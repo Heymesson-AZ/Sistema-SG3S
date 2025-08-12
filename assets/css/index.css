@@ -1,0 +1,135 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(
+    135deg,
+    #e3f2fd,
+    #bbdefb
+  ); /* opcional para deixar a tela mais charmosa */
+}
+
+header {
+  background-color: #7fb3ed;
+  width: 100%;
+}
+
+nav .btn {
+  font-size: 1rem;
+  font-weight: bold;
+  border: 2px solid transparent;
+}
+
+nav .btn-danger {
+  background-color: #f30202;
+  color: #fff;
+  border: 2px solid transparent;
+}
+
+.search-bar input {
+  max-width: 100%;
+  border: 2px solid #7fb3ed;
+}
+
+main {
+  flex: 1;
+  text-align: center;
+  padding: 20px;
+}
+
+main h1 {
+  color: #333;
+  font-weight: bold;
+}
+
+main a.btn-success {
+  font-size: 1.2rem;
+  padding: 0.8rem 2rem;
+}
+
+footer {
+  width: 100%;
+  background-color: #94beef;
+  color: #666;
+  text-align: center;
+  padding: 2rem;
+  border-top: 1px solid #ddd;
+  margin-top: auto;
+}
+
+/* Estilização geral do modal */
+#modal_pedido .modal-body {
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 0.3rem;
+}
+
+/* Espaçamento visual entre seções */
+#modal_pedido .form-label {
+  font-weight: 600;
+}
+
+#modal_pedido .section-title {
+  margin-top: 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+/* Estilização da tabela de produtos */
+#modal_pedido .table-wrapper {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  background-color: #fff;
+}
+
+#modal_pedido table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f1f1f1;
+  z-index: 1;
+  text-align: center;
+}
+
+#modal_pedido table td,
+#modal_pedido table th {
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.95rem;
+  padding: 0.5rem;
+}
+
+#modal_pedido table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  #modal_pedido .modal-dialog {
+    max-width: 95%;
+  }
+}
+
+/* Footer fixado no fim da viewport */
+footer {
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #555;
+  text-align: center;
+  padding: 1rem 0;
+  font-size: 0.85rem;
+  border-top: 1px solid #ddd;
+}
+

@@ -1,0 +1,683 @@
+<?php
+// classe produto
+class Produto extends Conexao
+{
+    // Atributos
+    private $id_produto = null;
+    private $custo_compra = null;
+    private $valor_venda = null;
+    private $nome_produto = null;
+    private $composicao = null;
+    private $largura = null;
+    private $tipo_produto = null;
+    private $data_compra = null;
+    private $quantidade = null;
+    private $quantidade_minima = null;
+    private $cor = null;
+    private $ncm_produto = null;
+    private $id_fornecedor = null;
+    private $img_produto = null;
+
+    // metodos getters e setters
+
+    public function getIdProduto()
+    {
+        return $this->id_produto;
+    }
+    public function setIdProduto($id_produto)
+    {
+        $this->id_produto = $id_produto;
+    }
+
+
+    // Define o custo de compra do produto
+    public function getCustoCompra()
+    {
+        return $this->custo_compra;
+    }
+    // Define o custo de compra do produto
+    public function setCustoCompra($custo_compra)
+    {
+        $this->custo_compra = $custo_compra;
+    }
+
+
+    public function getValorVenda()
+    {
+        return $this->valor_venda;
+    }
+    public function setValorVenda($valor_venda)
+    {
+        $this->valor_venda = $valor_venda;
+    }
+
+
+    public function getNomeProduto()
+    {
+        return $this->nome_produto;
+    }
+    public function setNomeProduto($nome_produto)
+    {
+        $this->nome_produto = $nome_produto;
+    }
+    public function getComposicao()
+    {
+        return $this->composicao;
+    }
+    public function setComposicao($composicao)
+    {
+        $this->composicao = $composicao;
+    }
+    public function getLargura()
+    {
+        return $this->largura;
+    }
+    public function setLargura($largura)
+    {
+        $this->largura = $largura;
+    }
+    public function getTipoProduto()
+    {
+        return $this->tipo_produto;
+    }
+    public function setTipoProduto($tipo_produto)
+    {
+        $this->tipo_produto = $tipo_produto;
+    }
+    public function getDataCompra()
+    {
+        return $this->data_compra;
+    }
+    public function setDataCompra($data_compra)
+    {
+        $this->data_compra = $data_compra;
+    }
+    public function getQuantidade()
+    {
+        return $this->quantidade;
+    }
+    public function setQuantidade($quantidade)
+    {
+        $this->quantidade = $quantidade;
+    }
+    public function getQuantidadeMinima()
+    {
+        return $this->quantidade_minima;
+    }
+    public function setQuantidadeMinima($quantidade_minima)
+    {
+        $this->quantidade_minima = $quantidade_minima;
+    }
+    public function getCor()
+    {
+        return $this->cor;
+    }
+    public function setCor($cor)
+    {
+        $this->cor = $cor;
+    }
+    public function getIdFornecedor()
+    {
+        return $this->id_fornecedor;
+    }
+    public function setIdFornecedor($id_fornecedor)
+    {
+        $this->id_fornecedor = $id_fornecedor;
+    }
+    public function getNcmProduto()
+    {
+        return $this->ncm_produto;
+    }
+    public function setNcmProduto($ncm_produto)
+    {
+        $this->ncm_produto = $ncm_produto;
+    }
+    public function getImgProduto()
+    {
+        return $this->img_produto;
+    }
+    public function setImgProduto($img_produto)
+    {
+        $this->img_produto = $img_produto;
+
+        return $this;
+    }
+    // Cadastrar Produtos
+    public function cadastrarProduto(
+        $nome_produto,
+        $tipo_produto,
+        $cor,
+        $composicao,
+        $quantidade,
+        $quantidade_minima,
+        $largura,
+        $custo_compra,
+        $valor_venda,
+        $data_compra,
+        $ncm_produto,
+        $id_fornecedor,
+        $img_produto
+    ) {
+        // Setando os atributos
+        $this->setNomeProduto($nome_produto);
+        $this->setTipoProduto($tipo_produto);
+        $this->setCor($cor);
+        $this->setComposicao($composicao);
+        $this->setQuantidade($quantidade);
+        $this->setQuantidadeMinima($quantidade_minima);
+        $this->setLargura($largura);
+        $this->setCustoCompra($custo_compra);
+        $this->setValorVenda($valor_venda);
+        $this->setDataCompra($data_compra);
+        $this->setNcmProduto($ncm_produto);
+        $this->setIdFornecedor($id_fornecedor);
+        $this->setImgProduto($img_produto);
+
+        // Query para inserir produto
+        $sql = "INSERT INTO produto (nome_produto, tipo_produto, cor, composicao, quantidade, largura,
+                    custo_compra, valor_venda, data_compra, ncm_produto, id_fornecedor, img_produto, quantidade_minima)
+                    VALUES (:nome_produto, :tipo_produto, :cor, :composicao, :quantidade, :largura,
+                    :custo_compra, :valor_venda, :data_compra, :ncm_produto, :id_fornecedor, :img_produto, :quantidade_minima)";
+        try {
+            // Conectar com o banco
+            $bd = $this->conectarBanco();
+            // Preparar o SQL
+            $query = $bd->prepare($sql);
+            // Blindagem dos dados
+            $query->bindValue(':nome_produto', $this->getNomeProduto(), PDO::PARAM_STR);
+            $query->bindValue(':tipo_produto', $this->getTipoProduto(), PDO::PARAM_STR);
+            $query->bindValue(':cor', $this->getCor(), PDO::PARAM_STR);
+            $query->bindValue(':composicao', $this->getComposicao(), PDO::PARAM_STR);
+            $query->bindValue(':quantidade', $this->getQuantidade(), PDO::PARAM_STR);
+            $query->bindValue(':largura', $this->getLargura(), PDO::PARAM_STR);
+            $query->bindValue(':custo_compra', $this->getCustoCompra(), PDO::PARAM_STR);
+            $query->bindValue(':valor_venda', $this->getValorVenda(), PDO::PARAM_STR);
+            $query->bindValue(':data_compra', $this->getDataCompra(), PDO::PARAM_STR);
+            $query->bindValue(':ncm_produto', $this->getNcmProduto(), PDO::PARAM_STR);
+            $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
+            $query->bindValue(':img_produto', $this->getImgProduto(), PDO::PARAM_STR);
+            $query->bindValue(':quantidade_minima', $this->getQuantidadeMinima(), PDO::PARAM_STR);
+            // Executar a query
+            $query->execute();
+            // Retorna true caso tenha sido cadastrado com sucesso
+            return true;
+        } catch (PDOException $e) {
+            error_log("Erro ao cadastrar produto: " . $e->getMessage());
+            return false;
+        }
+    }
+    // consultar Produtos
+    public function consultarProduto($nome_produto, $tipo_produto, $cor, $id_fornecedor)
+    {
+        // Setando os atributos
+        $this->setNomeProduto($nome_produto);
+        $this->setTipoProduto($tipo_produto);
+        $this->setCor($cor);
+        $this->setIdFornecedor($id_fornecedor);
+
+        // Base da query
+        $sql = "SELECT p.id_produto, p.nome_produto, p.tipo_produto, p.cor, p.composicao,
+            p.quantidade, p.largura, p.custo_compra, p.valor_venda, p.data_compra,
+            p.ncm_produto, p.id_fornecedor, f.razao_social, p.img_produto,p.quantidade_minima
+            FROM produto AS p
+            LEFT JOIN fornecedor AS f ON p.id_fornecedor = f.id_fornecedor";
+        // Array de condições
+        $condicoes = [];
+
+        // Filtros com LIKE para busca parcial
+        if (!empty($this->getNomeProduto())) {
+            $condicoes[] = "p.nome_produto LIKE :nome_produto";
+        }
+
+        if (!empty($this->getTipoProduto())) {
+            $condicoes[] = "p.tipo_produto LIKE :tipo_produto";
+        }
+
+        if (!empty($this->getCor())) {
+            $condicoes[] = "p.cor LIKE :cor";
+        }
+
+        // Filtro exato por ID do fornecedor
+        if (!empty($this->getIdFornecedor())) {
+            $condicoes[] = "p.id_fornecedor = :id_fornecedor";
+        }
+
+        // Adiciona cláusulas WHERE dinamicamente
+        if (count($condicoes) > 0) {
+            $sql .= " WHERE " . implode(" AND ", $condicoes);
+        }
+        // Ordenação
+        $sql .= " ORDER BY p.nome_produto ASC";
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+
+            // Bind individual com bindValue()
+            if (!empty($this->getNomeProduto())) {
+                $query->bindValue(':nome_produto', "%" . $this->getNomeProduto() . "%", PDO::PARAM_STR);
+            }
+            if (!empty($this->getTipoProduto())) {
+                $query->bindValue(':tipo_produto', "%" . $this->getTipoProduto() . "%", PDO::PARAM_STR);
+            }
+            if (!empty($this->getCor())) {
+                $query->bindValue(':cor', "%" . $this->getCor() . "%", PDO::PARAM_STR);
+            }
+            if (!empty($this->getIdFornecedor())) {
+                $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
+            }
+            $query->execute();
+            $produto = $query->fetchAll(PDO::FETCH_OBJ);
+            return $produto;
+        } catch (PDOException $e) {
+            error_log("Erro ao consultar produtos: " . $e->getMessage());
+            return false;
+        }
+    }
+    // alterar Produtos
+    public function alterarProduto(
+        $nome_produto,
+        $tipo_produto,
+        $cor,
+        $composicao,
+        $quantidade,
+        $quantidade_minima,
+        $largura,
+        $custo_compra,
+        $valor_venda,
+        $data_compra,
+        $ncm_produto,
+        $id_fornecedor,
+        $id_produto,
+        $img_produto
+    ) {
+        // Setando os atributos
+        $this->setIdProduto($id_produto);
+        $this->setNomeProduto($nome_produto);
+        $this->setTipoProduto($tipo_produto);
+        $this->setCor($cor);
+        $this->setComposicao($composicao);
+        $this->setQuantidade($quantidade);
+        $this->setQuantidadeMinima($quantidade_minima);
+        $this->setLargura($largura);
+        $this->setCustoCompra($custo_compra);
+        $this->setValorVenda($valor_venda);
+        $this->setDataCompra($data_compra);
+        $this->setNcmProduto($ncm_produto);
+        $this->setIdFornecedor($id_fornecedor);
+        $this->setImgProduto($img_produto);
+
+        // Query para alterar produto
+        $sql = "UPDATE produto SET nome_produto = :nome_produto, tipo_produto = :tipo_produto,
+        cor = :cor, composicao = :composicao, quantidade = :quantidade,
+        quantidade_minima = :quantidade_minima, largura = :largura
+        , custo_compra = :custo_compra,
+        valor_venda = :valor_venda, data_compra = :data_compra, ncm_produto = :ncm_produto,
+        id_fornecedor = :id_fornecedor, img_produto = :img_produto
+        WHERE id_produto = :id_produto";
+        try {
+            // Conectar com o banco
+            $bd = $this->conectarBanco();
+            // Preparar o SQL
+            $query = $bd->prepare($sql);
+
+            // Blindagem dos dados
+            $query->bindValue(':id_produto', $this->getIdProduto(), PDO::PARAM_INT);
+            $query->bindValue(':nome_produto', $this->getNomeProduto(), PDO::PARAM_STR);
+            $query->bindValue(':tipo_produto', $this->getTipoProduto(), PDO::PARAM_STR);
+            $query->bindValue(':cor', $this->getCor(), PDO::PARAM_STR);
+            $query->bindValue(':composicao', $this->getComposicao(), PDO::PARAM_STR);
+            $query->bindValue(':quantidade', $this->getQuantidade(), PDO::PARAM_STR);
+            $query->bindValue(':quantidade_minima', $this->getQuantidadeMinima(), PDO::PARAM_STR);
+            $query->bindValue(':largura', $this->getLargura(), PDO::PARAM_STR);
+            $query->bindValue(':custo_compra', $this->getCustoCompra(), PDO::PARAM_STR);
+            $query->bindValue(':valor_venda', $this->getValorVenda(), PDO::PARAM_STR);
+            $query->bindValue(':data_compra', $this->getDataCompra(), PDO::PARAM_STR);
+            $query->bindValue(':ncm_produto', $this->getNcmProduto(), PDO::PARAM_STR);
+            $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
+            $query->bindValue(':img_produto', $this->getImgProduto(), PDO::PARAM_STR);
+            // Verifica se a imagem foi alterada
+            if ($this->getImgProduto() !== $img_produto) {
+                // Se a imagem foi alterada, atualiza o campo no banco
+                $query->bindValue(':img_produto', $this->getImgProduto(), PDO::PARAM_STR);
+            }
+            // Se a imagem não foi alterada, mantém o valor atual
+            else {
+                $query->bindValue(':img_produto', $img_produto, PDO::PARAM_STR);
+            }
+            // Executar a query
+            $query->execute();
+            // Retorna true caso tenha sido alterado com sucesso
+            return true;
+        } catch (PDOException $e) {
+            error_log("Erro ao alterar produto: " . $e->getMessage());
+            return false;
+        }
+    }
+    // verifica se o produto está vinculado a algum pedido
+    public function produtoEmAlgumPedido($id_produto)
+    {
+        // seta o id do produto
+        $this->setIdProduto($id_produto);
+
+        // Exemplo considerando que a tabela seja item_pedido
+        $sql = "SELECT COUNT(*) as total
+            FROM item_pedido
+            WHERE id_produto = :id_produto";
+
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+            $query->bindValue(':id_produto', $this->getIdProduto(), PDO::PARAM_INT);
+            $query->execute();
+
+            $resultado = $query->fetch(PDO::FETCH_ASSOC);
+
+            if ($resultado && $resultado['total'] > 0) {
+                // Produto está vinculado a pelo menos um pedido
+                return true;
+            } else {
+                // Produto não está em nenhum pedido
+                return false;
+            }
+        } catch (PDOException $e) {
+            error_log("Erro ao verificar se produto está em pedido: " . $e->getMessage());
+            return false;
+        }
+    }
+    // excluir Produtos
+    public function excluirProduto($id_produto)
+    {
+        // Seta o ID do produto
+        $this->setIdProduto($id_produto);
+
+        try {
+            // Conecta ao banco
+            $bd = $this->conectarBanco();
+
+            // Inicia a transação
+            $bd->beginTransaction();
+
+            // Busca a imagem do produto
+            $sqlBusca = "SELECT img_produto FROM produto WHERE id_produto = :id_produto";
+            $queryBusca = $bd->prepare($sqlBusca);
+            $queryBusca->bindValue(':id_produto', $this->getIdProduto(), PDO::PARAM_INT);
+            $queryBusca->execute();
+
+            $resultado = $queryBusca->fetch(PDO::FETCH_ASSOC);
+
+            if (!$resultado) {
+                // Produto não encontrado
+                error_log("Produto não encontrado para exclusão: ID {$this->getIdProduto()}");
+                $bd->rollBack();
+                return false;
+            }
+
+            // Se existe imagem, tenta excluir
+            if (!empty($resultado['img_produto'])) {
+                $caminhoImagem = $resultado['img_produto'];
+                // Verifica se o caminho da imagem é válido
+                if (file_exists($caminhoImagem)) {
+                    if (!unlink($caminhoImagem)) {
+                        // Falha ao excluir o arquivo
+                        error_log("Erro ao excluir a imagem: $caminhoImagem");
+                        $bd->rollBack();
+                        return false;
+                    }
+                }
+            }
+            // Exclui o produto do banco
+            $sqlDelete = "DELETE FROM produto WHERE id_produto = :id_produto";
+            $queryDelete = $bd->prepare($sqlDelete);
+            $queryDelete->bindValue(':id_produto', $this->getIdProduto(), PDO::PARAM_INT);
+            $queryDelete->execute();
+            // Confirma a transação
+            $bd->commit();
+            return true;
+        } catch (PDOException $e) {
+            // Em caso de erro, faz rollback
+            if ($bd->inTransaction()) {
+                $bd->rollBack();
+            }
+            error_log("Erro ao excluir produto: " . $e->getMessage());
+            return false;
+        }
+    }
+    // consultarProdutoPedido
+    public function consultarProdutoDinamico($produto)
+    {
+        $sql = "SELECT id_produto, nome_produto, tipo_produto, cor, largura, valor_venda, quantidade
+            FROM produto
+            WHERE nome_produto LIKE :produto
+            OR tipo_produto LIKE :produto
+            OR cor LIKE :produto";
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+            $query->bindValue(':produto', "%" . $produto . "%", PDO::PARAM_STR);
+            $query->execute();
+            $resultado = $query->fetchAll(PDO::FETCH_ASSOC);
+            return $resultado;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+    // verificar produto
+    public function verificarProduto($nome_produto, $cor, $largura)
+    {
+        // setando os atributos
+        $this->setNomeProduto($nome_produto);
+        $this->setCor($cor);
+        $this->setLargura($largura);
+
+        $sql = "SELECT * FROM produto
+                WHERE nome_produto = :nome_produto
+                AND cor = :cor
+                AND largura = :largura
+                LIMIT 1";
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+            $query->bindValue(':nome_produto', $nome_produto, PDO::PARAM_STR);
+            $query->bindValue(':cor', $cor, PDO::PARAM_STR);
+            $query->bindValue(':largura', $largura, PDO::PARAM_STR);
+            $query->execute();
+            // Retornar resultados
+            $produto = $query->fetchAll(PDO::FETCH_ASSOC);
+            return $produto;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+    // verificar a quantidade de um produto
+    public function verificarQuantidadeProduto($id_produto, $quantidade)
+    {
+        // Setando o id do produto
+        $this->setIdProduto($id_produto);
+
+        $sql = "SELECT quantidade FROM produto WHERE id_produto = :id_produto";
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+            $query->bindValue(':id_produto', $this->getIdProduto(), PDO::PARAM_INT);
+            $query->execute();
+            $resultado = $query->fetch(PDO::FETCH_OBJ);
+            if ($resultado && $resultado->quantidade >= $quantidade) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (PDOException $e) {
+            error_log("Erro ao verificar quantidade do produto: " . $e->getMessage());
+            return false; // Erro na consulta
+        }
+    }
+
+    // produtos a baixo do limite minimo
+    public function produtosAbaixoDoMinimo()
+    {
+        try {
+            $bd = $this->conectarBanco();
+            $sql = "SELECT
+                    p.id_produto,
+                    p.nome_produto,
+                    p.quantidade,
+                    p.quantidade_minima,
+                    (p.quantidade_minima - p.quantidade) AS falta
+                FROM produto p
+                WHERE p.quantidade < p.quantidade_minima
+                ORDER BY falta DESC";
+
+            $stmt = $bd->prepare($sql);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            die("Erro ao buscar produtos abaixo do mínimo: " . $e->getMessage());
+        }
+    }
+
+    //  Relatórios
+
+    //produtos com baxo estoque
+    public function produtosComBaixoEstoque($limite)
+    {
+        $sql = "SELECT id_produto, nome_produto, quantidade
+            FROM produto
+            WHERE quantidade <= :limite
+            ORDER BY quantidade ASC";
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+            $query->bindValue(':limite', $limite, PDO::PARAM_INT);
+            $query->execute();
+            return $query->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $e) {
+            error_log("Erro ao buscar produtos com baixo estoque: " . $e->getMessage());
+            return false;
+        }
+    }
+    // Valor do custo de compra por produto baseado nos pedidos realizados
+    public function custoTotalPorProduto($id_produto = null)
+    {
+        $this->setIdProduto($id_produto);
+        try {
+            $bd = $this->conectarBanco();
+            $sql = "SELECT
+                    p.id_produto,
+                    p.nome_produto,
+                    p.tipo_produto,
+                    p.largura,
+                    p.composicao,
+                    SUM(ip.quantidade) AS quantidade_total,
+                    -- custo médio ponderado por item (valor histórico)
+                    ROUND(SUM(ip.quantidade * ip.custo_compra) / SUM(ip.quantidade), 2) AS custo_unit_medio,
+                    -- total investido (custo histórico)
+                    ROUND(SUM(ip.quantidade * ip.custo_compra), 2) AS total_investido,
+                    -- valor total vendido (valor histórico)
+                    ROUND(SUM(ip.quantidade * ip.valor_unitario), 2) AS valor_total_pedidos,
+                    -- lucro bruto (valor histórico de venda - custo histórico)
+                    ROUND(SUM(ip.quantidade * ip.valor_unitario) - SUM(ip.quantidade * ip.custo_compra), 2) AS lucro_bruto
+                FROM item_pedido ip
+                INNER JOIN produto p ON p.id_produto = ip.id_produto
+                INNER JOIN pedido pe ON pe.id_pedido = ip.id_pedido
+                WHERE pe.status_pedido = 'Finalizado'";
+
+            if (!empty($id_produto)) {
+                $sql .= " AND ip.id_produto = :id_produto";
+            }
+
+            $sql .= " GROUP BY
+                    p.id_produto,
+                    p.nome_produto,
+                    p.tipo_produto,
+                    p.largura,
+                    p.composicao
+                ORDER BY lucro_bruto DESC";
+
+            $query = $bd->prepare($sql);
+
+            if (!empty($id_produto)) {
+                $query->bindValue(':id_produto', $this->getIdProduto(), PDO::PARAM_INT);
+            }
+
+            $query->execute();
+
+            return $query->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $e) {
+            error_log("Erro ao calcular custo total por produto: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    //listar todos o produtos de um fornecedor especifico
+    public function listarProdutosPorFornecedor($id_fornecedor = null)
+    {
+        $sql = "SELECT 
+                p.id_produto, 
+                p.nome_produto, 
+                p.tipo_produto, 
+                p.cor, 
+                p.quantidade,
+                f.razao_social
+            FROM produto p
+            INNER JOIN fornecedor f ON p.id_fornecedor = f.id_fornecedor";
+
+        // Adiciona cláusula WHERE apenas se ID for válido
+        if (!empty($id_fornecedor)) {
+            $this->setIdFornecedor($id_fornecedor);
+            $sql .= " WHERE p.id_fornecedor = :id_fornecedor";
+        }
+
+        $sql .= " ORDER BY p.nome_produto ASC";
+
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+
+            if (!empty($id_fornecedor)) {
+                $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
+            }
+
+            $query->execute();
+            return $query->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $e) {
+            error_log("Erro ao listar produtos por fornecedor: " . $e->getMessage());
+            return false;
+        }
+    }
+    // produtos com margem de lucro
+    public function produtosMargem($limitePercentual = null, $id_produto = null)
+    {
+        $this->setIdProduto($id_produto);
+
+        $sql = "SELECT
+                nome_produto,
+                custo_compra,
+                valor_venda,
+                ROUND(((valor_venda - custo_compra) / custo_compra) * 100, 2) AS margem_percentual
+            FROM produto
+            WHERE custo_compra > 0";
+        // Adiciona filtro apenas se passado, e nunca os dois juntos
+        if ($id_produto !== null) {
+            $sql .= " AND id_produto = :id_produto";
+        } elseif ($limitePercentual !== null) {
+            $sql .= " AND ((valor_venda - custo_compra) / custo_compra) * 100 <= :limitePercentual";
+        }
+        $sql .= " ORDER BY margem_percentual ASC";
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+            // Aplica o parâmetro condicionalmente (um só)
+            if ($id_produto !== null) {
+                $query->bindValue(':id_produto', $this->getIdProduto(), PDO::PARAM_INT);
+            } elseif ($limitePercentual !== null) {
+                $query->bindValue(':limitePercentual', $limitePercentual, PDO::PARAM_STR);
+            }
+            $query->execute();
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erro ao buscar margem dos produtos: " . $e->getMessage());
+            return false;
+        }
+    }
+};
