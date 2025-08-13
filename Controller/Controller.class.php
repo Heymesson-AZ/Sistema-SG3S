@@ -487,65 +487,73 @@ class Controller
     {
         print '<header class="bg-primary shadow-sm">';
         print '    <nav class="container navbar navbar-expand-lg navbar-dark py-2">';
+
+        // Logo
         print '        <a class="navbar-brand fw-bold text-white d-flex align-items-center" href="index.php?principal">';
         print '            <i class="fas fa-chart-line me-2"></i> SG3S System';
         print '        </a>';
+
+        // Botão Mobile
         print '        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">';
         print '            <span class="navbar-toggler-icon"></span>';
         print '        </button>';
 
         print '        <div class="collapse navbar-collapse" id="navbarNav">';
-
-        // Menu de navegação
         print '            <ul class="navbar-nav d-flex align-items-center gap-2">';
-        print '                <li class="nav-item">';
-        print '                    <a href="index.php?principal" class="btn btn-outline-light fw-semibold"><i class="fas fa-home me-1"></i> Início</a>';
-        print '                </li>';
-        print '                <li class="nav-item">';
-        print '                    <a href="index.php?cliente" class="btn btn-outline-light fw-semibold"><i class="fas fa-user me-1"></i> Cliente</a>';
-        print '                </li>';
-        print '                <li class="nav-item">';
-        print '                    <a href="index.php?produto" class="btn btn-outline-light fw-semibold"><i class="fas fa-box me-1"></i> Produto</a>';
-        print '                </li>';
 
-        if ($this->temPermissao(['Administrador'])) {
+        // Links principais
+        $links = [
+            ['principal', 'fas fa-home', 'Início'],
+            ['cliente', 'fas fa-user', 'Cliente'],
+            ['produto', 'fas fa-box', 'Produto']
+        ];
+
+        foreach ($links as $link) {
             print '                <li class="nav-item">';
-            print '                    <a href="index.php?usuario" class="btn btn-outline-light fw-semibold"><i class="fas fa-users me-1"></i> Usuário</a>';
-            print '                </li>';
-            print '                <li class="nav-item">';
-            print '                    <a href="index.php?pedido" class="btn btn-outline-light fw-semibold"><i class="bi bi-bag-fill me-1"></i> Pedidos</a>';
-            print '                </li>';
-            print '                <li class="nav-item">';
-            print '                    <a href="index.php?relatorios" class="btn btn-outline-light fw-semibold"><i class="fas fa-warehouse me-1"></i> Relatórios</a>';
-            print '                </li>';
-            print '                <li class="nav-item">';
-            print '                    <a href="index.php?auditoria" class="btn btn-outline-light fw-semibold"><i class="fas fa-search me-1"></i> Auditoria</a>';
+            print '                    <a href="index.php?' . $link[0] . '" class="btn btn-outline-light fw-semibold"><i class="' . $link[1] . ' me-1"></i> ' . $link[2] . '</a>';
             print '                </li>';
         }
 
+        if ($this->temPermissao(['Administrador'])) {
+            $adminLinks = [
+                ['usuario', 'fas fa-users', 'Usuário'],
+                ['pedido', 'bi bi-bag-fill', 'Pedidos'],
+                ['relatorios', 'fas fa-warehouse', 'Relatórios'],
+                ['auditoria', 'fas fa-search', 'Auditoria']
+            ];
+            foreach ($adminLinks as $link) {
+                print '                <li class="nav-item">';
+                print '                    <a href="index.php?' . $link[0] . '" class="btn btn-outline-light fw-semibold"><i class="' . $link[1] . ' me-1"></i> ' . $link[2] . '</a>';
+                print '                </li>';
+            }
+        }
+
+        // Calendário
         print '                <li class="nav-item">';
         print '                    <button type="button" class="btn btn-outline-light fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCalendario">';
         print '                        <i class="fas fa-calendar-alt me-1"></i> Calendário';
         print '                    </button>';
         print '                </li>';
 
-        // Notificações modernas
-        // Notificações modernas
-        print '<li class="nav-item dropdown">';
-        print '  <a class="nav-link text-white position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
-        print '    <i class="fas fa-bell fa-lg"></i>';
-        print '    <span id="contadorNotificacoes" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary" style="font-size: 0.65rem;">0</span>';
-        print '  </a>';
-        print '  <ul id="listaNotificacoes" class="dropdown-menu dropdown-menu-end shadow-sm p-2" style="width: 300px;">';
-        print '    <li class="dropdown-header">Notificações</li>';
-        print '    <li><hr class="dropdown-divider"></li>';
-        print '    <li class="text-center text-muted small">Nenhuma notificação</li>';
-        print '  </ul>';
-        print '</li>';
-        print ' </ul>';
-        print '<div class="vr mx-4"></div>'; // Linha vertical separadora
-        // Exibe o nome do usuário logado e avatar
-        // Área do usuário à direita (ms-auto separa visualmente)
+        // Notificações (mais elegante)
+        print '                <li class="nav-item dropdown">';
+        print '                    <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
+        print '                        <i class="fas fa-bell fa-lg text-white"></i>';
+        print '                        <span id="contadorNotificacoes" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm" style="font-size: 0.65rem; display:none;">0</span>';
+        print '                    </a>';
+        print '                    <ul id="listaNotificacoes" class="dropdown-menu dropdown-menu-end shadow-sm p-2" style="width: 320px; max-height: 400px; overflow-y: auto;">';
+        print '                        <li class="dropdown-header fw-bold text-primary"><i class="fas fa-bell me-1"></i> Notificações</li>';
+        print '                        <li><hr class="dropdown-divider"></li>';
+        print '                        <li class="text-center text-muted small">Nenhuma notificação</li>';
+        print '                    </ul>';
+        print '                </li>';
+
+        print '            </ul>';
+
+        // Linha separadora
+        print '            <div class="vr mx-4 d-none d-lg-block"></div>';
+
+        // Usuário
         print '            <div class="ms-auto d-flex align-items-center">';
         print '                <div class="dropdown">';
         print '                    <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="#" id="usuarioDropdown" data-bs-toggle="dropdown" aria-expanded="false">';
@@ -557,10 +565,12 @@ class Controller
         print '                    </ul>';
         print '                </div>';
         print '            </div>';
-        print '        </div>'; // navbar-collapse
+
+        print '        </div>';
         print '    </nav>';
         print '</header>';
     }
+
 
     // USUARIO
 
@@ -5307,25 +5317,40 @@ class Controller
     {
         $objProduto = new Produto();
         $produtos = $objProduto->produtosAbaixoDoMinimo();
+        // Legenda
+        print "
+            <li class='dropdown-item text-center fw-bold text-warning bg-light'>
+                <i class='fas fa-exclamation-triangle me-1'></i> Produtos com estoque baixo
+            </li>
+            <li><hr class='dropdown-divider'></li>
+        ";
+
         if (!empty($produtos)) {
             foreach ($produtos as $produto) {
                 $id_produto     = $produto['id_produto'];
                 $nome_produto   = htmlspecialchars($produto['nome_produto']);
                 $estoque_atual  = (float) $produto['quantidade'];
                 $estoque_minimo = (float) $produto['quantidade_minima'];
-                $falta = (float) $produto['falta'];
+
                 print "
-            <span class='list-group-item list-group-item-action produto-item'
-                data-id='{$id_produto}'
-                data-nome='{$nome_produto}'
-                data-estoque-atual='{$estoque_atual}'
-                data-estoque-minimo='{$estoque_minimo}'>
-                {$nome_produto} - Estoque: {$estoque_atual} (Mín.: {$estoque_minimo}) - Falta {$falta}
-            </span>
+                <li class='produto-item dropdown-item d-flex justify-content-between align-items-center'
+                    data-nome='{$nome_produto}'
+                    data-estoque-atual='{$estoque_atual}'
+                    data-estoque-minimo='{$estoque_minimo}'>
+                    <div>
+                        <i class='fas fa-box text-secondary me-2'></i> {$nome_produto}
+                    </div>
+                    <span class='badge bg-danger'>{$estoque_atual}</span>
+                    <small class='text-muted ms-1'>(mín.: {$estoque_minimo})</small>
+                </li>
             ";
             }
         } else {
-            print "<span class='list-group-item text-danger'>Nenhum produto abaixo do mínimo encontrado</span>";
+            print "
+            <li class='dropdown-item text-center text-success'>
+                <i class='fas fa-check-circle me-1'></i> Todos os produtos estão acima do estoque mínimo
+            </li>
+        ";
         }
     }
 };

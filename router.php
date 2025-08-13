@@ -213,11 +213,13 @@ if (isset($_POST['buscar_fornecedor'])) {
 // PRODUTO
 
 
-// Exemplo de rota para listar produtos abaixo do estoque mínimo
-if (isset($_GET['acao']) && $_GET['acao'] === 'buscarProdutosAbaixoMinimo') {
-    $objController->buscarProdutosAbaixoMinimo();
-    exit;
+//  rota para listar produtos abaixo do estoque mínimo
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao']) && $_POST['acao'] === 'buscarProdutosAbaixoMinimo') {
+    $controller = new Controller();
+    $controller->buscarProdutosAbaixoMinimo();
+    exit; // <-- Impede de renderizar o layout
 }
+
 
 function limparNumero($valor)
 {
@@ -386,7 +388,7 @@ if (isset($_POST['alterar_produto'])) {
             exit;
         }
     }
-    
+
     $objController->alterar_Produto(
         $id_produto,
         $nome_produto,
