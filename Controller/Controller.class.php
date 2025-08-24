@@ -1157,8 +1157,6 @@ class Controller
         print '</div>';     // modal
     }
 
-
-
     // PERFIL
 
     // cadastrar perfil de usuaio
@@ -1950,7 +1948,15 @@ class Controller
 
         // Fornecedor
         print '<div class="col-md-6">';
-        $this->selectFornecedoresCadastro();
+        print '<label for="produto_custo" class="form-label">Fornecedor *</label>';
+        print '<div class="position-relative">';
+        print '<div class="input-group"> ';
+        print '<span class="input-group-text"><i class="bi bi-search"></i></span>';
+        print '<input type="hidden" id="id_fornecedor_hidden" name="id_fornecedor" value="" />';
+        print '<input type="text" class="form-control" id="id_fornecedor_produto" placeholder="Digite o nome do fornecedor" autocomplete="off" />';
+        print '</div>';
+        print '<div id="resultado_busca_fornecedor" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;">';
+        print '</div>';
         print '</div>';
 
         print '</div>'; // fecha row do fieldset
@@ -2191,8 +2197,9 @@ class Controller
         $valor_venda,
         $data_compra,
         $ncm_produto,
-        $id_fornecedor,
-        $img_produto
+        $razao_social,
+        $img_produto,
+        $id_fornecedor
     ) {
         print '<div class="modal fade" id="alterar_produto' . $id_produto . '" tabindex="-1" aria-labelledby="alterarProdutoLabel" aria-hidden="true">';
         print '<div class="modal-dialog modal-xl modal-dialog-centered">';
@@ -2302,7 +2309,20 @@ class Controller
         print '</div>';
 
         print '<div class="col-md-6">';
-        $this->selectFornecedoresCadastro($id_fornecedor);
+        print '<label for="produto_custo" class="form-label">Fornecedor *</label>';
+        print '<div class="position-relative">';
+        print '<div class="input-group"> ';
+        print '<span class="input-group-text"><i class="bi bi-search"></i></span>';
+        print '<input type="hidden" id="id_fornecedor_hidden' . $id_produto . '" name="id_fornecedor" value="' . $id_fornecedor . '" />';
+        print '<input type="text" class="form-control fornecedor-input"
+        id="id_fornecedor_produto' . $id_produto . '"
+        placeholder="Digite o nome do fornecedor"
+        value="' . $razao_social . '"
+        autocomplete="off" />';
+        print '</div>';
+        print '<div id="resultado_busca_fornecedor' . $id_produto . '"
+        class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"
+        style="max-height: 200px; overflow-y: auto;">';
         print '</div>';
 
         print '</div>'; // row internos
@@ -4263,14 +4283,6 @@ class Controller
 
 
 
-
-
-
-
-
-
-
-
     // Relatorios de pedidos
 
     // faturamento do mes por ano inserido
@@ -5129,7 +5141,6 @@ class Controller
 
         print '</tbody></table></div>';
     }
-
     // metodo de Custo Total por Produto
     public function produto_Fornecedor($id_fornecedor)
     {
@@ -5243,7 +5254,6 @@ class Controller
         }
         print '</tbody></table></div>';
     }
-
     // metodo de clientes que mais compraram
     public function clientes_MaisCompraram($ano_referencia, $mes_referencia, $limite)
     {

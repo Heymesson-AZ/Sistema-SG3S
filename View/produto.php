@@ -128,7 +128,16 @@
                                             placeholder="Ex: Azul, Vermelho" autocomplete="off" />
                                     </div>
                                     <div class="col-md-6">
-                                        <?php $this->selectFornecedores($id_fornecedor = null); ?>
+                                        <label for="produto_custo" class="form-label">Buscar Fornecedor</label>
+                                        <div class="position-relative">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                                <input type="hidden" id="id_fornecedor_hidden" name="id_fornecedor" value="" />
+                                                <input type="text" class="form-control" id="id_fornecedor_produto" placeholder="Digite o nome do fornecedor" autocomplete="off" />
+                                            </div>
+                                            <div id="resultado_busca_fornecedor" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="text-center mt-4">
@@ -272,8 +281,9 @@
                     $valor->valor_venda,
                     $valor->data_compra,
                     $valor->ncm_produto,
-                    $valor->id_fornecedor,
-                    $valor->img_produto
+                    $valor->razao_social,
+                    $valor->img_produto,
+                    $valor->id_fornecedor
                 );
                 //modal excluir usuario
                 $this->modalExcluirProduto(
@@ -319,6 +329,7 @@
         <script src="assets/js/produto.js"></script>
         <!-- ajax de produtos com baixo estoque-->
         <script src="assets/js/notificacao.js"></script>
+        <script src="assets/js/relatorio.js"></script>
     </body>
 
     </html>

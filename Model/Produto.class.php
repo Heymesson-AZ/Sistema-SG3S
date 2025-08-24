@@ -511,7 +511,6 @@ class Produto extends Conexao
             return false; // Erro na consulta
         }
     }
-
     // produtos a baixo do limite minimo
     public function produtosAbaixoDoMinimo()
     {
@@ -608,7 +607,6 @@ class Produto extends Conexao
             return false;
         }
     }
-
     //listar todos o produtos de um fornecedor especifico
     public function listarProdutosPorFornecedor($id_fornecedor = null)
     {

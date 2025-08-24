@@ -94,21 +94,10 @@ if (isset($_POST['alterar_usuario'])) {
     $id = intval($_POST['id_usuario']);
     $nome = htmlspecialchars($_POST['nome_usuario']);
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-    $senhaForm = $_POST['senha'];
-    $confSenha = $_POST['confSenha'];
     $perfil = intval($_POST['id_perfil']);
     $telefone = limparTelefone($_POST['telefone']);
     $cpf = limparCpf($_POST['cpf']);
-
-    if (!validarSenhasIguais($senhaForm, $confSenha)) {
-        $menu = $objController->menu();
-        include_once 'view/usuario.php';
-        $objController->mostrarMensagemErro("As senhas não coincidem");
-        return;
-    }
-
-    $senhaHash = password_hash($senhaForm, PASSWORD_DEFAULT);
-    $objController->alterar_Usuario($id, $nome, $email, $senhaHash, $perfil, $cpf, $telefone);
+    $objController->alterar_Usuario($id, $nome, $email, $perfil, $cpf, $telefone);
 }
 // ================= ALTERAR SENHA =================
 if (isset($_POST['alterar_senha'])) {

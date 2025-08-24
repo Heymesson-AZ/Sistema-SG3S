@@ -257,7 +257,6 @@ class Usuario extends Conexao
         try {
             // Conectar com o banco
             $bd = $this->conectarBanco();
-            $senha = password_hash($senha, PASSWORD_DEFAULT);
             $sql = "UPDATE usuario SET senha = :senha WHERE id_usuario = :id_usuario";
             $query = $bd->prepare($sql);
             $query->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
