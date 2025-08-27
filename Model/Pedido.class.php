@@ -1130,6 +1130,7 @@ class Pedido extends Conexao
             p.status_pedido,
             p.valor_total,
             p.valor_frete,
+            p.status_pedido,
 
             -- Cliente
             c.id_cliente,

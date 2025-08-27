@@ -1,35 +1,20 @@
 $(document).ready(function () {
 
   // ===========================
-  // MÁSCARAS DE CAMPOS (USANDO jQuery Mask)
+  // MÁSCARAS DE CAMPOS
   // ===========================
-
   $(".cnpj").mask("00.000.000/0000-00", { reverse: true });
   $(".telefone_celular").mask("(00) 00000-0000");
   $(".telefone_fixo").mask("(00) 0000-0000");
 
-  // Máscara de moeda (R$)
-  $(".dinheiro").on("input", function () {
-    let valor = this.value.replace(/[^\d]/g, ""); // remove tudo que não for dígito
-    if (valor) {
-      valor = (parseFloat(valor) / 100)
-        .toFixed(2)
-        .replace(".", ",");
-      this.value = `R$ ${valor}`;
-    } else {
-      this.value = "";
-    }
-  });
-
+  // Máscara de moeda (R$) com separador de milhar
+  $(".dinheiro").mask("R$ 000.000.000,00", { reverse: true });
   // ===========================
   // MÁSCARA FLEXÍVEL PARA DECIMAIS
   // ===========================
   function aplicarMascaraDecimal(selector) {
     $(selector).on("input", function () {
-      // Permite apenas números, vírgula e ponto
       this.value = this.value.replace(/[^0-9.,]/g, "");
-
-      // Se tiver mais de um ponto ou vírgula, mantém só o primeiro
       let partes = this.value.split(/[,\.]/);
       if (partes.length > 2) {
         this.value = partes[0] + "." + partes.slice(1).join("");
@@ -37,17 +22,14 @@ $(document).ready(function () {
     });
 
     $(selector).on("blur", function () {
-      let valor = this.value.replace(",", "."); // vírgula -> ponto
+      let valor = this.value.replace(",", ".");
       if (valor && !isNaN(valor)) {
-        // Mantém até 3 casas decimais
         this.value = parseFloat(valor).toString();
       } else {
         this.value = "";
       }
     });
   }
-
-  // Aplica máscara aos campos pelo NAME
   aplicarMascaraDecimal("input[name='largura'], input[name='quantidade'], input[name='quantidade_minima']");
 
   // ===========================
@@ -99,7 +81,7 @@ $(document).ready(function () {
     if (!file) return;
 
     const tiposPermitidos = ["image/jpeg", "image/png", "image/gif"];
-    const maxTamanho = 500 * 1024; // 500KB
+    const maxTamanho = 500 * 1024;
     const maxLargura = 1200, maxAltura = 1200;
 
     if (!tiposPermitidos.includes(file.type)) {
@@ -129,7 +111,6 @@ $(document).ready(function () {
     reader.readAsDataURL(file);
   });
 
-  // Funções auxiliares
   function marcarErro(input, mensagem) {
     input.classList.add("is-invalid");
     input.title = mensagem;
@@ -153,4 +134,74 @@ $(document).ready(function () {
       legendaLabel.textContent = "Imagem Selecionada:";
     }
   }
+
+  // ===========================
+  // BUSCA DE FORNECEDOR (CADASTRO + ALTERAÇÃO)
+  // ===========================
+  function inicializarBuscaFornecedor(inputFornecedor, hiddenFornecedor, resultadoFornecedor) {
+    function buscarFornecedor(termo) {
+      if (!termo) {
+        resultadoFornecedor.innerHTML = "";
+        return;
+      }
+      fetch("index.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `buscar_fornecedor=${encodeURIComponent(termo)}`
+      })
+        .then(res => res.text())
+        .then(data => {
+          resultadoFornecedor.innerHTML = data;
+          resultadoFornecedor.querySelectorAll(".fornecedor-item").forEach(item => {
+            item.addEventListener("click", function () {
+              inputFornecedor.value = this.dataset.nome;
+              hiddenFornecedor.value = this.dataset.id;
+              resultadoFornecedor.innerHTML = "";
+            });
+          });
+        })
+        .catch(() => mostrarAlerta("Erro ao buscar fornecedor."));
+    }
+
+    inputFornecedor.addEventListener("input", () => {
+      hiddenFornecedor.value = "";
+      buscarFornecedor(inputFornecedor.value.trim());
+    });
+
+    inputFornecedor.closest("form").addEventListener("submit", function (e) {
+      if (inputFornecedor.value.trim() !== "" && !hiddenFornecedor.value) {
+        e.preventDefault();
+        mostrarAlerta("Por favor, selecione um fornecedor da lista.");
+      }
+    });
+  }
+
+  // --- Consulta ---
+  const inputFornecedorConsulta = document.getElementById("id_fornecedor_produto");
+  if (inputFornecedorConsulta) {
+    inicializarBuscaFornecedor(
+      inputFornecedorConsulta,
+      document.getElementById("id_fornecedor_hidden"),
+      document.getElementById("resultado_busca_fornecedor")
+    );
+  }
+  // --- Cadastro ---
+  const inputFornecedorCadastro = document.getElementById("id_fornecedor_produto_cadastro");
+  if (inputFornecedorCadastro) {
+    inicializarBuscaFornecedor(
+      inputFornecedorCadastro,
+      document.getElementById("id_fornecedor_hidden_cadastro"),
+      document.getElementById("resultado_busca_fornecedor_cadastro")
+    );
+  }
+  // --- Alteração ---
+  document.querySelectorAll(".fornecedor-input").forEach((inputFornecedor) => {
+    const id = inputFornecedor.id.replace("id_fornecedor_produto", "");
+    inicializarBuscaFornecedor(
+      inputFornecedor,
+      document.getElementById("id_fornecedor_hidden" + id),
+      document.getElementById("resultado_busca_fornecedor" + id)
+    );
+  });
+
 });

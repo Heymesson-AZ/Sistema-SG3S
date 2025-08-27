@@ -3,7 +3,6 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use Dompdf\Dompdf;
-use Dompdf\Options;
 
 // classe de controle
 class Controller
@@ -91,7 +90,6 @@ class Controller
             echo "Nenhum pedido para gerar PDF.";
             return;
         }
-
         mb_internal_encoding('UTF-8');
         mb_http_output('UTF-8');
 
@@ -100,21 +98,22 @@ class Controller
         // Agrupar itens por pedido
         $pedidosAgrupados = [];
         foreach ($pedidos as $pedido) {
-            $id = $pedido->id_pedido ?? 0;
-
+            $id = $pedido->id_pedido;
+            // Agrupar pedidos pelo ID
             if (!isset($pedidosAgrupados[$id])) {
                 $pedidosAgrupados[$id] = [
                     'dados' => $pedido,
                     'itens' => [],
                 ];
             }
-
+            // Agrupar itens pelo ID do pedido
             if (!empty($pedido->id_item_pedido)) {
                 $pedidosAgrupados[$id]['itens'][] = [
                     'nome_produto'    => $pedido->nome_produto ?? '',
                     'unidade_medida'  => $pedido->unidade_medida ?? 'un',
                     'valor_unitario'  => $pedido->valor_unitario ?? 0,
                     'quantidade'      => $pedido->quantidade ?? 0,
+                    'status_pedido' => $pedido->status_pedido ?? '',
                 ];
             }
         }
@@ -198,6 +197,7 @@ class Controller
 
             $html .= '<div class="pedido-info">
                 <div><strong>Número do Pedido:</strong> ' . htmlspecialchars($pedido->numero_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
+                <div><strong>Status do Pedido:</strong> ' . htmlspecialchars($pedido->status_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
                 <div><strong>Cliente:</strong> ' . htmlspecialchars($pedido->nome_fantasia ?? '', ENT_QUOTES, 'UTF-8') . '</div>
             </div>';
 
@@ -1157,6 +1157,25 @@ class Controller
         print '</div>';     // modal
     }
 
+    // select de usuarios
+    public function selectUsuario($id_usuario = null)
+    {
+        $objUsuario = new Usuario();
+        // Invocar o método da classe Usuario para consultar os perfis de usuário
+        $resultado = $objUsuario->consultarUsuario(null, null);
+        print '<label for="usuario" class="form-label"> Usuário: </label>';
+        print '<select name="id_usuario" class="form-select" aria-label="Default select example">';
+        print '<option selected value="">Selecione o Usuario </option>';
+        foreach ($resultado as $key => $valor) {
+            if ($valor->id_usuario == $id_usuario) {
+                print '<option selected value="' . $valor->id_usuario . '">' . $valor->nome_usuario . '</option>';
+            } else {
+                print '<option value="' . $valor->id_usuario . '">' . $valor->nome_usuario . '</option>';
+            }
+        }
+        print '</select>';
+    }
+
     // PERFIL
 
     // cadastrar perfil de usuaio
@@ -1906,18 +1925,18 @@ class Controller
 
         print '<div class="col-md-4">';
         print '<label for="quantidade" class="form-label">Qtd. (m) *</label>';
-        print '<input type="text" class="form-control quantidade" id="quantidade" name="quantidade" required>';
+        print '<input type="text" class="form-control quantidade" id="quantidade" name="quantidade" required autocomplete="off">';
         print '</div>';
 
         // Quantidade mínima, Largura, Composição
         print '<div class="col-md-4">';
         print '<label for="quantidade_minima" class="form-label">Qtd. Mínima *</label>';
-        print '<input type="text" class="form-control quantidade_minima" id="quantidade_minima" name="quantidade_minima" required>';
+        print '<input type="text" class="form-control quantidade_minima" id="quantidade_minima" name="quantidade_minima" required autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-4">';
         print '<label for="largura" class="form-label">Largura (m) *</label>';
-        print '<input type="text" class="form-control" id="largura" name="largura" value="' . $_SESSION['produto']['largura'] . '" required>';
+        print '<input type="text" class="form-control" id="largura" name="largura" value="' . $_SESSION['produto']['largura'] . '" required autocomplete="off" >';
         print '</div>';
 
         print '<div class="col-md-4">';
@@ -1927,38 +1946,42 @@ class Controller
 
         // Custo, Valor, Data
         print '<div class="col-md-4">';
-        print '<label for="custo_compra" class="form-label">Custo Compra (R$) *</label>';
-        print '<input type="text" class="form-control dinheiro" id="custo_compra" name="custo_compra" required>';
+        print '<label for="custo_compra" class="form-label">Custo de Compra *</label>';
+        print '<div class="input-group">';
+        print '<span class="input-group-text">R$</span>';
+        print '<input type="text" class="form-control dinheiro" id="custo_compra" name="custo_compra" required autocomplete="off" >';
+        print '</div>';
         print '</div>';
 
         print '<div class="col-md-4">';
-        print '<label for="valor_venda" class="form-label">Valor Venda (R$) *</label>';
-        print '<input type="text" class="form-control dinheiro" id="valor_venda" name="valor_venda" required>';
+        print '<label for="valor_venda" class="form-label">Valor de Venda *</label>';
+        print '<div class="input-group">';
+        print '<span class="input-group-text">R$</span>';
+        print '<input type="text" class="form-control dinheiro" id="valor_venda" name="valor_venda" required autocomplete="off" >';
+        print '</div>';
         print '</div>';
 
         print '<div class="col-md-4">';
         print '<label for="data_compra" class="form-label">Data Compra *</label>';
-        print '<input type="date" class="form-control" id="data_compra" name="data_compra" required>';
+        print '<input type="date" class="form-control" id="data_compra" name="data_compra" required autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="ncm_produto" class="form-label">NCM *</label>';
-        print '<input type="text" class="form-control" id="ncm_produto" name="ncm_produto" required>';
+        print '<input type="text" class="form-control" id="ncm_produto" name="ncm_produto" required autocomplete="off">';
         print '</div>';
-
         // Fornecedor
         print '<div class="col-md-6">';
         print '<label for="produto_custo" class="form-label">Fornecedor *</label>';
         print '<div class="position-relative">';
         print '<div class="input-group"> ';
         print '<span class="input-group-text"><i class="bi bi-search"></i></span>';
-        print '<input type="hidden" id="id_fornecedor_hidden" name="id_fornecedor" value="" />';
-        print '<input type="text" class="form-control" id="id_fornecedor_produto" placeholder="Digite o nome do fornecedor" autocomplete="off" />';
+        print '<input type="hidden" id="id_fornecedor_hidden_cadastro" name="id_fornecedor" value="" />';
+        print '<input type="text" class="form-control" id="id_fornecedor_produto_cadastro" placeholder="Digite o nome do fornecedor" autocomplete="off" />';
         print '</div>';
-        print '<div id="resultado_busca_fornecedor" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;">';
+        print '<div id="resultado_busca_fornecedor_cadastro" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;">';
         print '</div>';
         print '</div>';
-
         print '</div>'; // fecha row do fieldset
         print '</fieldset>';
         print '</div>'; // col-md-12
@@ -2255,7 +2278,7 @@ class Controller
 
         print '<div class="col-md-4">';
         print '<label for="nome_produto" class="form-label">Nome *</label>';
-        print '<input type="text" class="form-control" name="nome_produto" value="' . $nome_produto . '" required>';
+        print '<input type="text" class="form-control" name="nome_produto" value="' . $nome_produto . '" required autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-4">';
@@ -2275,40 +2298,47 @@ class Controller
 
         print '<div class="col-md-4">';
         print '<label for="largura" class="form-label">Largura (m) *</label>';
-        print '<input type="text" class="form-control" name="largura" value="' . $largura . '" required>';
+        print '<input type="text" class="form-control" name="largura" value="' . $largura . '" required autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-4">';
         print '<label for="quantidade" class="form-label">Quantidade (m) *</label>';
-        print '<input type="text" class="form-control" name="quantidade" value="' . $quantidade . '" required>';
+        print '<input type="text" class="form-control" name="quantidade" value="' . $quantidade . '" required autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-4">';
         print '<label for="quantidade_minima" class="form-label">Qtd. Mínima *</label>';
-        print '<input type="text" class="form-control" name="quantidade_minima" value="' . $quantidade_minima . '" required>';
+        print '<input type="text" class="form-control" name="quantidade_minima" value="' . $quantidade_minima . '" required autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-4">';
         print '<label for="custo_compra" class="form-label">Custo Compra (R$) *</label>';
-        print '<input type="text" class="form-control dinheiro" name="custo_compra" value="' . $custo_compra . '" required>';
+        print '<div class="input-group">';
+        print '<span class="input-group-text">R$</span>';
+        print '<input type="text" class="form-control dinheiro" name="custo_compra" value="' . $custo_compra . '" required autocomplete="off"> ';
         print '</div>';
+        print '</div>';
+
 
         print '<div class="col-md-4">';
         print '<label for="valor_venda" class="form-label">Valor Venda (R$) *</label>';
-        print '<input type="text" class="form-control dinheiro" name="valor_venda" value="' . $valor_venda . '" required>';
+        print '<div class="input-group">';
+        print '<span class="input-group-text">R$</span>';
+        print '<input type="text" class="form-control dinheiro" name="valor_venda" value="' . $valor_venda . '" required autocomplete="off" > ';
+        print '</div>';
         print '</div>';
 
         print '<div class="col-md-4">';
         print '<label for="data_compra" class="form-label">Data da Compra *</label>';
-        print '<input type="date" class="form-control" name="data_compra" value="' . $data_compra . '" required>';
+        print '<input type="date" class="form-control" name="data_compra" value="' . $data_compra . '" required autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-4">';
         print '<label for="ncm_produto" class="form-label">NCM *</label>';
-        print '<input type="text" class="form-control" name="ncm_produto" value="' . $ncm_produto . '" required>';
+        print '<input type="text" class="form-control" name="ncm_produto" value="' . $ncm_produto . '" required autocomplete="off">';
         print '</div>';
 
-        print '<div class="col-md-6">';
+        print '<div class="col-md-4">';
         print '<label for="produto_custo" class="form-label">Fornecedor *</label>';
         print '<div class="position-relative">';
         print '<div class="input-group"> ';
@@ -2791,7 +2821,7 @@ class Controller
             }
         }
     }
-    public function modal_cadastroCliente()
+    public function modal_CadastroCliente()
     {
         print '<div class="modal fade" id="modal_cliente" tabindex="-1" aria-labelledby="modalClienteLabel" aria-hidden="true">';
         print '<div class="modal-dialog modal-lg modal-dialog-centered">';
@@ -2799,14 +2829,15 @@ class Controller
 
         // Cabeçalho
         print '<div class="modal-header">';
-        print '<h6 class="modal-title" id="modalClienteLabel">Novo Cliente</h6>';
-        print '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '<h6 class="modal-title" id="modalClienteLabel"> Novo Cliente</h6>';
+        print '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>';
         print '</div>';
 
         // Corpo
         print '<div class="modal-body">';
-        print '<form action="index.php" method="POST" id="formulario_cliente">';
+        print '<form action="index.php" method="POST" id="formulario_cliente" class="needs-validation" novalidate>';
         print '<div class="row g-2">';
+
         // Fieldset Dados Cadastrais
         print '<div class="col-md-12">';
         print '<fieldset class="border border-black p-1 mb-4">';
@@ -2815,27 +2846,31 @@ class Controller
 
         print '<div class="col-md-6">';
         print '<label for="responsavel" class="form-label">Nome do Responsável *</label>';
-        print '<input type="text" class="form-control" id="responsavel" name="nome_representante" required placeholder="Digite o nome do responsável" pattern="^[A-Za-zÀ-ÿ\s]{3,}$" autocomplete="off">';
+        print '<input type="text" class="form-control" id="responsavel" name="nome_representante" required placeholder="Digite o nome do responsável" pattern="^[A-Za-zÀ-ÿ\s]{3,}$" minlength="3" maxlength="100" autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="razao_social" class="form-label">Razão Social *</label>';
-        print '<input type="text" class="form-control" id="razao_social" name="razao_social" required placeholder="Digite a razão social" pattern=".{3,}" autocomplete="off">';
+        print '<input type="text" class="form-control" id="razao_social" name="razao_social" required placeholder="Digite a razão social" minlength="3" maxlength="150" autocomplete="off">';
+
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="nome_fantasia" class="form-label">Nome Fantasia *</label>';
-        print '<input type="text" class="form-control" id="nome_fantasia" name="nome_fantasia" required placeholder="Digite o nome fantasia" pattern=".{3,}" autocomplete="off">';
+        print '<input type="text" class="form-control" id="nome_fantasia" name="nome_fantasia" required placeholder="Digite o nome fantasia" minlength="3" maxlength="150" autocomplete="off">';
+
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="cnpj_cliente" class="form-label">CNPJ *</label>';
         print '<input type="text" class="form-control cnpj_cliente" id="cnpj_cliente" name="cnpj_cliente" value="' . ($_SESSION['cnpj_cliente'] ?? '') . '" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" autocomplete="off">';
+
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="telefone_celular" class="form-label">Telefone Celular *</label>';
-        print '<input type="tel" class="form-control telefone_celular" id="telefone_celular" name="telefone_celular" required placeholder="(00) 00000-0000" pattern="\(\d{2}\) \d{4,5}-\d{4}" autocomplete="off">';
+        print '<input type="tel" class="form-control telefone_celular" id="telefone_celular" name="telefone_celular" required placeholder="(00) 00000-0000" pattern="\(\d{2}\) \d{5}-\d{4}" autocomplete="off">';
+
         print '</div>';
 
         print '<div class="col-md-6">';
@@ -2845,17 +2880,22 @@ class Controller
 
         print '<div class="col-md-6">';
         print '<label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>';
-        print '<input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" placeholder="Digite a inscrição estadual" pattern="^\d{3,20}$" autocomplete="off">';
+        print '<input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" maxlength="20" autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="email" class="form-label">E-mail *</label>';
-        print '<input type="email" class="form-control" id="email" name="email" required placeholder="exemplo@email.com" pattern="^[\\w\\.-]+@[\\w\\.-]+\\.\\w{2,}$" autocomplete="off">';
+        print '<input type="email" class="form-control" id="email" name="email" required placeholder="Digite o email" maxlength="150" autocomplete="off">';
+
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="limite_credito" class="form-label">Limite de Crédito *</label>';
-        print '<input type="text" class="form-control dinheiro" id="limite_credito" name="limite_credito" required placeholder="Digite o limite de crédito" value="0.00" autocomplete="off">';
+        print '<div class="input-group">';
+        print '<span class="input-group-text">R$</span>';
+        print '<input type="text" class="form-control dinheiro" id="limite_credito" name="limite_credito" required placeholder="0,00" autocomplete="off">';
+        print '</div>';
+
         print '</div>';
 
         print '</div>'; // fecha row
@@ -2870,27 +2910,30 @@ class Controller
 
         print '<div class="col-md-4">';
         print '<label for="cep" class="form-label">CEP *</label>';
-        print '<input type="text" class="form-control cep" id="cep" name="cep" required placeholder="00000-000" pattern="\\d{5}-\\d{3}" autocomplete="off">';
+        print '<input type="text" class="form-control cep" id="cep" name="cep" required placeholder="00000-000" pattern="\d{5}-\d{3}" autocomplete="off">';
+
         print '</div>';
 
         print '<div class="col-md-4">';
         print '<label for="cidade" class="form-label">Cidade *</label>';
-        print '<input type="text" class="form-control" id="cidade" name="cidade" required placeholder="Digite a cidade" pattern="^[A-Za-zÀ-ÿ\\s]{2,}$" autocomplete="off">';
+        print '<input type="text" class="form-control" id="cidade" name="cidade" required placeholder="Digite a cidade" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" maxlength="100" autocomplete="off">';
+
         print '</div>';
 
         print '<div class="col-md-4">';
-        print '<label for="estado" class="form-label">Estado *</label>';
-        print '<input type="text" class="form-control" id="estado" name="estado" required placeholder="Digite o estado" pattern="^[A-Za-zÀ-ÿ\\s]{2,}$" autocomplete="off">';
+        print '<label for="estado" class="form-label">Estado (UF) *</label>';
+        print '<input type="text" class="form-control text-uppercase" id="estado" name="estado" required placeholder="Ex: DF" pattern="[A-Za-z]{2}" maxlength="2" autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-4">';
         print '<label for="bairro" class="form-label">Bairro *</label>';
-        print '<input type="text" class="form-control" id="bairro" name="bairro" required placeholder="Digite o bairro" autocomplete="off">';
+        print '<input type="text" class="form-control" id="bairro" name="bairro" required placeholder="Digite o bairro" maxlength="100" autocomplete="off">';
+
         print '</div>';
 
         print '<div class="col-md-8">';
         print '<label for="complemento" class="form-label">Complemento</label>';
-        print '<input type="text" class="form-control" id="complemento" name="complemento" placeholder="Digite o complemento" autocomplete="off">';
+        print '<input type="text" class="form-control" id="complemento" name="complemento" placeholder="Digite o complemento" maxlength="100" autocomplete="off">';
         print '</div>';
 
         print '</div>'; // fecha row
@@ -2916,8 +2959,7 @@ class Controller
         print '</div>';
         print '</div>';
         print '</div>';
-        print '</div>'; // modal-footer
-
+        print '</div>'; // modal-footerF
         print '</form>';
         print '</div>'; // modal-content
         print '</div>'; // modal-dialog
@@ -2988,6 +3030,159 @@ class Controller
             }
         }
     }
+    // modal alterar cliente
+    public function modal_AlterarCliente(
+        $id_cliente,
+        $nome_representante,
+        $razao_social,
+        $nome_fantasia,
+        $cnpj_cliente,
+        $email,
+        $limite_credito,
+        $inscricao_estadual,
+        $telefone_celular,
+        $telefone_fixo,
+        $cidade,
+        $estado,
+        $bairro,
+        $cep,
+        $complemento
+    ) {
+        print '<div class="modal fade" id="alterar_cliente' . $id_cliente . '" tabindex="-1" aria-labelledby="alterarClienteLabel' . $id_cliente . '" aria-hidden="true">';
+        print '<div class="modal-dialog modal-lg modal-dialog-centered">';
+        print '<div class="modal-content">';
+
+        // Cabeçalho
+        print '<div class="modal-header">';
+        print '<h6 class="modal-title" id="alterarClienteLabel' . $id_cliente . '">Alterar Cliente</h6>';
+        print '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '</div>';
+
+        // Corpo
+        print '<div class="modal-body">';
+        print '<form action="index.php" method="POST">';
+        print '<input type="hidden" name="id_cliente" value="' . $id_cliente . '">';
+        print '<div class="row g-2">';
+
+        // Fieldset Dados Cadastrais
+        print '<div class="col-md-12">';
+        print '<fieldset class="border border-black p-1 mb-4">';
+        print '<legend class="float-none w-auto px-2">Dados Cadastrais</legend>';
+        print '<div class="row g-2">';
+
+        print '<div class="col-md-6">';
+        print '<label class="form-label">Nome do Responsável </label>';
+        print '<input type="text" class="form-control" name="nome_representante" required placeholder="Digite o nome do responsável" pattern="^[A-Za-zÀ-ÿ\s]{3,}$" value="' . $nome_representante . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-6">';
+        print '<label class="form-label">Razão Social </label>';
+        print '<input type="text" class="form-control" name="razao_social" required placeholder="Digite a razão social" pattern=".{3,}" value="' . $razao_social . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-6">';
+        print '<label class="form-label">Nome Fantasia </label>';
+        print '<input type="text" class="form-control" name="nome_fantasia" required placeholder="Digite o nome fantasia" pattern=".{3,}" value="' . $nome_fantasia . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-6">';
+        print '<label class="form-label">CNPJ </label>';
+        print '<input type="text" class="form-control cnpj_cliente" name="cnpj_cliente" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" value="' . $cnpj_cliente . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-6">';
+        print '<label class="form-label">Telefone Celular </label>';
+        print '<input type="tel" class="form-control telefone_celular" name="telefone_celular" required placeholder="(00) 00000-0000" pattern="\(\d{2}\) \d{4,5}-\d{4}" value="' . $telefone_celular . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-6">';
+        print '<label class="form-label">Telefone Fixo</label>';
+        print '<input type="tel" class="form-control telefone_fixo" name="telefone_fixo" placeholder="(00) 0000-0000" pattern="\(\d{2}\) \d{4}-\d{4}" value="' . $telefone_fixo . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-6">';
+        print '<label class="form-label">Inscrição Estadual</label>';
+        print '<input type="text" class="form-control" name="inscricao_estadual" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" value="' . $inscricao_estadual . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-6">';
+        print '<label class="form-label">E-mail </label>';
+        print '<input type="email" class="form-control" name="email" required placeholder="exemplo@email.com" pattern="^[\\w\\.-]+@[\\w\\.-]+\\.\\w{2,}$" value="' . $email . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-6">';
+        print '<label class="form-label">Limite de Crédito</label>';
+        print '<div class="input-group">';
+        print '<span class="input-group-text">R$</span>';
+        print '<input type="text" class="form-control dinheiro" name="limite_credito" required placeholder="Digite o limite de crédito" value="' . $limite_credito . '" autocomplete="off">';
+        print '</div>';
+        print '</div>';
+
+        print '</div>'; // fecha row
+        print '</fieldset>';
+        print '</div>'; // col-md-12
+
+        // Fieldset Endereço
+        print '<div class="col-md-12">';
+        print '<fieldset class="border border-black p-1 mb-3">';
+        print '<legend class="float-none w-auto px-2">Endereço</legend>';
+        print '<div class="row g-2">';
+
+        print '<div class="col-md-4">';
+        print '<label for="cep' . $id_cliente . '" class="form-label">CEP *</label>';
+        print '<input type="text" class="form-control cep" id="cep' . $id_cliente . '" name="cep" required placeholder="00000-000" pattern="\d{5}-\d{3}" value="' . $cep . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-4">';
+        print '<label for="cidade' . $id_cliente . '" class="form-label">Cidade *</label>';
+        print '<input type="text" class="form-control" id="cidade' . $id_cliente . '" name="cidade" required placeholder="Digite a cidade" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" value="' . $cidade . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-4">';
+        print '<label for="estado' . $id_cliente . '" class="form-label">Estado *</label>';
+        print '<input type="text" class="form-control" id="estado' . $id_cliente . '" name="estado" required placeholder="Digite o estado" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" value="' . $estado . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-4">';
+        print '<label for="bairro' . $id_cliente . '" class="form-label">Bairro *</label>';
+        print '<input type="text" class="form-control" id="bairro' . $id_cliente . '" name="bairro" required placeholder="Digite o bairro" value="' . $bairro . '" autocomplete="off">';
+        print '</div>';
+
+        print '<div class="col-md-8">';
+        print '<label for="complemento' . $id_cliente . '" class="form-label">Complemento</label>';
+        print '<input type="text" class="form-control" id="complemento' . $id_cliente . '" name="complemento" placeholder="Digite o complemento" value="' . $complemento . '" autocomplete="off">';
+        print '</div>';
+
+        print '</div>'; // fecha row
+        print '</fieldset>';
+        print '</div>'; // col-md-12
+
+        print '</div>'; // row g-2
+
+        // Rodapé
+        print '<div class="modal-footer">';
+        print '<div class="container-fluid">';
+        print '<div class="row g-2">';
+        print '<div class="col-md-6">';
+        print '<button type="button" class="btn btn-outline-secondary w-100 py-2" data-bs-dismiss="modal">';
+        print '<i class="bi bi-x-circle"></i> Cancelar';
+        print '</button>';
+        print '</div>';
+        print '<div class="col-md-6">';
+        print '<button type="submit" class="btn btn-primary w-100 py-2" name="alterar_cliente">';
+        print '<i class="bi bi-check-circle"></i> Alterar';
+        print '</button>';
+        print '</div>';
+        print '</div>';
+        print '</div>';
+        print '</div>'; // modal-footer
+
+        print '</form>';
+        print '</div>'; // modal-body
+        print '</div>'; // modal-content
+        print '</div>'; // modal-dialog
+        print '</div>'; // modal
+    }
     // excluir cliente
     public function excluir_Cliente($id_cliente)
     {
@@ -3047,157 +3242,6 @@ class Controller
         print '</div>';
         print '</div>';
     }
-    // modal alterar cliente
-    public function modal_AlterarCliente(
-        $id_cliente,
-        $nome_representante,
-        $razao_social,
-        $nome_fantasia,
-        $cnpj_cliente,
-        $email,
-        $limite_credito,
-        $inscricao_estadual,
-        $telefone_celular,
-        $telefone_fixo,
-        $cidade,
-        $estado,
-        $bairro,
-        $cep,
-        $complemento
-    ) {
-        print '<div class="modal fade" id="alterar_cliente' . $id_cliente . '" tabindex="-1" aria-labelledby="alterarClienteLabel" aria-hidden="true">';
-        print '<div class="modal-dialog modal-lg modal-dialog-centered">';
-        print '<div class="modal-content">';
-
-        // Cabeçalho
-        print '<div class="modal-header">';
-        print '<h6 class="modal-title" id="alterarClienteLabel">Alterar Cliente</h6>';
-        print '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
-        print '</div>';
-
-        // Corpo
-        print '<div class="modal-body">';
-        print '<form action="index.php" method="POST">';
-        print '<input type="hidden" name="id_cliente" value="' . $id_cliente . '">';
-        print '<div class="row g-2">';
-
-        // Fieldset Dados Cadastrais
-        print '<div class="col-md-12">';
-        print '<fieldset class="border border-black p-1 mb-4">';
-        print '<legend class="float-none w-auto px-2">Dados Cadastrais</legend>';
-        print '<div class="row g-2">';
-
-        print '<div class="col-md-6">';
-        print '<label for="responsavel" class="form-label">Nome do Responsável *</label>';
-        print '<input type="text" class="form-control" name="nome_representante" required placeholder="Digite o nome do responsável" pattern="^[A-Za-zÀ-ÿ\s]{3,}$" value="' . $nome_representante . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-6">';
-        print '<label for="razao_social" class="form-label">Razão Social *</label>';
-        print '<input type="text" class="form-control" name="razao_social" required placeholder="Digite a razão social" pattern=".{3,}" value="' . $razao_social . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-6">';
-        print '<label for="nome_fantasia" class="form-label">Nome Fantasia *</label>';
-        print '<input type="text" class="form-control" name="nome_fantasia" required placeholder="Digite o nome fantasia" pattern=".{3,}" value="' . $nome_fantasia . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-6">';
-        print '<label for="cnpj_cliente" class="form-label">CNPJ *</label>';
-        print '<input type="text" class="form-control cnpj_cliente" name="cnpj_cliente" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" value="' . $cnpj_cliente . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-6">';
-        print '<label for="telefone_celular" class="form-label">Telefone Celular *</label>';
-        print '<input type="tel" class="form-control telefone_celular" name="telefone_celular" required placeholder="(00) 00000-0000" pattern="\(\d{2}\) \d{4,5}-\d{4}" value="' . $telefone_celular . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-6">';
-        print '<label for="telefone_fixo" class="form-label">Telefone Fixo</label>';
-        print '<input type="tel" class="form-control telefone_fixo" name="telefone_fixo" placeholder="(00) 0000-0000" pattern="\(\d{2}\) \d{4}-\d{4}" value="' . $telefone_fixo . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-6">';
-        print '<label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>';
-        print '<input type="text" class="form-control" name="inscricao_estadual" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" value="' . $inscricao_estadual . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-6">';
-        print '<label for="email" class="form-label">E-mail *</label>';
-        print '<input type="email" class="form-control" name="email" required placeholder="exemplo@email.com" pattern="^[\\w\\.-]+@[\\w\\.-]+\\.\\w{2,}$" value="' . $email . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-6">';
-        print '<label for="limite_credito" class="form-label">Limite de Crédito *</label>';
-        print '<input type="text" class="form-control dinheiro" name="limite_credito" required placeholder="Digite o limite de crédito" value="' . $limite_credito . '" autocomplete="off">';
-        print '</div>';
-
-        print '</div>'; // fecha row
-        print '</fieldset>';
-        print '</div>'; // col-md-12
-
-        // Fieldset Endereço
-        print '<div class="col-md-12">';
-        print '<fieldset class="border border-black p-1 mb-3">';
-        print '<legend class="float-none w-auto px-2">Endereço</legend>';
-        print '<div class="row g-2">';
-
-        print '<div class="col-md-4">';
-        print '<label for="cep" class="form-label">CEP *</label>';
-        print '<input type="text" class="form-control cep" id="cep" name="cep" required placeholder="00000-000" pattern="\d{5}-\d{3}" value="' . $cep . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-4">';
-        print '<label for="cidade" class="form-label">Cidade *</label>';
-        print '<input type="text" class="form-control" id="cidade" name="cidade" required placeholder="Digite a cidade" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" value="' . $cidade . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-4">';
-        print '<label for="estado" class="form-label">Estado *</label>';
-        print '<input type="text" class="form-control" id="estado" name="estado" required placeholder="Digite o estado" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" value="' . $estado . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-4">';
-        print '<label for="bairro" class="form-label">Bairro *</label>';
-        print '<input type="text" class="form-control" id="bairro" name="bairro" required placeholder="Digite o bairro" value="' . $bairro . '" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-8">';
-        print '<label for="complemento" class="form-label">Complemento</label>';
-        print '<input type="text" class="form-control" id="complemento" name="complemento" placeholder="Digite o complemento" value="' . $complemento . '" autocomplete="off">';
-        print '</div>';
-
-        print '</div>'; // fecha row
-        print '</fieldset>';
-        print '</div>'; // col-md-12
-
-        print '</div>'; // row g-2
-
-        // Rodapé
-        print '<div class="modal-footer">';
-        print '<div class="container-fluid">';
-        print '<div class="row g-2">';
-        print '<div class="col-md-6">';
-        print '<button type="button" class="btn btn-outline-secondary w-100 py-2" data-bs-dismiss="modal">';
-        print '<i class="bi bi-x-circle"></i> Cancelar';
-        print '</button>';
-        print '</div>';
-        print '<div class="col-md-6">';
-        print '<button type="submit" class="btn btn-primary w-100 py-2" name="alterar_cliente">';
-        print '<i class="bi bi-check-circle"></i> Alterar';
-        print '</button>';
-        print '</div>';
-        print '</div>';
-        print '</div>';
-        print '</div>'; // modal-footer
-
-        print '</form>';
-        print '</div>'; // modal-body
-        print '</div>'; // modal-content
-        print '</div>'; // modal-dialog
-        print '</div>'; // modal
-    }
-    //
     // select de clientes
     public function selectClientes($id_cliente = null)
     {
@@ -3680,7 +3724,6 @@ class Controller
         print '<i class="bi ' . $icone . '"></i>';
         print '</button>';
     }
-
     // modal de detalhes do pedido
     public function modalDetalhesPedido($pedidos)
     {

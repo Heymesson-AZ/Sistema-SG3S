@@ -1,26 +1,13 @@
 $(document).ready(function () {
+
   $(".cnpj_cliente").mask("00.000.000/0000-00", { reverse: true });
   $(".telefone_celular").mask("(00) 00000-0000");
   $(".telefone_fixo").mask("(00) 0000-0000");
   $(".cep").mask("00000-000");
   $(".cnpj_cliente_consulta").mask("00.000.000/0000-00", { reverse: true });
-  // Máscara de moeda para campos dinheiro (custo, valor, etc.)
-  $(".dinheiro").maskMoney({
-    prefix: "R$ ",
-    allowNegative: false,
-    thousands: ".",
-    decimal: ",",
-    affixesStay: true
-  });
 
-  $(".cnpj_cliente").on("blur", function () {
-    const cnpj = $(this).val();
-    if (!validarCNPJ(cnpj)) {
-      this.setCustomValidity("CNPJ inválido");
-    } else {
-      this.setCustomValidity("");
-    }
-  });
+  // Máscara de limite de credito e colocar o R$
+  $(".dinheiro").mask("R$ 000.000.000,00", { reverse: true });
 
   function validarCNPJ(cnpj) {
     cnpj = cnpj.replace(/[^\d]+/g, "");

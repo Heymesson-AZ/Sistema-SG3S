@@ -1,7 +1,8 @@
 $(document).ready(function () {
 
-  // máscara para o campo de limite de margem
-  $("#limite_margem").mask("000.00", { reverse: true });
+  $(document).ready(function () {
+    $("#limite_margem").mask("000.00", { reverse: true });
+  });
 
   function mostrarAlerta(mensagem, tipo = "danger", duracao = 3000) {
     const alerta = document.createElement("div");
@@ -105,49 +106,6 @@ $(document).ready(function () {
     "resultado_busca_fornecedor"
   );
 
-  // === Busca de fornecedor ===
-  document.querySelectorAll(".fornecedor-input").forEach((inputFornecedor) => {
-    const id = inputFornecedor.id.replace("id_fornecedor_produto", "");
-    const hiddenFornecedor = document.getElementById("id_fornecedor_hidden" + id);
-    const resultadoFornecedor = document.getElementById("resultado_busca_fornecedor" + id);
-
-    function buscarFornecedor(termo) {
-      if (!termo) {
-        resultadoFornecedor.innerHTML = "";
-        return;
-      }
-      fetch("index.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `buscar_fornecedor=${encodeURIComponent(termo)}`,
-      })
-        .then((res) => res.text())
-        .then((data) => {
-          resultadoFornecedor.innerHTML = data;
-          resultadoFornecedor.querySelectorAll(".fornecedor-item").forEach((item) => {
-            item.addEventListener("click", function () {
-              inputFornecedor.value = this.dataset.nome;
-              hiddenFornecedor.value = this.dataset.id;
-              resultadoFornecedor.innerHTML = "";
-            });
-          });
-        })
-        .catch(() => mostrarAlerta("Erro ao buscar fornecedor."));
-    }
-
-    inputFornecedor.addEventListener("input", () => {
-      hiddenFornecedor.value = "";
-      buscarFornecedor(inputFornecedor.value.trim());
-    });
-
-    inputFornecedor.closest("form").addEventListener("submit", function (e) {
-      if (inputFornecedor.value.trim() !== "" && !hiddenFornecedor.value) {
-        e.preventDefault();
-        mostrarAlerta("Por favor, selecione um fornecedor da lista.");
-      }
-    });
-  });
-  
   function buscarFornecedor(termo) {
     if (!termo) {
       resultadoFornecedor.innerHTML = "";

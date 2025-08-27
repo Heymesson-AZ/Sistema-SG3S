@@ -48,11 +48,10 @@
             <!-- Auditorias por Usuário -->
             <div class="col-md-3">
                 <form method="POST" action="index.php" class="relatorio-form text-start">
-                    <h6>Auditorias por Usuário</h6>
-                    <small class="text-muted">Filtra auditorias realizadas por um usuário específico.</small>
+                    <h6 class="card-title">Auditorias Gerais</h6>
+                    <p class="small text-muted">Consulta todas as auditorias registradas.</p>
                     <div class="mb-2 mt-2">
-                        <label class="form-label">Usuário:</label>
-                        
+                        <?php $this->selectUsuario($id_usuario = null) ?>
                     </div>
                     <button type="submit" class="btn btn-primary mt-2" name="auditorias_por_usuario">
                         <i class="bi bi-person-check me-1"></i> Gerar
@@ -63,16 +62,15 @@
             <!-- Auditorias por Ação -->
             <div class="col-md-3">
                 <form method="POST" action="index.php" class="relatorio-form text-start">
-                    <h6>Auditorias por Ação</h6>
-                    <small class="text-muted">Filtra auditorias por tipo de ação (INSERT, UPDATE, DELETE, LOGIN etc.).</small>
+                    <h6 class="card-title">Auditorias por Ação</h6>
+                    <p class="small text-muted">Filtra auditorias por tipo de ação.</p>
                     <div class="mb-2 mt-2">
                         <label class="form-label">Ação:</label>
                         <select name="acao_auditoria" class="form-select">
                             <option value="">Todas</option>
-                            <option value="INSERT">INSERT</option>
-                            <option value="UPDATE">UPDATE</option>
-                            <option value="DELETE">DELETE</option>
-                            <option value="LOGIN">LOGIN</option>
+                            <option value="INSERT">Inserir</option>
+                            <option value="UPDATE">Atualizar</option>
+                            <option value="DELETE">Deletar</option>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary mt-2" name="auditorias_por_acao">
@@ -80,27 +78,11 @@
                     </button>
                 </form>
             </div>
-
-            <!-- Auditorias por Tabela -->
-            <div class="col-md-3">
-                <form method="POST" action="index.php" class="relatorio-form text-start">
-                    <h6>Auditorias por Tabela</h6>
-                    <small class="text-muted">Filtra auditorias realizadas em uma tabela específica.</small>
-                    <div class="mb-2 mt-2">
-                        <label class="form-label">Tabela:</label>
-                        <input type="text" name="tabela_auditoria" class="form-control" placeholder="Nome da tabela" />
-                    </div>
-                    <button type="submit" class="btn btn-primary mt-2" name="auditorias_por_tabela">
-                        <i class="bi bi-table me-1"></i> Gerar
-                    </button>
-                </form>
-            </div>
-
             <!-- Auditorias por Período -->
             <div class="col-md-3">
                 <form method="POST" action="index.php" class="relatorio-form text-start">
-                    <h6>Auditorias por Período</h6>
-                    <small class="text-muted">Filtra auditorias entre duas datas.</small>
+                    <h6 class="card-title">Auditorias por Período</h6>
+                    <p class="small text-muted">Filtra auditorias entre duas datas.</p>
                     <div class="mb-2 mt-2">
                         <label class="form-label">De:</label>
                         <input type="date" name="data_inicio_auditoria" class="form-control" />
@@ -122,16 +104,15 @@
                     <small class="text-muted">Filtra auditorias por usuário e tipo de ação ao mesmo tempo.</small>
                     <div class="mb-2 mt-2">
                         <label class="form-label">Usuário:</label>
-                        <!-- Campo a implementar -->
+                        <?php $this->selectUsuario($id_usuario = null) ?>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Ação:</label>
                         <select name="acao_usuario" class="form-select">
                             <option value="">Todas</option>
-                            <option value="INSERT">INSERT</option>
-                            <option value="UPDATE">UPDATE</option>
-                            <option value="DELETE">DELETE</option>
-                            <option value="LOGIN">LOGIN</option>
+                            <option value="INSERT">Inserir</option>
+                            <option value="UPDATE">Atualizar</option>
+                            <option value="DELETE">Deletar</option>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary mt-2" name="auditorias_usuario_acao">
@@ -144,10 +125,10 @@
             <div class="col-md-3">
                 <form method="POST" action="index.php" class="relatorio-form text-start">
                     <h6>Tabela + Período</h6>
-                    <small class="text-muted">Filtra auditorias de uma tabela específica em determinado período.</small>
+                    <small class="text-muted">Filtra auditorias de uma área específica em determinado período.</small>
                     <div class="mb-2 mt-2">
-                        <label class="form-label">Tabela:</label>
-                        <input type="text" name="tabela_periodo" class="form-control" placeholder="Nome da tabela" />
+                        <label class="form-label">Área:</label>
+                        <input type="text" name="tabela_periodo" class="form-control" placeholder="Nome da Área" />
                     </div>
                     <div class="mb-2">
                         <label class="form-label">De:</label>
@@ -170,7 +151,7 @@
                     <small class="text-muted">Filtra auditorias de um usuário específico entre duas datas.</small>
                     <div class="mb-2 mt-2">
                         <label class="form-label">Usuário:</label>
-                        
+                        <?php $this->selectUsuario($id_usuario = null) ?>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">De:</label>
@@ -193,16 +174,15 @@
                     <small class="text-muted">Filtra auditorias de um usuário, tipo de ação e intervalo de datas.</small>
                     <div class="mb-2 mt-2">
                         <label class="form-label">Usuário:</label>
-                        
+                        <?php $this->selectUsuario($id_usuario = null) ?>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Ação:</label>
                         <select name="acao_usuario_periodo" class="form-select">
                             <option value="">Todas</option>
-                            <option value="INSERT">INSERT</option>
-                            <option value="UPDATE">UPDATE</option>
-                            <option value="DELETE">DELETE</option>
-                            <option value="LOGIN">LOGIN</option>
+                            <option value="INSERT">Inserir</option>
+                            <option value="UPDATE">Atualizar</option>
+                            <option value="DELETE">Deletar</option>
                         </select>
                     </div>
                     <div class="mb-2">

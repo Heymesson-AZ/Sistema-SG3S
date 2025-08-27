@@ -154,9 +154,6 @@ if (isset($_POST['excluir_perfil'])) {
 
 // FORNECEDOR
 
-// Instanciar o controller uma única vez
-$objController = new Controller();
-
 // Funções auxiliares para sanitização
 function limparCNPJ($cnpj)
 {
@@ -313,7 +310,7 @@ if (isset($_POST['cadastrar_produto'])) {
 }
 // ================= ALTERAR PRODUTO =================
 if (isset($_POST['alterar_produto'])) {
-    $id_produto         = (int) $_POST['id_produto'];
+    $id_produto         = $_POST['id_produto'];
     $nome_produto       = limparTexto($_POST['nome_produto']);
     $tipo_produto       = limparTexto($_POST['tipo_produto']);
     $cor                = limparTexto($_POST['cor']);
@@ -419,7 +416,7 @@ if (isset($_POST['excluir_produto'])) {
 // CLIENTE
 
 // Função utilitária para remover máscaras
-function removerMascara($valor, $mascaras = ['.', '-', '/', '(', ')', ' '])
+function removerMascara($valor, $mascaras = ['.', '-', '/', '(', ')', ' ', 'R$'])
 {
     return str_replace($mascaras, '', $valor);
 }
@@ -428,6 +425,7 @@ function sanitizar($valor)
 {
     return htmlspecialchars(trim($valor));
 }
+
 // ================= VerificaR CNPJ do CLIENTE =================
 if (isset($_POST['verificar_cliente'])) {
     $cnpj_cliente = limparCNPJ($_POST['cnpj_cliente']);
@@ -440,20 +438,36 @@ if (isset($_POST['consultar_cliente'])) {
     $cnpj_cliente  = removerMascara($_POST['cnpj_cliente'], ['.', '-', '/']);
     $objController->consultar_Cliente($nome_fantasia, $razao_social, $cnpj_cliente);
 }
-// ================= CADASTRAR PRODUTO =================
+
+// Função auxiliar para limpar limite de crédito (ex. "R$ 1.234,56" → 1234.56)
+function limparLimiteCredito($valor)
+{
+    // Remove R$ e espaços extras
+    $valor = str_replace('R$',' ', $valor);
+
+    // Remove pontos de milhar
+    $valor = str_replace('.', '', $valor);
+
+    // Troca vírgula decimal por ponto
+    $valor = str_replace(',', '.', $valor);
+
+    // Retorna em formato float
+    return trim($valor);
+}
+
+
+// ================= CADASTRAR CLIENTE =================
 if (isset($_POST['cadastrar_cliente'])) {
     $nome_representante = sanitizar($_POST['nome_representante']);
     $razao_social       = sanitizar($_POST['razao_social']);
     $nome_fantasia      = sanitizar($_POST['nome_fantasia']);
-    $cnpj_cliente       = limparCNPJ($_POST['cnpj_cliente']);
+    $cnpj_cliente       = removerMascara($_POST['cnpj_cliente'], ['.', '-', '/']);
     $inscricao_estadual = sanitizar($_POST['inscricao_estadual']);
-    $telefone_celular   = limparTelefone($_POST['telefone_celular']);
-    $telefone_fixo      = limparTelefone($_POST['telefone_fixo']);
+    $telefone_celular   = removerMascara($_POST['telefone_celular']);
+    $telefone_fixo      = removerMascara($_POST['telefone_fixo']);
     $email              = sanitizar($_POST['email']);
-    $limite_credito     = sanitizar($_POST['limite_credito']);
+    $limite_credito     = limparLimiteCredito($_POST['limite_credito']);
     $cep                = removerMascara($_POST['cep'], ['-']);
-    $endereco           = sanitizar($_POST['endereco']);
-    $numero_endereco    = sanitizar($_POST['numero_endereco']);
     $complemento        = sanitizar($_POST['complemento']);
     $bairro             = sanitizar($_POST['bairro']);
     $cidade             = sanitizar($_POST['cidade']);
@@ -476,9 +490,9 @@ if (isset($_POST['cadastrar_cliente'])) {
         $complemento
     );
 }
+
 // ================= ALTERAR CLIENTE =================
 if (isset($_POST['alterar_cliente'])) {
-
     $id_cliente         = $_POST['id_cliente'];
     $nome_representante = sanitizar($_POST['nome_representante']);
     $razao_social       = sanitizar($_POST['razao_social']);
@@ -488,13 +502,13 @@ if (isset($_POST['alterar_cliente'])) {
     $telefone_celular   = removerMascara($_POST['telefone_celular']);
     $telefone_fixo      = removerMascara($_POST['telefone_fixo']);
     $email              = sanitizar($_POST['email']);
-    $limite_credito     = sanitizar($_POST['limite_credito']);
+    $limite_credito     = limparLimiteCredito($_POST['limite_credito']);
     $cep                = removerMascara($_POST['cep'], ['-']);
     $complemento        = sanitizar($_POST['complemento']);
     $bairro             = sanitizar($_POST['bairro']);
     $cidade             = sanitizar($_POST['cidade']);
     $estado             = sanitizar($_POST['estado']);
-
+    
     $objController->alterar_Cliente(
         $id_cliente,
         $nome_representante,

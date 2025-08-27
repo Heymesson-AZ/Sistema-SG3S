@@ -54,7 +54,7 @@
                                         pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}"
                                         title="Formato esperado: XX.XXX.XXX/XXXX-XX"
                                         autocomplete="off"
-                                        maxlength="18"/>
+                                        maxlength="18" />
                                     <div class="invalid-feedback">Informe um CNPJ válido.</div>
                                 </div>
                             </fieldset>
@@ -157,7 +157,7 @@
         <div class="container-fluid">
             <?php
             if (isset($_SESSION['cnpj_cliente'])) {
-                $this->modal_cadastroCliente();
+                $this->modal_CadastroCliente();
                 unset($_SESSION['cnpj_cliente']);
             };
             ?>
@@ -192,10 +192,12 @@
 
     <!-- Bootstrap 5.3.3 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js"></script>
-
+    <!--   -->
     <script src="assets/js/cliente.js"></script>
+    <!--  -->
     <script src="assets/js/buscarCep.js"></script>
-    <!-- ajax de produtos com baixo estoque-->
+    <!-- ajax de notificações -->
     <script src="assets/js/notificacao.js"></script>
 </body>
+
 </html>

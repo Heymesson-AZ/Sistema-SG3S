@@ -243,6 +243,8 @@ class Cliente extends Conexao
         $cep,
         $complemento
     ) {
+
+        
         // settar os atributos
         $this->setIdCliente($id_cliente);
         $this->setNomeRepresentante($nome_representante);

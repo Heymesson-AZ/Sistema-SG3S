@@ -112,7 +112,7 @@
                             <form action="index.php" method="POST">
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label for="nome_produto_consulta" class="form-label">Nome do Produto *</label>
+                                        <label for="nome_produto_consulta" class="form-label">Nome do Produto </label>
                                         <input type="text" class="form-control" id="nome_produto_consulta" name="nome_produto"
                                             placeholder="Digite o nome do produto" autocomplete="off" />
                                         <div class="invalid-feedback">Informe o nome do produto.</div>
@@ -128,12 +128,12 @@
                                             placeholder="Ex: Azul, Vermelho" autocomplete="off" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="produto_custo" class="form-label">Buscar Fornecedor</label>
+                                        <label for="produto_custo" class="form-label"> Fornecedor </label>
                                         <div class="position-relative">
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="bi bi-search"></i></span>
                                                 <input type="hidden" id="id_fornecedor_hidden" name="id_fornecedor" value="" />
-                                                <input type="text" class="form-control" id="id_fornecedor_produto" placeholder="Digite o nome do fornecedor" autocomplete="off" />
+                                                <input type="text" class="form-control" id="id_fornecedor_produto" placeholder="Digite o fornecedor" autocomplete="off" />
                                             </div>
                                             <div id="resultado_busca_fornecedor" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;">
                                             </div>
@@ -329,7 +329,6 @@
         <script src="assets/js/produto.js"></script>
         <!-- ajax de produtos com baixo estoque-->
         <script src="assets/js/notificacao.js"></script>
-        <script src="assets/js/relatorio.js"></script>
     </body>
 
     </html>
