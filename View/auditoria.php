@@ -27,12 +27,13 @@
     <?php print $menu; ?>
     <main class="container text-center">
         <div class="text-center mb-4">
-            <h3 class="display-6">Sistema de Gerenciamento SG3S</h3>
+            <h1 class="display-9">Sistema de Gerenciamento SG3S</h1>
+            <p class="lead">Utilize as opções acima para navegar pelo Sistema</p>
         </div>
 
         <h4 class="mb-4 text-center">Relatórios de Auditoria</h4>
         <br>
-
+        <!-- Auditorias -->
         <div class="row g-3 justify-content-center">
             <!-- Auditorias Gerais -->
             <div class="col-md-3">
@@ -197,6 +198,13 @@
                         <i class="bi bi-shield-check me-1"></i> Gerar
                     </button>
                 </form>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="col-md-12">
+                    <?php $this->tabelaAuditoria($todas_auditorias); ?>
+                </div>
             </div>
         </div>
     </main>

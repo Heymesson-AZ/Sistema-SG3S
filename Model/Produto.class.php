@@ -537,17 +537,44 @@ class Produto extends Conexao
 
     //  Relatórios
 
-    //produtos com baxo estoque
-    public function produtosComBaixoEstoque($limite)
+    //produtos com baixo estoque
+    // Produtos com baixo estoque (limite opcional)
+    public function produtosComBaixoEstoque($limite = null)
     {
-        $sql = "SELECT id_produto, nome_produto, quantidade
-            FROM produto
-            WHERE quantidade <= :limite
-            ORDER BY quantidade ASC";
         try {
+            // Base da query
+            $sql = "SELECT
+                    nome_produto,
+                    quantidade,
+                    quantidade_minima,
+                    (quantidade_minima - quantidade) AS falta
+                    FROM produto p
+                    WHERE p.quantidade < p.quantidade_minima";
+
+            // Array de condições extras
+            $condicoes = [];
+
+            // Se limite foi informado, adiciona condição
+            if (!empty($limite)) {
+                $condicoes[] = "quantidade <= :limite";
+            }
+
+            // Se houver condições adicionais, concatena
+            if (count($condicoes) > 0) {
+                $sql .= " AND " . implode(" AND ", $condicoes);
+            }
+
+            // Ordenação
+            $sql .= " ORDER BY falta DESC";
+
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);
-            $query->bindValue(':limite', $limite, PDO::PARAM_INT);
+
+            // Bind opcional do limite
+            if (!empty($limite)) {
+                $query->bindValue(':limite', $limite, PDO::PARAM_INT);
+            }
+
             $query->execute();
             return $query->fetchAll(PDO::FETCH_OBJ);
         } catch (PDOException $e) {
@@ -555,6 +582,7 @@ class Produto extends Conexao
             return false;
         }
     }
+
     // Valor do custo de compra por produto baseado nos pedidos realizados
     public function custoTotalPorProduto($id_produto = null)
     {

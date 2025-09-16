@@ -16,8 +16,8 @@
 <body>
     <main class="container-fluid mt-4">
         <div class="text-center mb-4">
-            <h1 class="display-5">Gerenciamento de Clientes</h1>
-            <p class="lead">Utilize as opções abaixo para gerenciar os clientes.</p>
+            <h1 class="display-9">Sistema de Gerenciamento SG3S</h1>
+            <p class="lead">Utilize as opções acima para navegar pelo Sistema</p>
         </div>
         <div class="row justify-content-center g-3 mt-4">
             <div class="col-md-auto">
@@ -88,21 +88,18 @@
                                     <label for="nome_fantasia" class="form-label">Nome Fantasia</label>
                                     <input type="text" class="form-control" id="nome_fantasia" name="nome_fantasia"
                                         placeholder="Digite o nome fantasia" autocomplete="off" />
-                                    <div class="invalid-feedback">Informe o Nome Fantasia.</div>
                                 </div>
                                 <!-- Razão Social -->
                                 <div class="col-md-6">
                                     <label for="razao_social" class="form-label">Razão Social</label>
                                     <input type="text" class="form-control" id="razao_social" name="razao_social"
                                         placeholder="Digite a razão social" autocomplete="off" />
-                                    <div class="invalid-feedback">Informe a Razão Social.</div>
                                 </div>
                                 <!-- CNPJ Cliente -->
                                 <div class="col-md-6">
                                     <label for="cnpj_cliente" class="form-label">CNPJ</label>
-                                    <input type="text" class="form-control" id="cnpj_cliente" name="cnpj_cliente"
+                                    <input type="text" class="form-control cnpj_cliente" id="cnpj_cliente" name="cnpj_cliente"
                                         placeholder="Digite o CNPJ" autocomplete="off" />
-                                    <div class="invalid-feedback">Informe o CNPJ.</div>
                                 </div>
                             </div>
                             <div class="text-center mt-4">

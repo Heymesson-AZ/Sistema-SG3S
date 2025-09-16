@@ -1,21 +1,15 @@
 html,
 body {
   height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-body {
+  background-color: #f8f9fa;
+  font-family: "Arial", Roboto, sans-serif;
+  color: #212529;
   display: flex;
   flex-direction: column;
   height: 100%;
   margin: 0;
   padding: 0;
-  background: linear-gradient(
-    135deg,
-    #e3f2fd,
-    #bbdefb
-  ); /* opcional para deixar a tela mais charmosa */
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
 }
 
 header {
@@ -43,7 +37,7 @@ nav .btn-danger {
 main {
   flex: 1;
   text-align: center;
-  padding: 20px;
+  padding: 10px;
 }
 
 main h1 {
@@ -132,4 +126,3 @@ footer {
   font-size: 0.85rem;
   border-top: 1px solid #ddd;
 }
-

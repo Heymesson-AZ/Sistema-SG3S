@@ -1,0 +1,68 @@
+/* Dashboard - estilo moderno e minimalista */
+body {
+  background-color: #4fc3f7;
+  font-family: "Arial", Roboto, sans-serif; /* corrigido */
+  color: #212529;
+}
+
+h1 {
+  font-size: 2.2rem;
+  font-weight: 600;
+}
+
+.custom-card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+  margin-top: 12px;
+  background: #fff;
+}
+
+.custom-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.card-header h6 {
+  font-size: 1.05rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(45deg, #0d6efd, #0b5ed7);
+}
+
+.bg-gradient-success {
+  background: linear-gradient(45deg, #198754, #157347);
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(45deg, #ffc107, #ffb000);
+}
+
+.bg-gradient-info {
+  background: linear-gradient(45deg, #0dcaf0, #0aa2c0);
+}
+
+.bg-gradient-secondary {
+  background: linear-gradient(45deg, #6c757d, #565e64);
+}
+
+.bg-gradient-dark {
+  background: linear-gradient(45deg, #212529, #0d0f12);
+}
+
+/* Ajuste para os gráficos ocuparem todo o espaço do card */
+.card-body > div[id^="grafico"] {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 320px;
+}

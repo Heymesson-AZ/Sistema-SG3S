@@ -161,7 +161,7 @@
                                         <input type="text" class="form-control" id="nome_usuario_consulta" name="nome_usuario_consulta" placeholder="Digite o nome do usuário" autocomplete="off" />
                                     </div>
                                     <div class="col-md-6">
-                                        <?php $this->select_perfilUsuario(); ?>
+                                        <?php $this->select_perfilUsuarioConsulta(); ?>
                                     </div>
                                 </div>
                                 <div class="text-center mt-4">

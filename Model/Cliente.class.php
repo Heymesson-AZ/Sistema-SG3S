@@ -222,6 +222,7 @@ class Cliente extends Conexao
             return $cliente;
         } catch (PDOException $e) {
             error_log("Erro ao consultar produtos: " . $e->getMessage());
+            print_r($e->getMessage());
             return false;
         }
     }
@@ -243,8 +244,6 @@ class Cliente extends Conexao
         $cep,
         $complemento
     ) {
-
-        
         // settar os atributos
         $this->setIdCliente($id_cliente);
         $this->setNomeRepresentante($nome_representante);
@@ -284,7 +283,7 @@ class Cliente extends Conexao
             $query->execute();
             // atualizar na tabela inscricao_estadual
             $sqlInscricao = "UPDATE inscricao_estadual SET inscricao_estadual = :inscricao_estadual
-                            WHERE id_cliente = :id_cliente;";
+                                WHERE id_cliente = :id_cliente;";
             // preparar a query e blindar os parâmetros da tabela inscricao_estadual
             $query = $this->pdo->prepare($sqlInscricao);
             $query->bindValue(":inscricao_estadual", $inscricao_estadual, PDO::PARAM_STR);
@@ -292,7 +291,7 @@ class Cliente extends Conexao
             // Executa o cadastro da inscricao_estadual
             $query->execute();
             // atualizar na tabela endereco
-            $sqlEndereco = "UPDATE endereco SET cidade = :cidade, estado = :estado, bairro = :bairro, 
+            $sqlEndereco = "UPDATE endereco SET cidade = :cidade, estado = :estado, bairro = :bairro,
                             cep = :cep, complemento = :complemento WHERE id_cliente = :id_cliente;";
             // preparar a query e blindar os parâmetros da tabela endereco
             $query = $this->pdo->prepare($sqlEndereco);

@@ -20,7 +20,7 @@
     ?>
     <main class="container text-center mt-4">
         <div class="text-center mb-4">
-            <h1 class="display-5">Sistema de Gerenciamento SG3S</h1>
+            <h1 class="display-9">Sistema de Gerenciamento SG3S</h1>
             <p class="lead">Utilize as opções acima para navegar pelo Sistema</p>
         </div>
         <div class="row justify-content-center g-3 mt-4">
@@ -161,7 +161,6 @@
                 </div>
             </div>
         </div>
-        <!-- Modal de consulta de pedidos -->
         <!-- Modal de consulta de pedidos -->
         <div class="modal fade" id="modal_consulta_pedido" tabindex="-1" aria-labelledby="modalConsultaPedidoLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -387,4 +386,5 @@
     <!-- ajax de produtos com baixo estoque-->
     <script src="assets/js/notificacao.js"></script>
 </body>
+
 </html>

@@ -71,8 +71,6 @@ class Perfil extends Conexao
             // Retornar true se excluído com sucesso
             return true;
         } catch (PDOException $e) {
-            // Caso de erro, printar o erro
-            print "Erro ao excluir: " . $e->getMessage();
             // Retornar false
             return false;
         }

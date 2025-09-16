@@ -18,6 +18,7 @@
     <!-- CSS Personalizado -->
     <link rel="stylesheet" href="assets/css/index.css">
     <link rel="stylesheet" href="assets/css/modal.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
 </head>
 
 <body>
@@ -26,19 +27,33 @@
     ?>
     <main class="container text-center mt-4">
         <div class="text-center mb-4">
-            <h1 class="display-5">Sistema de Gerenciamento SG3S</h1>
+            <h1 class="display-9">Sistema de Gerenciamento SG3S</h1>
             <p class="lead">Utilize as opções acima para navegar pelo Sistema</p>
         </div>
-        <div class="row justify-content-center g-3 mt-4">
-            <div class="col-md-auto">
-                <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modal_pedido">
-                    <i class="bi bi-plus-circle"></i> Novo Pedido</button>
+        <!-- Painel de Ações -->
+        <section class="container mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white py-2 px-3 d-flex align-items-center">
+                    <i class="bi bi-lightning-charge me-2"></i>
+                    <h6 class="mb-0">Ações Rápidas</h6>
+                </div>
+                <div class="card-body py-3">
+                    <div class="row g-2 justify-content-center">
+                        <div class="col-6 col-md-4 col-lg-3 d-grid">
+                            <button class="btn btn-primary btn-md" data-bs-toggle="modal" data-bs-target="#modal_pedido">
+                                <i class="bi bi-plus-circle"></i> Novo Pedido
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-3 d-grid">
+                            <button class="btn btn-secondary btn-md" data-bs-toggle="modal" data-bs-target="#modal_consulta_pedido">
+                                <i class="bi bi-file-earmark-text"></i> Consultar
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-auto">
-                <button class="btn btn-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#modal_consulta_pedido">
-                    <i class="bi bi-file-earmark-text"></i> Consultar Pedidos</button>
-            </div>
-        </div>
+        </section>
+
         <!-- Modal de cadastro do pedido -->
         <div class="modal fade" id="modal_pedido" tabindex="-1" aria-labelledby="modalPedidoLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -199,20 +214,7 @@
                 </div>
             </div>
         </div>
-        <!-- Calendario -->
-        <div class="modal fade" id="modalCalendario" tabindex="-1" aria-labelledby="modalCalendarioLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title" id="modalCalendarioLabel"><i class="fas fa-calendar-alt me-2"></i>Calendário do Mês</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                    </div>
-                    <div class="modal-body">
-                        <?php print $this->Calendario(); ?>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <br>
         <!-- Tabela da consulta de pedidos -->
         <div class="container-fluid">
             <div class="row justify-content-center mt-4">
@@ -262,6 +264,102 @@
                 </div>
             </div>
         </div>
+        <!-- DASHBOARD - GRÁFICOS -->
+        <section class="container-fluid py-4">
+            <div class="row g-4">
+                <!-- Clientes que Mais Compraram -->
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-gradient-secondary text-white d-flex align-items-center">
+                            <i class="bi bi-people me-2"></i>
+                            <h6 class="mb-0">Clientes que Mais Compraram</h6>
+                        </div>
+                        <div class="card-body p-3">
+                            <div id="graficoClientesQueMaisCompraram" style="height: 380px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pedidos por Mês -->
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-gradient-dark text-white d-flex align-items-center">
+                            <i class="bi bi-calendar-week me-2"></i>
+                            <h6 class="mb-0">Pedidos por Mês</h6>
+                        </div>
+                        <div class="card-body p-3">
+                            <div id="graficoPedidosPorMes" style="height: 380px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Faturamento Mensal -->
+                <div class="col-lg-12">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-gradient-primary text-white d-flex align-items-center">
+                            <i class="bi bi-bar-chart-line me-2"></i>
+                            <h6 class="mb-0">Faturamento Mensal</h6>
+                        </div>
+                        <div class="card-body p-3">
+                            <div id="graficoFaturamentoMensal" style="height: 380px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Produtos Mais Vendidos -->
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-gradient-success text-white d-flex align-items-center">
+                            <i class="bi bi-box-seam me-2"></i>
+                            <h6 class="mb-0">Produtos Mais Vendidos</h6>
+                        </div>
+                        <div class="card-body p-3">
+                            <div id="graficoProdutosMaisVendidos" style="height: 380px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formas de Pagamento -->
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-gradient-warning text-dark d-flex align-items-center">
+                            <i class="bi bi-credit-card me-2"></i>
+                            <h6 class="mb-0">Formas de Pagamento</h6>
+                        </div>
+                        <div class="card-body p-3">
+                            <div id="graficoFormasPagamento" style="height: 380px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pedidos Recentes -->
+                <div class="col-lg-12">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-gradient-info text-white d-flex align-items-center">
+                            <i class="bi bi-clock-history me-2"></i>
+                            <h6 class="mb-0">Pedidos Recentes</h6>
+                        </div>
+                        <div class="card-body p-3">
+                            <div id="graficoPedidosRecentes" style="height: 380px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendario -->
+        <div class="modal fade" id="modalCalendario" tabindex="-1" aria-labelledby="modalCalendarioLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="modalCalendarioLabel"><i class="fas fa-calendar-alt me-2"></i>Calendário do Mês</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <?php print $this->Calendario(); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
     <footer class="text-center py-1 mt-6 bg-light">
         <p>&copy; 2025 Sistema de Gerenciamento SG3S. Todos os direitos reservados.</p>
@@ -280,6 +378,10 @@
     <script src="assets/js/alteracaoPedido.js"></script>
     <!-- ajax de produtos com baixo estoque-->
     <script src="assets/js/notificacao.js"></script>
+
+    <!-- charts -->
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="assets/js/charts.js"></script>
 </body>
 
 </html>

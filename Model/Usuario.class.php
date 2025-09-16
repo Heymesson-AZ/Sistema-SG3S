@@ -144,6 +144,7 @@ class Usuario extends Conexao
         } catch (PDOException $e) {
             //print "Erro ao cadastrar";
             error_log("Erro no banco de dados: " . $e->getMessage());
+            print "Erro ao cadastrar usuário. " . $e->getMessage();
             return false;
         }
     }
@@ -187,68 +188,85 @@ class Usuario extends Conexao
             return false;
         }
     }
-    // metodo para alterar usuario
-    public function alterarUsuario($id_usuario, $nome_usuario, $email,$id_perfil, $cpf, $telefone)
+    // === ALTERAR USUÁRIO ===
+    public function alterarUsuario($id_usuario, $nome_usuario, $email, $id_perfil, $cpf, $telefone)
     {
-        // Setar os atributos
         $this->setIdUsuario($id_usuario);
         $this->setNomeUsuario($nome_usuario);
         $this->setEmailUsuario($email);
         $this->setIdPerfil($id_perfil);
         $this->setTelefone($telefone);
         $this->setCpf($cpf);
-        // Query para alterar usuário
-        $sql = "UPDATE usuario
-        SET nome_usuario= :nome, email= :email,
-        cpf= :cpf, telefone= :telefone,
-        id_perfil= :id_perfil
-        WHERE usuario.id_usuario = :id_usuario";
 
-        // execução
         try {
-            // Conectar com o banco
             $bd = $this->conectarBanco();
-            // Preparar o SQL
-            $query = $bd->prepare($sql);
-            // Bind dos parâmetros
-            $query->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
-            $query->bindValue(':nome', $this->getNomeUsuario(), PDO::PARAM_STR);
-            $query->bindValue(':email', $this->getEmailUsuario(), PDO::PARAM_STR);
-            $query->bindValue(':senha', $this->getSenha(), PDO::PARAM_STR);
-            $query->bindValue(':cpf', $this->getCpf(), PDO::PARAM_STR);
-            $query->bindValue(':telefone', $this->getTelefone(), PDO::PARAM_STR);
-            $query->bindValue(':id_perfil', $this->getIdPerfil(), PDO::PARAM_INT);
-            // executar
-            $query->execute();
-            // retorno
+
+            // Verifica se existe apenas 1 administrador no sistema
+            $sqlCount = "SELECT COUNT(*) AS total
+                    FROM usuario u
+                    INNER JOIN perfil_usuario p ON u.id_perfil = p.id_perfil
+                    WHERE p.perfil_usuario = 'administrador'";
+            $totalAdmin = (int)$bd->query($sqlCount)->fetch(PDO::FETCH_ASSOC)['total'];
+
+            // Se só existir 1 e o novo perfil NÃO for administrador, bloqueia
+            if ($totalAdmin <= 1 && $this->getIdPerfil() != 1) {
+                return "Não é permitido alterar o perfil do único administrador do sistema.";
+            }
+
+            $sql = "UPDATE usuario
+            SET nome_usuario = :nome,
+                email = :email,
+                cpf = :cpf,
+                telefone = :telefone,
+                id_perfil = :id_perfil
+            WHERE id_usuario = :id_usuario";
+
+            $q = $bd->prepare($sql);
+            $q->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
+            $q->bindValue(':nome', $this->getNomeUsuario(), PDO::PARAM_STR);
+            $q->bindValue(':email', $this->getEmailUsuario(), PDO::PARAM_STR);
+            $q->bindValue(':cpf', $this->getCpf(), PDO::PARAM_STR);
+            $q->bindValue(':telefone', $this->getTelefone(), PDO::PARAM_STR);
+            $q->bindValue(':id_perfil', $this->getIdPerfil(), PDO::PARAM_INT);
+            $q->execute();
+
             return true;
         } catch (PDOException $e) {
-            error_log("Erro ao alterar usuário: " . $e->getMessage());
-            return false;
+            return "Erro ao alterar usuário: " . $e->getMessage();
         }
     }
-    // metodo para excluir usuario
+
+    // === EXCLUIR USUÁRIO ===
     public function excluirUsuario($id_usuario)
     {
-        // settar atributos
         $this->setIdUsuario($id_usuario);
-        // Query para excluir usuário
-        $sql = "DELETE FROM usuario WHERE id_usuario = :id_usuario";
+
         try {
-            // Conectar com o banco
             $bd = $this->conectarBanco();
-            // Preparar o SQL
-            $query = $bd->prepare($sql);
-            // Bind dos parâmetros
-            $query->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
-            // Executar a query
-            $query->execute();
+
+            // Verifica se existe apenas 1 administrador no sistema
+            $sqlCount = "SELECT COUNT(*) AS total
+                    FROM usuario u
+                    INNER JOIN perfil_usuario p ON u.id_perfil = p.id_perfil
+                    WHERE p.perfil_usuario = 'administrador'";
+            $totalAdmin = (int)$bd->query($sqlCount)->fetch(PDO::FETCH_ASSOC)['total'];
+
+            // Se só existir 1, bloqueia exclusão
+            if ($totalAdmin <= 1) {
+                return "Não é permitido excluir o único administrador do sistema.";
+            }
+
+            $sql = "DELETE FROM usuario WHERE id_usuario = :id_usuario";
+            $q = $bd->prepare($sql);
+            $q->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
+            $q->execute();
+
             return true;
         } catch (PDOException $e) {
-            print "Erro ao excluir";
-            return false;
+            return "Erro ao excluir usuário: " . $e->getMessage();
         }
     }
+
     // metodo para altera a senha do usuario
     public function alterarSenha($id_usuario, $senha)
     {

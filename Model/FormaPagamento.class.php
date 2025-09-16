@@ -49,6 +49,7 @@ class FormaPagamento extends Conexao
             return true;
         } catch (Exception $e) {
             error_log("Erro ao cadastrar forma de pagamento: " . $e->getMessage());
+            print "Erro ao cadastrar forma de pagamento: " . $e->getMessage();
             return false;
         }
     }
@@ -75,6 +76,7 @@ class FormaPagamento extends Conexao
             return true;
         } catch (Exception $e) {
             error_log("Erro ao alterar forma de pagamento: " . $e->getMessage());
+            print "Erro ao alterar forma de pagamento: " . $e->getMessage();
             return false;
         }
     }
@@ -99,6 +101,7 @@ class FormaPagamento extends Conexao
             return true;
         } catch (Exception $e) {
             error_log("Erro ao excluir forma de pagamento: " . $e->getMessage());
+            print "Erro ao excluir forma de pagamento: " . $e->getMessage();
             return false;
         }
     }

@@ -25,7 +25,8 @@
     ?>
     <main class="container text-center">
         <div class="text-center mb-4">
-            <h3 class="display-6">Sistema de Gerenciamento SG3S</h3>
+            <h1 class="display-9">Sistema de Gerenciamento SG3S</h1>
+            <p class="lead">Utilize as opções acima para navegar pelo Sistema</p>
         </div>
         <h4 class="mb-4 text-center">Relatórios Gerenciais</h4>
         <br>
@@ -257,10 +258,10 @@
             <div class="col-md-3">
                 <form method="POST" action="index.php" class="relatorio-form text-start">
                     <h6>Produtos com Baixo Estoque</h6>
-                    <small class="text-muted">Lista produtos com estoque abaixo do limite definido.</small>
+                    <small class="text-muted">Lista produtos com estoque abaixo do limite definido ou da quantidade mínima.</small>
                     <div class="mb-3 mt-2">
                         <label for="estoque_limite" class="form-label">Limite de Estoque: </label>
-                        <input type="number" id="estoque_limite" name="estoque_limite" class="form-control" value="50" min="50" max="1000" />
+                        <input type="number" id="estoque_limite" name="estoque_limite" class="form-control" />
                     </div>
                     <button type="submit" class="btn btn-primary mt-2" name="buscar_baixo_estoque"><i class="bi bi-exclamation-triangle me-1"></i> Gerar</button>
                 </form>
@@ -336,7 +337,7 @@
                             step="0.01"
                             placeholder="Ex: 10.00">
                     </div>
-                    <button type="submit" class="btn btn-primary mt-2" name="buscar_margem_produto" >
+                    <button type="submit" class="btn btn-primary mt-2" name="buscar_margem_produto">
                         <i class="bi bi-graph-down me-1"></i> Gerar
                     </button>
                 </form>
@@ -439,4 +440,5 @@
     <!-- ajax de produtos com baixo estoque-->
     <script src="assets/js/notificacao.js"></script>
 </body>
+
 </html>

@@ -223,7 +223,7 @@ class Pedido extends Conexao
             // 🔹 Gerar número do pedido já baseado no próximo ID
             $numero_pedido_gerado = str_pad($proximoId, 6, "0", STR_PAD_LEFT);
             $this->setNumeroPedido($numero_pedido_gerado);
-
+            
             // 🔹 Inserir pedido já com numero_pedido
             $sql = "INSERT INTO pedido
         (id_cliente, data_pedido, status_pedido, valor_total, id_forma_pagamento, valor_frete, numero_pedido)
@@ -632,6 +632,7 @@ class Pedido extends Conexao
             return true;
         } catch (PDOException $e) {
             error_log("Erro ao finalizar o pedido: " . $e->getMessage());
+            print "Erro ao finalizar o pedido: " . $e->getMessage();    
             return false;
         }
     }
@@ -1135,7 +1136,7 @@ class Pedido extends Conexao
             -- Cliente
             c.id_cliente,
             c.nome_fantasia,
-
+            c.cnpj_cliente,
             -- Forma de pagamento
             fp.id_forma_pagamento,
             fp.descricao,
@@ -1171,15 +1172,14 @@ class Pedido extends Conexao
         try {
             $bd = $this->conectarBanco();
 
-            $sql = "
-            SELECT 
+            $sql = "SELECT 
                 c.nome_fantasia AS nome_cliente,
                 p.numero_pedido,
                 p.status_pedido
-            FROM pedido p
-            INNER JOIN cliente c ON c.id_cliente = p.id_cliente
-            WHERE p.status_pedido IN ('Pendente', 'Aguardando Pagamento')
-            ORDER BY p.data_pedido DESC
+                FROM pedido p
+                INNER JOIN cliente c ON c.id_cliente = p.id_cliente
+                WHERE p.status_pedido IN ('Pendente', 'Aguardando Pagamento')
+                ORDER BY p.data_pedido DESC
         ";
 
             $query = $bd->prepare($sql);

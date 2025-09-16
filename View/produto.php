@@ -18,8 +18,8 @@
     <body>
         <main class="container-fluid mt-4">
             <div class="text-center mb-4">
-                <h1 class="display-5">Gerenciamento de Produtos e Fornecedores</h1>
-                <p class="lead">Utilize as opções abaixo para gerenciar produtos.</p>
+                <h1 class="display-9">Sistema de Gerenciamento SG3S</h1>
+                <p class="lead">Utilize as opções acima para navegar pelo Sistema</p>
             </div>
             <div class="row justify-content-center g-3 mt-4">
                 <?php if ($this->temPermissao(['Administrador'])): ?>

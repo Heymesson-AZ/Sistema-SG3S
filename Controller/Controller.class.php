@@ -14,6 +14,9 @@ class Controller
         $menu = $this->menu();
         include_once 'view/' . $pagina . '.php';
     }
+
+
+    
     // calendario
     public function calendario()
     {
@@ -117,7 +120,6 @@ class Controller
                 ];
             }
         }
-
         // HTML estilizado
         $html = '<!DOCTYPE html>
         <html lang="pt-BR">
@@ -185,7 +187,6 @@ class Controller
             </style>
         </head>
         <body>';
-
         $html .= '<div class="topo">
             <div class="legenda">Pedido</div>
             <div class="data-hora">Gerado em: ' . $dataHoraGeracao . '</div>
@@ -194,11 +195,13 @@ class Controller
         foreach ($pedidosAgrupados as $pedidoAgrupado) {
             $pedido = $pedidoAgrupado['dados'];
             $itens = $pedidoAgrupado['itens'];
-
+            // mascara do cnpj
+            $pedido->cnpj_cliente = $this->aplicarMascaraCNPJ($pedido->cnpj_cliente);
             $html .= '<div class="pedido-info">
                 <div><strong>Número do Pedido:</strong> ' . htmlspecialchars($pedido->numero_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
                 <div><strong>Status do Pedido:</strong> ' . htmlspecialchars($pedido->status_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
                 <div><strong>Cliente:</strong> ' . htmlspecialchars($pedido->nome_fantasia ?? '', ENT_QUOTES, 'UTF-8') . '</div>
+                <div><strong>CNPJ do Cliente:</strong> ' . htmlspecialchars($pedido->cnpj_cliente ?? '', ENT_QUOTES, 'UTF-8') . '</div>
             </div>';
 
             $html .= '<table>
@@ -246,9 +249,10 @@ class Controller
         if (ob_get_length()) {
             ob_end_clean();
         }
-
+        // Gera o PDF
         header('Content-Type: application/pdf');
-        header('Content-Disposition: inline; filename="pedidos_venda.pdf"');
+        // essa parte e o nome
+        header('Content-Disposition: inline; filename="pedidos_venda.' . $pedido->numero_pedido . '.pdf"');
         header('Cache-Control: private, max-age=0, must-revalidate');
         header('Pragma: public');
 
@@ -823,6 +827,7 @@ class Controller
                 include_once 'view/usuario.php';
                 // Exibir mensagem de sucesso
                 $this->mostrarMensagemSucesso("Usuário cadastrado com sucesso");
+                exit();
             } else {
                 session_start();
                 // Carregar o menu
@@ -831,39 +836,6 @@ class Controller
                 include_once 'view/usuario.php';
                 // Exibir mensagem de erro
                 $this->mostrarMensagemErro("Erro ao cadastrar usuário");
-                exit();
-            }
-        }
-    }
-    // alterar usuario
-    public function alterar_Usuario($id_usuario, $nome_usuario, $email, $id_perfil, $cpf, $telefone)
-    {
-        // Instancia a classe Usuario
-        $objUsuario = new Usuario();
-        // Validação do CPF
-        if ($this->validarCPF($cpf) == false) {
-            session_start();
-            $menu = $this->menu();
-            include_once 'view/usuario.php';
-            $this->mostrarMensagemErro("CPF inválido");
-        } else {
-            // Invoca o método da classe Usuario para alterar o usuário
-            if ($objUsuario->alterarUsuario($id_usuario, $nome_usuario, $email, $id_perfil, $cpf, $telefone) == true) {
-                session_start();
-                // Carregar o menu
-                $menu = $this->menu();
-                // Incluir a view do usuário
-                include_once 'view/usuario.php';
-                // Exibir mensagem de sucesso
-                $this->mostrarMensagemSucesso("Usuário alterado com sucesso");
-            } else {
-                session_start();
-                // Carregar o menu
-                $menu = $this->menu();
-                // Incluir a view do usuário
-                include_once 'view/usuario.php';
-                // Exibir mensagem de erro
-                $this->mostrarMensagemErro("Erro ao alterar usuário");
                 exit();
             }
         }
@@ -896,28 +868,51 @@ class Controller
             include_once 'view/usuario.php';
         }
     }
-    // excluir usuario
+    // =======================
+    // ALTERAR USUÁRIO
+    // =======================
+    public function alterar_Usuario($id_usuario, $nome_usuario, $email, $id_perfil, $cpf, $telefone)
+    {
+        $objUsuario = new Usuario();
+
+        // Validação do CPF
+        if ($this->validarCPF($cpf) == false) {
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/usuario.php';
+            $this->mostrarMensagemErro("CPF inválido");
+            return;
+        }
+
+        // Chama o método do model
+        $retorno = $objUsuario->alterarUsuario($id_usuario, $nome_usuario, $email, $id_perfil, $cpf, $telefone);
+
+        session_start();
+        $menu = $this->menu();
+        include_once 'view/usuario.php';
+
+        if ($retorno === true) {
+            $this->mostrarMensagemSucesso("Usuário alterado com sucesso");
+        } else {
+            $this->mostrarMensagemErro($retorno);
+        }
+    }
+    // EXCLUIR USUÁRIO
     public function excluir_Usuario($id_usuario)
     {
-        // Instancia a classe Usuario
         $objUsuario = new Usuario();
-        // Executa a exclusão
-        if ($objUsuario->excluirUsuario($id_usuario) == true) {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/usuario.php';
-            // Exibir mensagem de sucesso
+
+        // Chama o método do model
+        $retorno = $objUsuario->excluirUsuario($id_usuario);
+
+        session_start();
+        $menu = $this->menu();
+        include_once 'view/usuario.php';
+
+        if ($retorno === true) {
             $this->mostrarMensagemSucesso("Usuário excluído com sucesso");
         } else {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/usuario.php';
-            // Exibir mensagem de erro
-            $this->mostrarMensagemErro("Erro ao excluir usuário");
+            $this->mostrarMensagemErro($retorno);
         }
     }
     // tabela de consulta de Usuario
@@ -1282,8 +1277,10 @@ class Controller
             print '<td>' . $valor->perfil_usuario . '</td>';
             print '<td>';
             print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
-            print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_perfil' . $valor->id_perfil . '"><i class="bi bi-pencil-square"></i></button>';
-            print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_perfil' . $valor->id_perfil . '"><i class="bi bi-trash"></i></button>';
+            if ($valor->perfil_usuario != "Administrador") {
+                print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_perfil' . $valor->id_perfil . '"><i class="bi bi-pencil-square"></i></button>';
+                print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_perfil' . $valor->id_perfil . '"><i class="bi bi-trash"></i></button>';
+            }
             print '</div>';
             print '</td>';
             print '</tr>';
@@ -1292,7 +1289,6 @@ class Controller
         print '</table>';
         print '</div>';
     }
-
     // excluir perfil
     public function excluir_Perfil($id_perfil)
     {
@@ -1316,7 +1312,7 @@ class Controller
             // Incluir a view do usuário
             include_once 'view/usuario.php';
             // Exibir mensagem de erro
-            $this->mostrarMensagemErro("Erro ao excluir Perfil");
+            $this->mostrarMensagemErro("Não é possível excluir este perfil, pois existem usuários associados a ele.");
         }
     }
     // modal de alterar Perfil de Usuario
@@ -1370,7 +1366,6 @@ class Controller
         print '</div>'; // fecha modal-dialog
         print '</div>'; // fecha modal
     }
-
     // modal de excluir perfil
     public function modalExcluirPerfil($id_perfil, $perfil_usuario)
     {
@@ -1398,6 +1393,24 @@ class Controller
     }
     // select com dados da classe Perfil_Usuario
     public function select_perfilUsuario($id_perfil = null)
+    {
+        $objUsuario = new Perfil();
+        // Invocar o método da classe Usuario para consultar os perfis de usuário
+        $resultado = $objUsuario->consultarPerfil(null, null);
+        print '<label for="usuario" class="form-label">Perfil de Usuário: </label>';
+        print '<select name="id_perfil" class="form-select" aria-label="Default select example" required>';
+        print '<option selected value="">Selecione um Perfil</option>';
+        foreach ($resultado as $key => $valor) {
+            if ($valor->id_perfil == $id_perfil) {
+                print '<option selected value="' . $valor->id_perfil . '">' . $valor->perfil_usuario . '</option>';
+            } else {
+                print '<option value="' . $valor->id_perfil . '">' . $valor->perfil_usuario . '</option>';
+            }
+        }
+        print '</select>';
+    }
+
+    public function select_perfilUsuarioConsulta($id_perfil = null)
     {
         $objUsuario = new Perfil();
         // Invocar o método da classe Usuario para consultar os perfis de usuário
@@ -1489,14 +1502,14 @@ class Controller
 
         print '<div class="col-md-6">';
         print '<label for="telefone_celular" class="form-label">Telefone Celular *</label>';
-        print '<input type="tel" class="form-control" id="telefone_celular" name="telefone_celular" required
+        print '<input type="tel" class="form-control telefone_celular" id="telefone_celular" name="telefone_celular" required
             placeholder="(00) 00000-0000" autocomplete="off"
             pattern="\(\d{2}\) \d{4,5}-\d{4}" title="Formato esperado: (XX) XXXXX-XXXX">';
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="telefone_fixo" class="form-label">Telefone Fixo *</label>';
-        print '<input type="tel" class="form-control" id="telefone_fixo" name="telefone_fixo" required
+        print '<input type="tel" class="form-control telefone_fixo" id="telefone_fixo" name="telefone_fixo" required
             placeholder="(00) 0000-0000" autocomplete="off"
             pattern="\(\d{2}\) \d{4}-\d{4}" title="Formato esperado: (XX) XXXX-XXXX">';
         print '</div>';
@@ -2766,9 +2779,9 @@ class Controller
         $cnpj_cliente,
         $email,
         $limite_credito,
-        $inscricao_estadual,
         $telefone_celular,
         $telefone_fixo,
+        $inscricao_estadual,
         $cidade,
         $estado,
         $bairro,
@@ -2794,9 +2807,9 @@ class Controller
                 $cnpj_cliente,
                 $email,
                 $limite_credito,
-                $inscricao_estadual,
                 $telefone_celular,
                 $telefone_fixo,
+                $inscricao_estadual,
                 $cidade,
                 $estado,
                 $bairro,
@@ -2829,13 +2842,13 @@ class Controller
 
         // Cabeçalho
         print '<div class="modal-header">';
-        print '<h6 class="modal-title" id="modalClienteLabel"> Novo Cliente</h6>';
+        print '<h6 class="modal-title" id="modalClienteLabel"> Novo Cliente </h6>';
         print '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>';
         print '</div>';
 
         // Corpo
         print '<div class="modal-body">';
-        print '<form action="index.php" method="POST" id="formulario_cliente" class="needs-validation" novalidate>';
+        print '<form action="index.php" method="POST" id="formulario_cliente" class="needs-validation">';
         print '<div class="row g-2">';
 
         // Fieldset Dados Cadastrais
@@ -2863,7 +2876,7 @@ class Controller
 
         print '<div class="col-md-6">';
         print '<label for="cnpj_cliente" class="form-label">CNPJ *</label>';
-        print '<input type="text" class="form-control cnpj_cliente" id="cnpj_cliente" name="cnpj_cliente" value="' . ($_SESSION['cnpj_cliente'] ?? '') . '" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" autocomplete="off">';
+        print '<input type="text" class="form-control cnpj_cliente" id="cnpj_cliente" name="cnpj_cliente" value="' . $_SESSION['cnpj_cliente'] . '" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" autocomplete="off">';
 
         print '</div>';
 
@@ -2880,7 +2893,7 @@ class Controller
 
         print '<div class="col-md-6">';
         print '<label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>';
-        print '<input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" maxlength="20" autocomplete="off">';
+        print '<input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" maxlength="9" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" maxlength="20" autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-6">';
@@ -3031,6 +3044,7 @@ class Controller
         }
     }
     // modal alterar cliente
+    // modal alterar cliente
     public function modal_AlterarCliente(
         $id_cliente,
         $nome_representante,
@@ -3064,34 +3078,34 @@ class Controller
         print '<input type="hidden" name="id_cliente" value="' . $id_cliente . '">';
         print '<div class="row g-2">';
 
-        // Fieldset Dados Cadastrais
+        // Dados cadastrais
         print '<div class="col-md-12">';
         print '<fieldset class="border border-black p-1 mb-4">';
         print '<legend class="float-none w-auto px-2">Dados Cadastrais</legend>';
         print '<div class="row g-2">';
 
         print '<div class="col-md-6">';
-        print '<label class="form-label">Nome do Responsável </label>';
+        print '<label class="form-label">Nome do Responsável</label>';
         print '<input type="text" class="form-control" name="nome_representante" required placeholder="Digite o nome do responsável" pattern="^[A-Za-zÀ-ÿ\s]{3,}$" value="' . $nome_representante . '" autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-6">';
-        print '<label class="form-label">Razão Social </label>';
+        print '<label class="form-label">Razão Social</label>';
         print '<input type="text" class="form-control" name="razao_social" required placeholder="Digite a razão social" pattern=".{3,}" value="' . $razao_social . '" autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-6">';
-        print '<label class="form-label">Nome Fantasia </label>';
+        print '<label class="form-label">Nome Fantasia</label>';
         print '<input type="text" class="form-control" name="nome_fantasia" required placeholder="Digite o nome fantasia" pattern=".{3,}" value="' . $nome_fantasia . '" autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-6">';
-        print '<label class="form-label">CNPJ </label>';
+        print '<label class="form-label">CNPJ</label>';
         print '<input type="text" class="form-control cnpj_cliente" name="cnpj_cliente" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" value="' . $cnpj_cliente . '" autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-6">';
-        print '<label class="form-label">Telefone Celular </label>';
+        print '<label class="form-label">Telefone Celular</label>';
         print '<input type="tel" class="form-control telefone_celular" name="telefone_celular" required placeholder="(00) 00000-0000" pattern="\(\d{2}\) \d{4,5}-\d{4}" value="' . $telefone_celular . '" autocomplete="off">';
         print '</div>';
 
@@ -3102,11 +3116,11 @@ class Controller
 
         print '<div class="col-md-6">';
         print '<label class="form-label">Inscrição Estadual</label>';
-        print '<input type="text" class="form-control" name="inscricao_estadual" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" value="' . $inscricao_estadual . '" autocomplete="off">';
+        print '<input type="text" class="form-control" name="inscricao_estadual" maxlength="9" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" value="' . $inscricao_estadual . '" autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-6">';
-        print '<label class="form-label">E-mail </label>';
+        print '<label class="form-label">E-mail</label>';
         print '<input type="email" class="form-control" name="email" required placeholder="exemplo@email.com" pattern="^[\\w\\.-]+@[\\w\\.-]+\\.\\w{2,}$" value="' . $email . '" autocomplete="off">';
         print '</div>';
 
@@ -3122,7 +3136,7 @@ class Controller
         print '</fieldset>';
         print '</div>'; // col-md-12
 
-        // Fieldset Endereço
+        // Endereço
         print '<div class="col-md-12">';
         print '<fieldset class="border border-black p-1 mb-3">';
         print '<legend class="float-none w-auto px-2">Endereço</legend>';
@@ -3153,7 +3167,7 @@ class Controller
         print '<input type="text" class="form-control" id="complemento' . $id_cliente . '" name="complemento" placeholder="Digite o complemento" value="' . $complemento . '" autocomplete="off">';
         print '</div>';
 
-        print '</div>'; // fecha row
+        print '</div>'; // row
         print '</fieldset>';
         print '</div>'; // col-md-12
 
@@ -3183,6 +3197,7 @@ class Controller
         print '</div>'; // modal-dialog
         print '</div>'; // modal
     }
+
     // excluir cliente
     public function excluir_Cliente($id_cliente)
     {
@@ -3371,7 +3386,7 @@ class Controller
         print '<form action="index.php" method="post">';
         print '<div class="row g-3">';
         print '<div class="col-md-12">';
-        print '<input type="text" class="form-control" id="forma_pagamento" name="forma_pagamento" value="' . $forma_pagamento . '" required>';
+        print '<input type="text" class="form-control" id="forma_pagamento" name="descricao" value="' . $forma_pagamento . '" required>';
         print '</div>';
         print '</div>';
         print '<div class="d-flex justify-content-center gap-2 mt-4">';
@@ -4488,7 +4503,6 @@ class Controller
         print '</table>';
         print '</div>';
     }
-
     // metodo de quantidade de pedidos por mes
     public function pedidos_Mes($ano_referencia, $mes_referencia)
     {
@@ -4984,11 +4998,10 @@ class Controller
 
             print '<tr>';
             print "<td>{$mesNome}</td>";
-            print "<td>{$totalQtd}</td>";
+            print "<td>{$totalQtd} m</td>";
             print "<td>R$ {$totalFat}</td>";
             print '</tr>';
         }
-
         print '</tbody></table></div>';
     }
     // metodo de lucro mensal Bruto
@@ -5082,7 +5095,10 @@ class Controller
     // tabela de pedidos com baixo estoque
     public function tabelaProdutosBaixoEstoque($estoqueBaixoProduto)
     {
-        if (empty($estoqueBaixoProduto)) return;
+        if (empty($estoqueBaixoProduto)) {
+            print '<div class="alert alert-info mt-4">Nenhum produto com baixo estoque encontrado.</div>';
+            return;
+        }
 
         print '<div class="table-responsive mt-4">';
         print '<table class="table table-bordered table-striped table-hover align-middle text-center table-sm">';
@@ -5090,18 +5106,23 @@ class Controller
         print '<tr>';
         print '<th>Produto</th>';
         print '<th>Quantidade</th>';
+        print '<th>Quantidade Mínima</th>';
+        print '<th>Falta</th>';
         print '</tr>';
         print '</thead><tbody>';
 
         foreach ($estoqueBaixoProduto as $p) {
             print '<tr>';
             print "<td>" . htmlspecialchars($p->nome_produto) . "</td>";
-            print "<td>" . (int)$p->quantidade . "</td>";
+            print "<td>" . $p->quantidade . "</td>";
+            print "<td>" . $p->quantidade_minima . "</td>";
+            print "<td>" . $p->falta . "</td>";
             print '</tr>';
         }
 
         print '</tbody></table></div>';
     }
+
     // metodo de Custo Total por Produto
     public function custoTotal_PorProduto($id_produto)
     {
@@ -5431,4 +5452,205 @@ class Controller
             print "<li><hr class='dropdown-divider'></li>";
         }
     }
-};
+
+    // Auditoria
+    public function listar_Auditorias()
+    {
+        $objAuditoria = new Auditoria();
+        $objAuditoria->listarTudo();
+        if ($objAuditoria->listarTudo() == true) {
+            $todas_auditorias = $objAuditoria->listarTudo();
+            // menu
+            $menu = $this->menu();
+            // view
+            include_once 'View/auditoria.php';
+        } else {
+            // menu
+            $menu = $this->menu();
+            // view
+            include_once 'View/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao consultar Auditorias Gerais!");
+        }
+    }
+
+    // tabela de consulta de todas as auditorias
+    public function tabelaAuditoria($auditorias)
+    {
+        if (empty($auditorias)) return;
+
+        $modals = '';
+
+        /**
+         * ======================================================
+         * 1. AGRUPAR auditorias pelo id_auditoria
+         * ======================================================
+         * Cada registro de auditoria pode ter vários "detalhes".
+         * Aqui garantimos que cada auditoria seja uma entrada única,
+         * e os detalhes fiquem dentro de um array.
+         */
+        $auditoriasAgrupadas = [];
+        foreach ($auditorias as $aud) {
+            $id = $aud['id_auditoria'];
+
+            // Se ainda não existe no agrupamento, cria o cabeçalho
+            if (!isset($auditoriasAgrupadas[$id])) {
+                $auditoriasAgrupadas[$id] = [
+                    'id_auditoria' => $id,
+                    'nome_usuario' => $aud['nome_usuario'],
+                    'acao' => $aud['acao'],
+                    'descricao_relacionada' => $aud['descricao_relacionada'],
+                    'data_hora' => $aud['data_hora'],
+                    'detalhes' => []
+                ];
+            }
+
+            // Adiciona cada detalhe (se existir)
+            if (!empty($aud['campo'])) {
+                $auditoriasAgrupadas[$id]['detalhes'][] = [
+                    'campo' => $aud['campo'],
+                    'valor_antigo' => $aud['valor_antigo'],
+                    'valor_novo' => $aud['valor_novo']
+                ];
+            }
+        }
+
+        /**
+         * ======================================================
+         * 2. GERAR TABELA PRINCIPAL
+         * ======================================================
+         */
+        print '<div class="table-responsive mt-4">';
+        print '<table class="table table-hover table-bordered align-middle text-center shadow-sm table-lg">';
+        print '<thead class="table-primary">';
+        print '<tr>';
+        print '<th scope="col">Usuário</th>';
+        print '<th scope="col">Ação</th>';
+        print '<th scope="col">Descrição</th>';
+        print '<th scope="col">Data/Hora</th>';
+        print '<th scope="col">Detalhes</th>';
+        print '</tr>';
+        print '</thead>';
+        print '<tbody>';
+
+        foreach ($auditoriasAgrupadas as $auditoria) {
+            $id = md5($auditoria['id_auditoria']); // hash para id único da modal
+            $nomeUsuario = explode(" ", $auditoria['nome_usuario'])[0]; // pega só o primeiro nome
+            $acaoVisual = htmlspecialchars($auditoria['acao']);
+            $descricao = htmlspecialchars($auditoria['descricao_relacionada']);
+
+            // Linha da tabela principal
+            print '<tr>';
+            print '<td class="fw-bold">' . $nomeUsuario . '</td>';
+            print '<td><span class="badge bg-' . ($acaoVisual === 'Cadastro' ? 'success' : ($acaoVisual === 'Alteração' ? 'warning text-dark' : 'danger')) . '">' . $acaoVisual . '</span></td>';
+            print '<td class="text-start">' . $descricao . '</td>';
+            print '<td>' . date('d/m/Y H:i:s', strtotime($auditoria['data_hora'])) . '</td>';
+            print '<td>
+            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detalhes_auditoria' . $id . '" title="Ver detalhes">
+                <i class="bi bi-eye"></i> Ver
+            </button>
+            </td>';
+            print '</tr>';
+
+            /**
+             * ======================================================
+             * 3. MODAL DE DETALHES
+             * ======================================================
+             */
+            $modal  = '<div class="modal fade" id="detalhes_auditoria' . $id . '" tabindex="-1" aria-labelledby="detalhesAuditoriaLabel' . $id . '" aria-hidden="true">';
+            $modal .= '  <div class="modal-dialog modal-xl modal-dialog-scrollable">';
+            $modal .= '    <div class="modal-content">';
+            $modal .= '      <div class="modal-header bg-primary text-white">';
+            $modal .= '        <h5 class="modal-title" id="detalhesAuditoriaLabel' . $id . '">📋 Detalhes da Auditoria</h5>';
+            $modal .= '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+            $modal .= '      </div>';
+            $modal .= '      <div class="modal-body">';
+            $modal .= '        <div class="mb-3">';
+            $modal .= '          <strong>Usuário:</strong> ' . htmlspecialchars($auditoria['nome_usuario']) . '<br>';
+            $modal .= '          <strong>Ação:</strong> <span class="badge bg-primary">' . $acaoVisual . '</span><br>';
+            $modal .= '          <strong>Descrição:</strong> ' . $descricao . '<br>';
+            $modal .= '          <strong>Data/Hora:</strong> ' . date('d/m/Y H:i:s', strtotime($auditoria['data_hora']));
+            $modal .= '        </div>';
+            $modal .= '        <hr>';
+
+            // Se houver detalhes, monta tabela interna
+            if (!empty($auditoria['detalhes'])) {
+                $modal .= '<div class="table-responsive">';
+                $modal .= '<table class="table table-sm table-bordered align-middle">';
+                $modal .= '<thead class="table-light">';
+                $modal .= '<tr>';
+                $modal .= '<th>Campo</th>';
+                $modal .= '<th>Valor Antigo</th>';
+                $modal .= '<th>Valor Novo</th>';
+                $modal .= '</tr>';
+                $modal .= '</thead>';
+                $modal .= '<tbody>';
+
+                foreach ($auditoria['detalhes'] as $d) {
+                    $modal .= '<tr>';
+                    $modal .= '<td>' . htmlspecialchars($d['campo']) . '</td>';
+                    $modal .= '<td>' . htmlspecialchars($d['valor_antigo']) . '</td>';
+                    $modal .= '<td>' . htmlspecialchars($d['valor_novo']) . '</td>';
+                    $modal .= '</tr>';
+                }
+
+                $modal .= '</tbody></table></div>';
+            } else {
+                $modal .= '<div class="alert alert-secondary">Sem detalhes registrados</div>';
+            }
+
+            $modal .= '      </div>'; // modal-body
+            $modal .= '      <div class="modal-footer">';
+            $modal .= '        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>';
+            $modal .= '      </div>';
+            $modal .= '    </div>';
+            $modal .= '  </div>';
+            $modal .= '</div>';
+
+            $modals .= $modal;
+        }
+        print '</tbody>';
+        print '</table>';
+        print '</div>';
+
+        // Renderiza os modais
+        print $modals;
+    }
+
+    //  Charts
+    public function dashboardDados()
+    {
+        // Instancia o Model
+        $objPedido = new Pedido();
+
+        // --- PARÂMETROS BÁSICOS ---
+        $anoAtual = date('Y');
+
+        // --- 1. Faturamento Mensal ---
+        $faturamentoMensal = $objPedido->faturamentoMensal($anoAtual,);
+        // --- 2. Formas de Pagamento Mais Usadas ---
+        $formasPagamento = $objPedido->formasPagamentoMaisUsadas();
+        // --- 3. Produtos mais vendidos (opcional para um top 5 no dashboard) ---
+        $produtosMaisVendidos = $objPedido->produtosMaisVendidos(5);
+        // --- 4 Pedidos Recentes
+        $pedidosRecentes = $objPedido->pedidosRecentes(7);
+        // --- 5 Clientes que mais compram
+        $clientesQueMaisCompram = $objPedido->clientesQueMaisCompraram($anoAtual, null, 5);
+        // --- 6 Pedidos por mês (para linha do tempo anual) ---
+        $pedidosPorMes = $objPedido->pedidosPorMes(date('Y'));
+
+        // --- MONTA O RETORNO JSON ---
+        // O Google Charts pode consumir esse formato diretamente via AJAX
+        $dados = [
+            'faturamentoMensal'        => $faturamentoMensal,
+            'formasPagamentoMaisUsadas' => $formasPagamento,
+            'produtosMaisVendidos'     => $produtosMaisVendidos,
+            'pedidosRecentes'          => $pedidosRecentes,
+            'clientesQueMaisCompram'   => $clientesQueMaisCompram,
+            'pedidosPorMes'            => $pedidosPorMes
+        ];
+
+        header('Content-Type: application/json');
+        print json_encode($dados);
+        exit;
+    }
+}

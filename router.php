@@ -443,7 +443,7 @@ if (isset($_POST['consultar_cliente'])) {
 function limparLimiteCredito($valor)
 {
     // Remove R$ e espaços extras
-    $valor = str_replace('R$',' ', $valor);
+    $valor = str_replace('R$', ' ', $valor);
 
     // Remove pontos de milhar
     $valor = str_replace('.', '', $valor);
@@ -454,7 +454,6 @@ function limparLimiteCredito($valor)
     // Retorna em formato float
     return trim($valor);
 }
-
 
 // ================= CADASTRAR CLIENTE =================
 if (isset($_POST['cadastrar_cliente'])) {
@@ -480,9 +479,9 @@ if (isset($_POST['cadastrar_cliente'])) {
         $cnpj_cliente,
         $email,
         $limite_credito,
-        $inscricao_estadual,
         $telefone_celular,
         $telefone_fixo,
+        $inscricao_estadual,
         $cidade,
         $estado,
         $bairro,
@@ -508,7 +507,7 @@ if (isset($_POST['alterar_cliente'])) {
     $bairro             = sanitizar($_POST['bairro']);
     $cidade             = sanitizar($_POST['cidade']);
     $estado             = sanitizar($_POST['estado']);
-    
+
     $objController->alterar_Cliente(
         $id_cliente,
         $nome_representante,
@@ -564,13 +563,11 @@ if (isset($_POST['alterar_forma_pagamento'])) {
 // === EXCLUIR FORMA DE PAGAMENTO ===
 if (isset($_POST['excluir_forma_pagamento'])) {
     $id_forma_pagamento = $_POST['id_forma_pagamento'] ?? null;
-    $descricao = limparDescricao($_POST['descricao'] ?? '');
+    $descricao = limparDescricao($_POST['descricao']);
     $objController->excluirForma_Pagamento($id_forma_pagamento, $descricao);
 }
 
-
 // PEDIDO
-
 
 // =====================
 // BUSCA DINÂMICA DE CLIENTES
@@ -871,4 +868,16 @@ if (isset($_POST['cliente_mais_compraram'])) {
     $mes_referencia = $_POST['mes_referencia'];
 
     $objController->clientes_MaisCompraram($ano_referencia, $mes_referencia, $limite);
+}
+
+// Auditoria
+
+// auditorias gerais
+if (isset($_POST['auditorias_gerais'])) {
+    $objController->listar_Auditorias();
+}
+
+// DASHBOARD
+if (isset($_POST['action']) && $_POST['action'] === "dashboardDados") {
+    $objController->dashboardDados();
 }
