@@ -2,14 +2,25 @@
 // Instaciando a classe controller
 $objController = new Controller();
 
-// pegar url
-$url = explode('?', $_SERVER['REQUEST_URI']);
-$pagina = $url[1];
+session_start();
 
-//rotas de redirecionamento
-if (isset($pagina)) {
-    $objController->redirecionar($pagina);
-};
+// Se recebeu página na query string, guarda na sessão
+if (isset($_GET) && !empty($_GET)) {
+    $pagina = key($_GET);
+    $_SESSION['pagina'] = $pagina;
+
+    // Redireciona para limpar a URL
+    header("Location: index.php");
+    exit;
+}
+
+// Se já tem página em sessão, usa ela
+if (isset($_SESSION['pagina'])) {
+    $objController->redirecionar($_SESSION['pagina']);
+} else {
+    $objController->redirecionar('principal'); // página padrão
+}
+
 
 //  notificacoes:
 

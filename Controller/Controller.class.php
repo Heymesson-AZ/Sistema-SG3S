@@ -14,9 +14,6 @@ class Controller
         $menu = $this->menu();
         include_once 'view/' . $pagina . '.php';
     }
-
-
-    
     // calendario
     public function calendario()
     {
@@ -897,6 +894,7 @@ class Controller
             $this->mostrarMensagemErro($retorno);
         }
     }
+
     // EXCLUIR USUÁRIO
     public function excluir_Usuario($id_usuario)
     {
