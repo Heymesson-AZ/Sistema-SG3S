@@ -350,6 +350,35 @@ class Cliente extends Conexao
             return false;
         }
     }
+    public function verificar_LimiteCredito($id_cliente, $valor_totalPedido)
+    {
+        try {
+            $sql = "SELECT limite_credito
+                    FROM cliente
+                    WHERE id_cliente = :id_cliente";
+            $query = $this->pdo->prepare($sql);
+            $query->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
+            $query->execute();
+            $limite = $query->fetchColumn();
+            if ($valor_totalPedido > $limite) {
+                return [
+                    "status" => false,
+                    "mensagem" => "Limite de crédito excedido.",
+                    "limite" => $limite,
+                    "pedido" => $valor_totalPedido,
+                    "excedente" => $valor_totalPedido - $limite
+                ];
+            }
+            return true;
+        } catch (PDOException $e) {
+            error_log("Erro ao verificar limite de crédito: " . $e->getMessage());
+            return [
+                "status" => "erro",
+                "mensagem" => "Erro no banco de dados."
+            ];
+        }
+    }
+
     //  verificar se o cliente existe
     public function verificarCliente($cnpj_cliente)
     {

@@ -4,23 +4,14 @@ $objController = new Controller();
 
 session_start();
 
-// Se recebeu página na query string, guarda na sessão
-if (isset($_GET) && !empty($_GET)) {
-    $pagina = key($_GET);
-    $_SESSION['pagina'] = $pagina;
+// pegar url
+$url = explode('?', $_SERVER['REQUEST_URI']);
+$pagina = $url[1];
 
-    // Redireciona para limpar a URL
-    header("Location: index.php");
-    exit;
-}
-
-// Se já tem página em sessão, usa ela
-if (isset($_SESSION['pagina'])) {
-    $objController->redirecionar($_SESSION['pagina']);
-} else {
-    $objController->redirecionar('principal'); // página padrão
-}
-
+//rotas de redirecionamento
+if (isset($pagina)) {
+    $objController->redirecionar($pagina);
+};
 
 //  notificacoes:
 
@@ -413,7 +404,6 @@ if (isset($_POST['verificar_produto'])) {
     $nome_produto = limparTexto($_POST['nome_produto']);
     $cor          = limparTexto($_POST['cor']);
     $largura      = limparNumero($_POST['largura']);
-
     $objController->verificar_Produto($nome_produto, $cor, $largura);
 }
 // ================= EXCLUIR PRODUTO =================
@@ -580,6 +570,7 @@ if (isset($_POST['excluir_forma_pagamento'])) {
 
 // PEDIDO
 
+
 // =====================
 // BUSCA DINÂMICA DE CLIENTES
 // =====================
@@ -588,6 +579,15 @@ if (isset($_POST['cliente_pedido'])) {
     $objController->buscarCliente($cliente);
     exit;
 }
+// =====================
+// BUSCA DINÂMICA DO LIMITE DE CREDITO DO CLI
+// =====================
+if (isset($_POST['verificar_limite'])) {
+    $id_cliente = $_POST['id_cliente'];
+    $valor_totalPedido = $_POST['valor_total'];
+    $objController->verificarLimiteCredito($id_cliente,$valor_totalPedido);
+}
+
 // =====================
 // BUSCA DINÂMICA DE PRODUTO PARA PEDIDO
 // =====================

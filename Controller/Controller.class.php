@@ -14,6 +14,8 @@ class Controller
         $menu = $this->menu();
         include_once 'view/' . $pagina . '.php';
     }
+
+
     // calendario
     public function calendario()
     {
@@ -894,7 +896,6 @@ class Controller
             $this->mostrarMensagemErro($retorno);
         }
     }
-
     // EXCLUIR USUÁRIO
     public function excluir_Usuario($id_usuario)
     {
@@ -988,10 +989,12 @@ class Controller
         value="' . htmlspecialchars($nome_usuario) . '">';
         print '</div>';
 
-        print '<div class="col-md-6">';
-        $this->select_perfilUsuario($id_perfil);
-        print '</div>';
 
+        if ($id_usuario != $_SESSION['id_usuario']) {
+            print '<div class="col-md-6">';
+            $this->select_perfilUsuario($id_perfil);
+            print '</div>';
+        }
         print '<div class="col-md-6">';
         print '<label for="telefone_alterar" class="form-label">Telefone *</label>';
         print '<input type="tel" class="form-control" id="telefone_alterar" name="telefone"
@@ -1071,7 +1074,6 @@ class Controller
     // metodo de alterar a senha
     public function alterar_Senha($id_usuario, $nova_senha)
     {
-
         // Instancia a classe Usuario
         $objUsuario = new Usuario();
         // Tenta alterar a senha
@@ -3501,6 +3503,23 @@ class Controller
             print "<span class='list-group-item text-danger'>Nenhum cliente encontrado</span>";
         }
     }
+    public function verificarLimiteCredito($id_cliente, $valor_totalPedido)
+    {
+        $objCliente = new Cliente();
+        $resultado = $objCliente->verificar_LimiteCredito($id_cliente, $valor_totalPedido);
+        // Só retorna algo se o limite foi excedido
+        if ($resultado['status'] === false) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                "status" => false,
+                "mensagem" => $resultado['mensagem'],
+                "limite_credito" => $resultado['limite_credito'],
+                "valor_total" => $resultado['valor_total']
+            ]);
+            exit;
+        }
+    }
+
     // metodo de buscar produto AJAX
     public function buscarProduto($produto, $tipo)
     {

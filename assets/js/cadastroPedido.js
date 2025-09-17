@@ -299,7 +299,6 @@ $(document).ready(function () {
           this.value = valorAnterior;
           return;
         }
-
         fetch("index.php", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -312,7 +311,6 @@ $(document).ready(function () {
               input.value = valorAnterior;
               return;
             }
-
             // se válido, atualiza total
             valorTotal -= valorLinha;
             valorLinha = valorUnitario * novaQtd;
@@ -347,21 +345,20 @@ $(document).ready(function () {
     .getElementById("limpar_pedido")
     .addEventListener("click", limparCamposPedido);
 
-  document
+    document
     .getElementById("salvar_pedido")
     .addEventListener("click", function (e) {
       e.preventDefault();
       const idCliente = document.getElementById("id_cliente_hidden")?.value;
-      const status = "Pendente"; // Status fixo para o pedido
+      const status = "Pendente";
       const idPagamento = document.querySelector(
         "select[name='id_forma_pagamento']"
       ).value;
+
       if (!idCliente || !status || !idPagamento) {
-        return mostrarAlerta(
-          "Preencha todos os campos obrigatórios!",
-          "warning"
-        );
+        return mostrarAlerta("Preencha todos os campos obrigatórios!", "warning");
       }
+
       const origem = document.getElementById("origem").value;
       const data = document.getElementById("data").value;
       const frete = valorFrete.toFixed(2);
@@ -372,41 +369,70 @@ $(document).ready(function () {
         itens.push({
           id_produto: tr.dataset.idProduto,
           quantidade: tr.querySelector("input[type='number']").value,
-          valor_unitario: tr.querySelector("input[name='valor_unitario']")
-            .value,
-          totalValor_produto: tr.querySelector("input[name='valor_total']")
-            .value,
+          valor_unitario: tr.querySelector("input[name='valor_unitario']").value,
+          totalValor_produto: tr.querySelector("input[name='valor_total']").value,
         });
       });
-
       if (itens.length === 0) {
         return mostrarAlerta("Adicione pelo menos um produto!", "warning");
       }
-
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = "index.php";
-      form.innerHTML = `
-      <input type="hidden" name="salvar_pedido" value="1">
-      <input type="hidden" name="id_cliente" value="${idCliente}">
-      <input type="hidden" name="data_pedido" value="${data}">
-      <input type="hidden" name="status_pedido" value="${status}">
-      <input type="hidden" name="valor_total" value="${total}">
-      <input type="hidden" name="id_forma_pagamento" value="${idPagamento}">
-      <input type="hidden" name="valor_frete" value="${frete}">
-      <input type="hidden" name="origem" value="${origem}">
-    `;
-      itens.forEach((item, i) => {
-        form.innerHTML += `
-          <input type="hidden" name="itens[${i}][id_produto]" value="${item.id_produto}">
-          <input type="hidden" name="itens[${i}][quantidade]" value="${item.quantidade}">
-          <input type="hidden" name="itens[${i}][valor_unitario]" value="${item.valor_unitario}">
-          <input type="hidden" name="itens[${i}][totalValor_produto]" value="${item.totalValor_produto}">
-        `;
+      // ============================
+      // VERIFICAÇÃO AJAX DO LIMITE
+      // ============================
+      fetch("index.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `verificar_limite=1&id_cliente=${idCliente}&valor_total=${total}`,
+      })
+      .then(res => res.text())
+      .then(resdata => {
+        // Se o retorno estiver vazio, limite aceito
+        if (!resdata.trim()) {
+          // envia o form
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = "index.php";
+          form.innerHTML = `
+            <input type="hidden" name="salvar_pedido" value="1">
+            <input type="hidden" name="id_cliente" value="${idCliente}">
+            <input type="hidden" name="data_pedido" value="${data}">
+            <input type="hidden" name="status_pedido" value="${status}">
+            <input type="hidden" name="valor_total" value="${total}">
+            <input type="hidden" name="id_forma_pagamento" value="${idPagamento}">
+            <input type="hidden" name="valor_frete" value="${frete}">
+            <input type="hidden" name="origem" value="${origem}">
+          `;
+          itens.forEach((item, i) => {
+            form.innerHTML += `
+              <input type="hidden" name="itens[${i}][id_produto]" value="${item.id_produto}">
+              <input type="hidden" name="itens[${i}][quantidade]" value="${item.quantidade}">
+              <input type="hidden" name="itens[${i}][valor_unitario]" value="${item.valor_unitario}">
+              <input type="hidden" name="itens[${i}][totalValor_produto]" value="${item.totalValor_produto}">
+            `;
+          });
+          document.body.appendChild(form);
+          form.submit();
+          form.remove();
+          limparCamposPedido();
+          return;
+        }
+        // Se houver retorno, significa limite excedido (o controller envia JSON)
+        const json = JSON.parse(data);
+        if (json.status === false) {
+          mostrarAlerta(
+            `⚠️ Limite de crédito excedido!<br>
+              <strong>Limite:</strong> R$ ${parseFloat(json.limite_credito).toFixed(2).replace(".", ",")}<br>
+              <strong>Pedido:</strong> R$ ${parseFloat(total).toFixed(2).replace(".", ",")}<br>
+              <strong>Excedente:</strong> <span style="color:#dc3545; font-weight:bold;">
+              R$ ${(parseFloat(total) - parseFloat(json.limite_credito)).toFixed(2).replace(".", ",")}
+            </span>`,
+            "danger",
+            7000
+          );
+        }
+      })
+      .catch(() => {
+        mostrarAlerta("Erro ao verificar limite de crédito!", "danger");
       });
-      document.body.appendChild(form);
-      form.submit();
-      form.remove();
-      limparCamposPedido();
     });
 });
