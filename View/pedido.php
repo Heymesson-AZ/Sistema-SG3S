@@ -135,10 +135,10 @@
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>Produto</th>
-                                                        <th>Qtd</th>
-                                                        <th>Valor Unit.</th>
+                                                        <th>Quantidade</th>
+                                                        <th>Valor Unitario</th>
                                                         <th>Valor Total</th>
-                                                        <th>Ações</th>
+                                                        <th>Ação</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="tbody_lista_pedido"></tbody>

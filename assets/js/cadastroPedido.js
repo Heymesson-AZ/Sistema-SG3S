@@ -294,7 +294,7 @@ $(document).ready(function () {
         cor,
         largura,
         valorVenda: parseFloat(valor),
-        quantidade: parseInt(qtd),
+        quantidade: parseFloat(qtd),
       };
       // Limpa a lista de resultados após a seleção
       this.innerHTML = "";
@@ -322,7 +322,7 @@ $(document).ready(function () {
   document.getElementById("adicionar_produto").addEventListener("click", function () {
     const idProduto = document.getElementById("id_produto_hidden")?.value;
     const nome = document.getElementById("produto_pedido").value;
-    const qtd = parseInt(document.getElementById("quantidade").value);
+    const qtd = parseFloat(document.getElementById("quantidade").value);
     const valorUnitario = produtoSelecionado?.valorVenda || 0;
 
     if (!idProduto || !qtd || qtd <= 0) {
@@ -344,7 +344,7 @@ $(document).ready(function () {
 
     const cellQtd = tr.insertCell(1);
     const inputQtd = document.createElement("input");
-    inputQtd.type = "number";
+    inputQtd.type = "text";
     inputQtd.value = qtd;
     inputQtd.min = 1;
     inputQtd.className = "form-control form-control-sm text-center";
