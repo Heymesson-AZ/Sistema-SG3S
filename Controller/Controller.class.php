@@ -3044,7 +3044,6 @@ class Controller
         }
     }
     // modal alterar cliente
-    // modal alterar cliente
     public function modal_AlterarCliente(
         $id_cliente,
         $nome_representante,
@@ -3197,7 +3196,6 @@ class Controller
         print '</div>'; // modal-dialog
         print '</div>'; // modal
     }
-
     // excluir cliente
     public function excluir_Cliente($id_cliente)
     {
@@ -3496,13 +3494,14 @@ class Controller
             foreach ($clientes as $valor) {
                 $id_cliente = $valor['id_cliente'];
                 $nome = $valor['nome_fantasia'];
-                $cnpj = $valor['cnpj_cliente'];
-                print "<span class='list-group-item list-group-item-action cliente-item' data-id='$id_cliente' >$nome - $cnpj</span>";
+                print "<span class='list-group-item list-group-item-action cliente-item' data-id='$id_cliente' >$nome</span>";
             }
         } else {
             print "<span class='list-group-item text-danger'>Nenhum cliente encontrado</span>";
         }
     }
+
+    // metodo de limite de credito
     public function verificarLimiteCredito($id_cliente, $valor_totalPedido)
     {
         $objCliente = new Cliente();
@@ -3514,11 +3513,15 @@ class Controller
                 "status" => false,
                 "mensagem" => $resultado['mensagem'],
                 "limite_credito" => $resultado['limite_credito'],
-                "valor_total" => $resultado['valor_total']
+                "valor_total" => $resultado['valor_total'],
+                "excedente" => $resultado['excedente']
             ]);
             exit;
         }
+
+        // Se o limite for aceito, não retorna nada
     }
+
 
     // metodo de buscar produto AJAX
     public function buscarProduto($produto, $tipo)
@@ -3552,7 +3555,7 @@ class Controller
                     data-cor='{$cor}'
                     data-valorVenda='{$valor_venda}'
                     data-quantidade='{$quantidade}'>
-                    {$nome} - {$cor} - {$largura} (m) - R$ {$valor_venda} - {$quantidade} (m)
+                    {$nome} - Cor: {$cor} - Largura: {$largura} (m) - Valor: R$ {$valor_venda} - Qtd.: {$quantidade} (m)
                 </span>";
                 }
             }

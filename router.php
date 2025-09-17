@@ -580,13 +580,15 @@ if (isset($_POST['cliente_pedido'])) {
     exit;
 }
 // =====================
-// BUSCA DINÂMICA DO LIMITE DE CREDITO DO CLI
+// BUSCA DINÂMICA DO LIMITE DE CREDITO DO CLIENTE
 // =====================
-if (isset($_POST['verificar_limite'])) {
-    $id_cliente = $_POST['id_cliente'];
-    $valor_totalPedido = $_POST['valor_total'];
-    $objController->verificarLimiteCredito($id_cliente,$valor_totalPedido);
+if (isset($_POST['verificar_limite'], $_POST['id_cliente'], $_POST['valor_total'])) {
+    $id_cliente = (int) $_POST['id_cliente'];
+    $valor_totalPedido = (float) $_POST['valor_total'];
+    $objController->verificarLimiteCredito($id_cliente, $valor_totalPedido);
+    exit;
 }
+
 
 // =====================
 // BUSCA DINÂMICA DE PRODUTO PARA PEDIDO

@@ -53,81 +53,87 @@
                 </div>
             </div>
         </section>
-
         <!-- Modal de cadastro do pedido -->
         <div class="modal fade" id="modal_pedido" tabindex="-1" aria-labelledby="modalPedidoLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h6 class="modal-title" id="modalPedidoLabel">Novo Pedido</h6>
+                    <!-- Cabeçalho -->
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title fw-bold" id="modalPedidoLabel">
+                            <i class="bi bi-cart-plus me-2"></i> Novo Pedido
+                        </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
+                    <!-- Corpo -->
                     <div class="modal-body">
                         <form action="index.php" method="POST" id="formulario_pedido">
-                            <input type="hidden" name="origem" id="origem" value="principal">
+                            <input type="hidden" name="origem" value="principal" id="origem">
                             <div class="row g-4">
-                                <!-- Lado esquerdo: cliente e dados do pedido -->
-                                <div class="col-md-6">
-                                    <!-- Seção Cliente -->
-                                    <fieldset class="border border-black p-3 mb-4 h-80">
-                                        <legend class="float-none w-auto px-3">Cliente</legend>
+                                <!-- Coluna Esquerda: Cliente + Dados do Pedido -->
+                                <div class="col-md-4">
+                                    <!-- Cliente -->
+                                    <fieldset class="border rounded p-3 mb-4">
+                                        <legend class="float-none w-auto px-3 fw-semibold text-primary">Cliente</legend>
                                         <div class="mb-3 position-relative">
                                             <label for="cliente_pedido" class="form-label">Buscar Cliente</label>
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                                <input type="text" class="form-control" id="cliente_pedido" name="cliente_pedido" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off" />
+                                                <input type="text" class="form-control" id="cliente_pedido" name="cliente_pedido"
+                                                    placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">
                                             </div>
-                                            <div id="resultado_busca_cliente" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>
+                                            <div id="resultado_busca_cliente"
+                                                class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"
+                                                style="max-height: 200px; overflow-y: auto;"></div>
                                         </div>
                                     </fieldset>
-                                    <!-- Seção Dados do Pedido -->
-                                    <fieldset class="border border-black p-3 mb-4 h-100">
-                                        <legend class="float-none w-auto px-4">Dados do Pedido</legend>
+                                    <!-- Dados do Pedido -->
+                                    <fieldset class="border rounded p-3 mb-4">
+                                        <legend class="float-none w-auto px-3 fw-semibold text-primary">Dados do Pedido</legend>
                                         <div class="row g-3">
-                                            <div class="col-md-4">
-                                                <label for="data" class="form-label">Data</label>
-                                                <input type="date" id="data" name="data" class="form-control" value="<?php echo date('Y-m-d'); ?>" readonly />
-                                            </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-6">
                                                 <label for="frete" class="form-label">Frete</label>
-                                                <input type="text" class="form-control" id="frete" name="frete" placeholder="R$ 0,00" autocomplete="off" />
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="valor_total" class="form-label">Valor Total</label>
-                                                <input type="text" class="form-control" id="valor_total" name="valor_total" placeholder="R$ 0,00" readonly />
+                                                <input type="text" class="form-control frete" id="frete" name="frete" placeholder="R$ 0,00" autocomplete="off">
                                             </div>
                                             <div class="col-md-6">
+                                                <label for="valor_total" class="form-label">Valor Total</label>
+                                                <input type="text" class="form-control" id="valor_total" name="valor_total" placeholder="R$ 0,00" readonly>
+                                            </div>
+                                            <div class="col-12">
                                                 <?php $this->selectConsultaForma_Pagamento(); ?>
                                             </div>
                                         </div>
                                     </fieldset>
                                 </div>
-
-                                <!-- Lado direito: produtos -->
-                                <div class="col-md-6">
-                                    <fieldset class="border border-black p-3 mb-4 h-100">
-                                        <legend class="float-none w-auto px-3">Produtos</legend>
-                                        <div class="mb-3 row">
+                                <!-- Coluna Direita: Produtos -->
+                                <div class="col-md-8">
+                                    <fieldset class="border rounded p-3 h-100">
+                                        <legend class="float-none w-auto px-3 fw-semibold text-primary">Produtos</legend>
+                                        <!-- Busca de Produto -->
+                                        <div class="row g-3 align-items-end mb-3">
                                             <div class="col-md-8 position-relative">
-                                                <label for="produtos" class="form-label">Buscar Produto</label>
+                                                <label for="produto_pedido" class="form-label">Buscar Produto</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                                    <input type="text" class="form-control" id="produto_pedido" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off" />
+                                                    <input type="text" class="form-control" id="produto_pedido" name="produto_pedido"
+                                                        placeholder="Digite o nome, cor ou código do produto" autocomplete="off">
                                                 </div>
-                                                <div id="resultado_busca_produto" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>
+                                                <div id="resultado_busca_produto"
+                                                    class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"
+                                                    style="max-height: 200px; overflow-y: auto;"></div>
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="quantidade" class="form-label">Quantidade</label>
                                                 <div class="input-group">
-                                                    <input type="number" class="form-control" id="quantidade" name="quantidade" min="1" autocomplete="off" />
+                                                    <input type="number" class="form-control" id="quantidade" name="quantidade" min="1" autocomplete="off">
                                                     <button type="button" class="btn btn-outline-primary" id="adicionar_produto">
                                                         <i class="bi bi-plus"></i>
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="table-responsive mt-3">
-                                            <label class="form-label" for="produtos">Produtos do Pedido</label>
+                                        <!-- Lista de Produtos -->
+                                        <div class="table-responsive">
+                                            <label class="form-label fw-semibold">Produtos do Pedido</label>
                                             <table class="table table-bordered table-striped table-sm align-middle text-center">
                                                 <thead class="table-light">
                                                     <tr>
@@ -144,18 +150,14 @@
                                     </fieldset>
                                 </div>
                             </div>
-                            <!-- Ações -->
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <button type="button" id="limpar_pedido" class="btn btn-outline-secondary w-100 py-2">
-                                        <i class="bi bi-arrow-counterclockwise"></i> Limpar
-                                    </button>
-                                </div>
-                                <div class="col-md-6">
-                                    <button type="submit" class="btn btn-success w-100 py-2" name="salvar_pedido" id="salvar_pedido">
-                                        <i class="bi bi-check-circle"></i> Finalizar Pedido
-                                    </button>
-                                </div>
+                            <!-- Rodapé -->
+                            <div class="modal-footer">
+                                <button type="button" id="limpar_pedido" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Limpar
+                                </button>
+                                <button type="submit" class="btn btn-success" id="salvar_pedido">
+                                    <i class="bi bi-check-circle me-1"></i> Finalizar Pedido
+                                </button>
                             </div>
                         </form>
                     </div>

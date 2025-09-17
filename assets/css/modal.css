@@ -13,14 +13,13 @@
 fieldset {
   border: 1px solid #ccc !important;
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 1rem;
   background-color: #f9f9f9;
 }
 
 legend {
   font-size: 1rem;
   font-weight: 600;
-  padding: 0 1rem;
   color: #333;
 }
 
