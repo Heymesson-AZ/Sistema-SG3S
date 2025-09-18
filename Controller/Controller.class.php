@@ -4059,7 +4059,7 @@ class Controller
                 $valorTotalLinha = $item['quantidade'] * $item['valor_unitario'];
                 print '                      <tr data-id-produto="' . $item['id_produto'] . '">';
                 print '                        <td>' . htmlspecialchars($item['nome_produto']) . '</td>';
-                print '                        <td><input type="number" class="form-control form-control-sm text-center" name="itens[' . $item['id_produto'] . '][quantidade]" value="' . $item['quantidade'] . '" min="1"></td>';
+                print '                        <td><input type="text" class="form-control form-control-sm text-center" name="itens[' . $item['id_produto'] . '][quantidade]" value="' . $item['quantidade'] . '" min="1"></td>';
                 print '                        <td>R$ ' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>';
                 print '                        <td>R$ ' . number_format($valorTotalLinha, 2, ',', '.') . '</td>';
                 print '                        <td><button type="button" class="btn btn-sm btn-outline-danger remover-item"><i class="bi bi-trash"></i></button></td>';

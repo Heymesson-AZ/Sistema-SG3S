@@ -216,7 +216,7 @@ function inicializarModalAlteracao(modal) {
           const qtd = this.dataset.quantidade;
 
           const input = modal.querySelector(`#produto_pedido_${numPedido}`);
-          input.value = `${nome} - ${cor} - Largura: ${largura}cm`;
+          input.value = `${nome} - Cor: ${cor} - Largura: ${largura}cm`;
 
           let hidden = modal.querySelector(`#id_produto_hidden_${numPedido}`);
           if (!hidden) {
@@ -234,7 +234,7 @@ function inicializarModalAlteracao(modal) {
             cor,
             largura,
             valorVenda: parseFloat(valor),
-            quantidade: parseInt(qtd),
+            quantidade: parseFloat(qtd),
           };
 
           // limpa resultados visuais
@@ -282,7 +282,7 @@ function inicializarModalAlteracao(modal) {
   function adicionarProduto() {
     const idProduto = modal.querySelector(`#id_produto_hidden_${numPedido}`)?.value;
     const nome = modal.querySelector(`#produto_pedido_${numPedido}`).value;
-    const qtd = parseInt(modal.querySelector(`#quantidade_${numPedido}`).value);
+    const qtd = parseFloat(modal.querySelector(`#quantidade_${numPedido}`).value);
     const valorUnitario = produtoSelecionado?.valorVenda || 0;
 
     if (!idProduto || !qtd || qtd <= 0) {
@@ -308,7 +308,7 @@ function inicializarModalAlteracao(modal) {
     // Qtd input
     const cellQtd = tr.insertCell(1);
     const inputQtd = document.createElement("input");
-    inputQtd.type = "number";
+    inputQtd.type = "text";
     inputQtd.value = qtd;
     inputQtd.min = 1;
     inputQtd.className = "form-control form-control-sm text-center";

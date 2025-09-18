@@ -39,13 +39,12 @@
             <div class="col-md-3">
                 <form method="POST" action="index.php" class="relatorio-form text-start">
                     <h6>Auditorias Gerais</h6>
-                    <small class="text-muted">Consulta todas as auditorias registradas.</small>
+                    <small class="text-muted">Consulta todas as auditorias registradas no ultimos 7 dias.</small>
                     <button type="submit" class="btn btn-primary mt-2" name="auditorias_gerais">
                         <i class="bi bi-list-check me-1"></i> Gerar
                     </button>
                 </form>
             </div>
-
             <!-- Auditorias por Usuário -->
             <div class="col-md-3">
                 <form method="POST" action="index.php" class="relatorio-form text-start">
