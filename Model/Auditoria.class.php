@@ -77,51 +77,36 @@ class Auditoria extends Conexao
     {
         $sql = "SELECT
                 a.id_auditoria,
-                a.tabela,
+                a.tabela AS tabela_principal,
                 a.id_registro,
                 u.nome_usuario,
                 a.acao,
                 a.data_hora,
+                ad.campo,
+                ad.valor_antigo,
+                ad.valor_novo,
+                ad.descricao,
+                -- campo virtual para agrupar no modal
                 CASE
-                    WHEN a.tabela = 'Cliente' THEN CONCAT('Cliente: ', c.nome_representante, ' (', c.razao_social, ')')
-                    WHEN a.tabela = 'Endereco' THEN CONCAT('Endereço do Cliente: ', c.nome_representante, ' - ', e.cidade, '/', e.estado, ' - ', e.bairro)
-                    WHEN a.tabela = 'Telefone_Cliente' THEN CONCAT('Telefone do Cliente: ', c.nome_representante)
-                    WHEN a.tabela = 'Inscricao_Estadual' THEN CONCAT('Inscrição Estadual do Cliente: ', c.nome_representante, ' - ', ie.inscricao_estadual)
-                    WHEN a.tabela = 'Pedido' THEN CONCAT('Pedido: ', p.numero_pedido, ' do Cliente: ', c.nome_representante)
-                    WHEN a.tabela = 'Item_Pedido' THEN CONCAT('Item do Pedido: ', ip.id_item_pedido, ' - Produto: ', pr.nome_produto, ' do Pedido: ', p.numero_pedido)
-                    WHEN a.tabela = 'Produto' THEN CONCAT('Produto: ', pr.nome_produto, ' - Fornecedor: ', f.razao_social)
-                    WHEN a.tabela = 'Fornecedor' THEN CONCAT('Fornecedor: ', f.razao_social)
-                    WHEN a.tabela = 'Telefone_Fornecedor' THEN CONCAT('Telefone do Fornecedor: ', f.razao_social)
-                    WHEN a.tabela = 'Forma_Pagamento' THEN CONCAT('Forma de Pagamento: ', fp.descricao)
-                    WHEN a.tabela = 'Usuario' THEN CONCAT('Usuário: ', u2.nome_usuario, ' - Perfil: ', pu.perfil_usuario)
-                    WHEN a.tabela = 'Perfil_Usuario' THEN CONCAT('Perfil de Usuário: ', pu.perfil_usuario)
-                    ELSE a.tabela
-                END AS descricao_relacionada,
-                GROUP_CONCAT(
-                    CONCAT(ad.campo, ': ', 
-                           IFNULL(ad.valor_antigo,'[vazio]'), 
-                           ' → ', 
-                           IFNULL(ad.valor_novo,'[vazio]')
-                    ) SEPARATOR ' | '
-                ) AS detalhes
+                    WHEN a.tabela = 'Cliente' THEN 'Cliente'
+                    WHEN a.tabela = 'Endereco' THEN 'Endereco'
+                    WHEN a.tabela = 'Telefone_Cliente' THEN 'Telefone_Cliente'
+                    WHEN a.tabela = 'Inscricao_Estadual' THEN 'Inscricao_Estadual'
+                    WHEN a.tabela = 'Pedido' THEN 'Pedido'
+                    WHEN a.tabela = 'Item_Pedido' THEN 'Item_Pedido'
+                    WHEN a.tabela = 'Produto' THEN 'Produto'
+                    WHEN a.tabela = 'Fornecedor' THEN 'Fornecedor'
+                    WHEN a.tabela = 'Telefone_Fornecedor' THEN 'Telefone_Fornecedor'
+                    WHEN a.tabela = 'Forma_Pagamento' THEN 'Forma_Pagamento'
+                    WHEN a.tabela = 'Usuario' THEN 'Usuario'
+                    WHEN a.tabela = 'Perfil_Usuario' THEN 'Perfil_Usuario'
+                    ELSE 'Principal'
+                END AS tabela_relacionada
             FROM Auditoria a
             JOIN Usuario u ON a.id_usuario = u.id_usuario
             LEFT JOIN Auditoria_Detalhe ad ON a.id_auditoria = ad.id_auditoria
-
-            LEFT JOIN Cliente c ON (a.tabela IN ('Cliente','Endereco','Telefone_Cliente','Inscricao_Estadual','Pedido') AND a.id_registro = c.id_cliente)
-            LEFT JOIN Endereco e ON (a.tabela = 'Endereco' AND a.id_registro = e.id_endereco)
-            LEFT JOIN Telefone_Cliente tc ON (a.tabela = 'Telefone_Cliente' AND a.id_registro = tc.id_telefone)
-            LEFT JOIN Inscricao_Estadual ie ON (a.tabela = 'Inscricao_Estadual' AND a.id_registro = ie.id_inscricao)
-            LEFT JOIN Pedido p ON (a.tabela = 'Pedido' AND a.id_registro = p.id_pedido)
-            LEFT JOIN Item_Pedido ip ON (a.tabela = 'Item_Pedido' AND a.id_registro = ip.id_item_pedido)
-            LEFT JOIN Produto pr ON ((a.tabela = 'Item_Pedido' AND ip.id_produto = pr.id_produto) OR (a.tabela = 'Produto' AND a.id_registro = pr.id_produto))
-            LEFT JOIN Fornecedor f ON ((a.tabela = 'Produto' AND pr.id_fornecedor = f.id_fornecedor) OR (a.tabela = 'Fornecedor' AND a.id_registro = f.id_fornecedor))
-            LEFT JOIN Telefone_Fornecedor tf ON (a.tabela = 'Telefone_Fornecedor' AND a.id_registro = tf.id_telefone)
-            LEFT JOIN Forma_Pagamento fp ON (a.tabela = 'Forma_Pagamento' AND a.id_registro = fp.id_forma_pagamento)
-            LEFT JOIN Usuario u2 ON (a.tabela = 'Usuario' AND a.id_registro = u2.id_usuario)
-            LEFT JOIN Perfil_Usuario pu ON ((a.tabela = 'Usuario' AND u2.id_perfil = pu.id_perfil) OR (a.tabela = 'Perfil_Usuario' AND a.id_registro = pu.id_perfil))
-            GROUP BY a.id_auditoria, a.tabela, a.id_registro, u.nome_usuario, a.acao, a.data_hora, descricao_relacionada
-            ORDER BY a.data_hora DESC";
+            WHERE a.data_hora >= NOW() - INTERVAL 7 DAY
+            ORDER BY a.data_hora DESC, a.id_auditoria ASC";
 
         try {
             $bd = $this->conectarBanco();
@@ -133,6 +118,7 @@ class Auditoria extends Conexao
             return false;
         }
     }
+
 
     // 2. Listar auditoria por usuário
     public function listarPorUsuario()

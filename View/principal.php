@@ -66,7 +66,7 @@
                     </div>
                     <!-- Corpo -->
                     <div class="modal-body">
-                        <form action="index.php" method="POST" id="formulario_pedido">
+                        <form action="index.php" method="POST">
                             <input type="hidden" name="origem" value="principal" id="origem">
                             <div class="row g-4">
                                 <!-- Coluna Esquerda: Cliente + Dados do Pedido -->
@@ -124,10 +124,17 @@
                                             <div class="col-md-4">
                                                 <label for="quantidade" class="form-label">Quantidade</label>
                                                 <div class="input-group">
-                                                    <input type="number" class="form-control" id="quantidade" name="quantidade" min="1" autocomplete="off">
-                                                    <button type="button" class="btn btn-outline-primary" id="adicionar_produto">
-                                                        <i class="bi bi-plus"></i>
-                                                    </button>
+                                                    <input
+                                                        type="number"
+                                                        class="form-control"
+                                                        id="quantidade"
+                                                        name="quantidade"
+                                                        min="1"
+                                                        step="0.01"
+                                                        autocomplete="off">
+                                                        <button type="button" class="btn btn-outline-primary" id="adicionar_produto">
+                                                            <i class="bi bi-plus"></i>
+                                                        </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -380,7 +387,6 @@
     <script src="assets/js/alteracaoPedido.js"></script>
     <!-- ajax de produtos com baixo estoque-->
     <script src="assets/js/notificacao.js"></script>
-
     <!-- charts -->
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="assets/js/charts.js"></script>

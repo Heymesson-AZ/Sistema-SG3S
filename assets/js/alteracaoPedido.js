@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+$(document).ready(function () {
   document.querySelectorAll(".modal-alterar-pedido").forEach((modal) => {
     inicializarModalAlteracao(modal);
   });

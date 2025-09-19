@@ -249,11 +249,10 @@ $(document).ready(function () {
         hiddenIdCliente.name = "id_cliente";
         inputCliente.parentElement.appendChild(hiddenIdCliente);
       }
-      hiddenIdCliente.value = id; // Define o valor do input hidden
-
+      // Define o valor do input hidden
+      hiddenIdCliente.value = id;
       // Limpa a lista de resultados após a seleção
       this.innerHTML = "";
-
       // Chama uma função para verificar limites de crédito, etc.
       verificarLimiteCredito();
     }
@@ -275,7 +274,7 @@ $(document).ready(function () {
 
       const inputProduto = document.getElementById("produto_pedido");
       // Preenche o campo de input com uma descrição formatada do produto
-      inputProduto.value = `${nome} - Cor: ${cor} - Largura: ${largura}cm`;
+      inputProduto.value = `${nome} - Cor: ${cor} - Largura: ${largura}m`;
 
       // Lógica para criar/atualizar um input hidden para armazenar o ID do produto
       let hiddenIdProduto = document.getElementById("id_produto_hidden");
@@ -301,7 +300,7 @@ $(document).ready(function () {
     }
   });
   document.getElementById("quantidade").addEventListener("input", function () {
-    const qtd = this.value;
+    const qtd = parseFloat(this.value);
     const id = document.getElementById("id_produto_hidden")?.value;
     if (!id || !qtd) return;
 
@@ -323,10 +322,10 @@ $(document).ready(function () {
     const idProduto = document.getElementById("id_produto_hidden")?.value;
     const nome = document.getElementById("produto_pedido").value;
     const qtd = parseFloat(document.getElementById("quantidade").value);
-    const valorUnitario = produtoSelecionado?.valorVenda || 0;
+    const valorUnitario = parseFloat(produtoSelecionado?.valorVenda) || 0;
 
     if (!idProduto || !qtd || qtd <= 0) {
-      return mostrarAlerta("Dados do produto incompletos!", "warning");
+      return mostrarAlerta("Selecione um produto!", "warning");
     }
 
     const tbody = document.getElementById("tbody_lista_pedido");
@@ -349,7 +348,6 @@ $(document).ready(function () {
     inputQtd.min = 1;
     inputQtd.className = "form-control form-control-sm text-center";
     cellQtd.appendChild(inputQtd);
-
     tr.insertCell(2).textContent = formatarMoeda(valorUnitario);
 
     const cellTotal = tr.insertCell(3);
@@ -423,20 +421,20 @@ $(document).ready(function () {
   });
 
   // Função utilitária já existente
-function formatarMoeda(valor) {
-  return "R$ " + valor.toFixed(2).replace(".", ",");
-}
+  function formatarMoeda(valor) {
+    return "R$ " + valor.toFixed(2).replace(".", ",");
+  }
 
-// Aplica no campo de frete também
-document.getElementById("frete").addEventListener("input", (e) => {
-  // remove tudo que não seja número
-  let somenteNumeros = e.target.value.replace(/\D/g, "");
-  let valor = parseFloat(somenteNumeros) / 100;
-  valorFrete = isNaN(valor) ? 0 : valor;
-  e.target.value = formatarMoeda(valorFrete);
-  // atualiza o total com frete
-  atualizarValorTotalComFrete();
-});
+  // Aplica no campo de frete também
+  document.getElementById("frete").addEventListener("input", (e) => {
+    // remove tudo que não seja número
+    let somenteNumeros = e.target.value.replace(/\D/g, "");
+    let valor = parseFloat(somenteNumeros) / 100;
+    valorFrete = isNaN(valor) ? 0 : valor;
+    e.target.value = formatarMoeda(valorFrete);
+    // atualiza o total com frete
+    atualizarValorTotalComFrete();
+  });
 
 
   document.getElementById("limpar_pedido").addEventListener("click", limparCamposPedido);
@@ -467,7 +465,7 @@ document.getElementById("frete").addEventListener("input", (e) => {
     document.querySelectorAll("#tbody_lista_pedido tr").forEach((tr) => {
       itens.push({
         id_produto: tr.dataset.idProduto,
-        quantidade: tr.querySelector("input[type='number']").value,
+        quantidade: tr.querySelector("input[type='text']").value,
         valor_unitario: tr.querySelector("input[name='valor_unitario']").value,
         totalValor_produto: tr.querySelector("input[name='valor_total']").value,
       });

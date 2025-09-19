@@ -152,7 +152,9 @@ class Pedido extends Conexao
         }
 
         // Sempre por último!
-        $sql .= " ORDER BY p.numero_pedido ASC, ip.id_item_pedido ASC";
+        $sql .= " ORDER BY p.numero_pedido DESC";
+
+         // Executa a query
 
         try {
             $bd = $this->conectarBanco();

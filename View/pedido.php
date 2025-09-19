@@ -63,7 +63,7 @@
                     </div>
                     <!-- Corpo -->
                     <div class="modal-body">
-                        <form action="index.php" method="POST" id="formulario_pedido">
+                        <form action="index.php" method="POST">
                             <input type="hidden" name="origem" value="pedido" id="origem">
                             <div class="row g-4">
                                 <!-- Coluna Esquerda: Cliente + Dados do Pedido -->

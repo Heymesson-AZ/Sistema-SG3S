@@ -2643,7 +2643,6 @@ class Controller
             $this->mostrarMensagemErro("Cliente não encontrado");
         }
     }
-
     // funcoes auxiliares para aplicar mascaras na tabela e nos detalhes:
     private function aplicarMascaraCNPJ($cnpj)
     {
@@ -3924,6 +3923,7 @@ class Controller
         print '</div>';
         print '</div>';
     }
+    // modal de alterar pedido
     public function modalAlterarPedido($pedidos)
     {
         if (empty($pedidos)) return;
@@ -3969,16 +3969,13 @@ class Controller
             print '        </h5>';
             print '        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
             print '      </div>';
-
             // Corpo
             print '      <div class="modal-body">';
             print '        <form action="index.php" method="POST" class="form-alterar-pedido" id="form_' . $dados->numero_pedido . '">';
             print '          <input type="hidden" name="origem" value="pedido">';
             print '          <input type="hidden" name="id_pedido" value="' . $dados->id_pedido . '">';
             print '          <input type="hidden" name="alterar_pedido" value="1">';
-
             print '          <div class="row g-4">';
-
             /** LADO ESQUERDO **/
             print '            <div class="col-md-4">';
             // Cliente
@@ -4032,14 +4029,13 @@ class Controller
             print '                  <div class="col-md-4">';
             print '                    <label for="quantidade_' . $dados->numero_pedido . '" class="form-label">Quantidade</label>';
             print '                    <div class="input-group">';
-            print '                      <input type="number" class="form-control" id="quantidade_' . $dados->numero_pedido . '" name="quantidade" min="1" autocomplete="off">';
+            print '                      <input type="text" class="form-control" id="quantidade_' . $dados->numero_pedido . '" name="quantidade" min="1" autocomplete="off">';
             print '                      <button type="button" class="btn btn-outline-primary" id="adicionar_produto_' . $dados->numero_pedido . '">';
             print '                        <i class="bi bi-plus"></i>';
             print '                      </button>';
             print '                    </div>';
             print '                  </div>';
             print '                </div>';
-
             // Tabela produtos
             print '                <div class="table-responsive">';
             print '                  <label class="form-label fw-semibold">Produtos do Pedido</label>';
@@ -4048,7 +4044,7 @@ class Controller
             print '                      <tr>';
             print '                        <th>Produto</th>';
             print '                        <th>Quantidade</th>';
-            print '                        <th>Valor Unitario</th>';
+            print '                        <th>Valor Unitário</th>';
             print '                        <th>Valor Total</th>';
             print '                        <th>Ação</th>';
             print '                      </tr>';
@@ -4062,13 +4058,13 @@ class Controller
                 print '                        <td><input type="text" class="form-control form-control-sm text-center" name="itens[' . $item['id_produto'] . '][quantidade]" value="' . $item['quantidade'] . '" min="1"></td>';
                 print '                        <td>R$ ' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>';
                 print '                        <td>R$ ' . number_format($valorTotalLinha, 2, ',', '.') . '</td>';
-                print '                        <td><button type="button" class="btn btn-sm btn-outline-danger remover-item"><i class="bi bi-trash"></i></button></td>';
+                // A célula da ação vai ficar vazia — o JS insere o botão
+                print '                        <td></td>';
                 print '                        <input type="hidden" name="itens[' . $item['id_produto'] . '][id_produto]" value="' . $item['id_produto'] . '">';
                 print '                        <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_unitario]" value="' . $item['valor_unitario'] . '">';
                 print '                        <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_total]" value="' . $valorTotalLinha . '">';
                 print '                      </tr>';
             }
-
             print '                    </tbody>';
             print '                  </table>';
             print '                </div>';
@@ -4086,7 +4082,6 @@ class Controller
             print '              <i class="bi bi-x-lg me-1"></i> Fechar';
             print '            </button>';
             print '          </div>';
-
             print '        </form>';
             print '      </div>';
             print '    </div>';
@@ -5491,7 +5486,6 @@ class Controller
             $this->mostrarMensagemErro("Erro ao consultar Auditorias Gerais!");
         }
     }
-    // tabela de consulta de todas as auditorias
     public function tabelaAuditoria($auditorias)
     {
         if (empty($auditorias)) return;
@@ -5502,15 +5496,11 @@ class Controller
          * ======================================================
          * 1. AGRUPAR auditorias pelo id_auditoria
          * ======================================================
-         * Cada registro de auditoria pode ter vários "detalhes".
-         * Aqui garantimos que cada auditoria seja uma entrada única,
-         * e os detalhes fiquem dentro de um array.
          */
         $auditoriasAgrupadas = [];
         foreach ($auditorias as $aud) {
             $id = $aud['id_auditoria'];
 
-            // Se ainda não existe no agrupamento, cria o cabeçalho
             if (!isset($auditoriasAgrupadas[$id])) {
                 $auditoriasAgrupadas[$id] = [
                     'id_auditoria' => $id,
@@ -5522,12 +5512,17 @@ class Controller
                 ];
             }
 
-            // Adiciona cada detalhe (se existir)
+            // Detalhes agrupados em um array por ação
             if (!empty($aud['campo'])) {
+                // Formata valores monetários se forem numéricos
+                $valorAntigo = is_numeric($aud['valor_antigo']) ? 'R$ ' . number_format($aud['valor_antigo'], 2, ',', '.') : $aud['valor_antigo'];
+                $valorNovo = is_numeric($aud['valor_novo']) ? 'R$ ' . number_format($aud['valor_novo'], 2, ',', '.') : $aud['valor_novo'];
+
                 $auditoriasAgrupadas[$id]['detalhes'][] = [
                     'campo' => $aud['campo'],
-                    'valor_antigo' => $aud['valor_antigo'],
-                    'valor_novo' => $aud['valor_novo']
+                    'valor_antigo' => $valorAntigo,
+                    'valor_novo' => $valorNovo,
+                    'tabela' => $aud['tabela_relacionada'] ?? 'Principal'
                 ];
             }
         }
@@ -5541,82 +5536,88 @@ class Controller
         print '<table class="table table-hover table-bordered align-middle text-center shadow-sm table-lg">';
         print '<thead class="table-primary">';
         print '<tr>';
-        print '<th scope="col">Usuário</th>';
-        print '<th scope="col">Ação</th>';
-        print '<th scope="col">Descrição</th>';
-        print '<th scope="col">Data/Hora</th>';
-        print '<th scope="col">Detalhes</th>';
+        print '<th>Usuário</th>';
+        print '<th>Ação</th>';
+        print '<th>Data</th>';
+        print '<th>Hora</th>';
+        print '<th>Detalhes</th>';
         print '</tr>';
         print '</thead>';
         print '<tbody>';
 
         foreach ($auditoriasAgrupadas as $auditoria) {
-            $id = md5($auditoria['id_auditoria']); // hash para id único da modal
-            $nomeUsuario = explode(" ", $auditoria['nome_usuario'])[0]; // pega só o primeiro nome
-            $acaoVisual = htmlspecialchars($auditoria['acao']);
+            $id = md5($auditoria['id_auditoria']);
+            $nomeUsuario = explode(" ", $auditoria['nome_usuario'])[0];
+            $acao = htmlspecialchars($auditoria['acao']);
             $descricao = htmlspecialchars($auditoria['descricao_relacionada']);
+            $data = date('d/m/Y', strtotime($auditoria['data_hora']));
+            $hora = date('H:i:s', strtotime($auditoria['data_hora']));
 
-            // Linha da tabela principal
             print '<tr>';
             print '<td class="fw-bold">' . $nomeUsuario . '</td>';
-            print '<td><span class="badge bg-' . ($acaoVisual === 'Cadastro' ? 'success' : ($acaoVisual === 'Alteração' ? 'warning text-dark' : 'danger')) . '">' . $acaoVisual . '</span></td>';
-            print '<td class="text-start">' . $descricao . '</td>';
-            print '<td>' . date('d/m/Y H:i:s', strtotime($auditoria['data_hora'])) . '</td>';
+            print '<td><span class="badge bg-' .
+                ($acao === 'Cadastro' ? 'success' : ($acao === 'Alteração' ? 'warning text-dark' : 'danger')) . '">' . $acao . '</span></td>';
+            print '<td>' . $data . '</td>';
+            print '<td>' . $hora . '</td>';
             print '<td>
-            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detalhes_auditoria' . $id . '" title="Ver detalhes">
-                <i class="bi bi-eye"></i> Ver
-            </button>
-            </td>';
+                <button type="button" class="btn btn-info btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#detalhes_auditoria' . $id . '">
+                    <i class="bi bi-eye"></i> Ver
+                </button>
+              </td>';
             print '</tr>';
 
             /**
              * ======================================================
-             * 3. MODAL DE DETALHES
+             * 3. MODAL COM AGRUPAMENTO DE DADOS
              * ======================================================
              */
-            $modal  = '<div class="modal fade" id="detalhes_auditoria' . $id . '" tabindex="-1" aria-labelledby="detalhesAuditoriaLabel' . $id . '" aria-hidden="true">';
+            $modal  = '<div class="modal fade" id="detalhes_auditoria' . $id . '" tabindex="-1">';
             $modal .= '  <div class="modal-dialog modal-xl modal-dialog-scrollable">';
             $modal .= '    <div class="modal-content">';
             $modal .= '      <div class="modal-header bg-primary text-white">';
-            $modal .= '        <h5 class="modal-title" id="detalhesAuditoriaLabel' . $id . '">📋 Detalhes da Auditoria</h5>';
-            $modal .= '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+            $modal .= '        <h5 class="modal-title">📋 Detalhes da Auditoria</h5>';
+            $modal .= '        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
             $modal .= '      </div>';
             $modal .= '      <div class="modal-body">';
             $modal .= '        <div class="mb-3">';
             $modal .= '          <strong>Usuário:</strong> ' . htmlspecialchars($auditoria['nome_usuario']) . '<br>';
-            $modal .= '          <strong>Ação:</strong> <span class="badge bg-primary">' . $acaoVisual . '</span><br>';
-            $modal .= '          <strong>Descrição:</strong> ' . $descricao . '<br>';
-            $modal .= '          <strong>Data/Hora:</strong> ' . date('d/m/Y H:i:s', strtotime($auditoria['data_hora']));
-            $modal .= '        </div>';
-            $modal .= '        <hr>';
+            $modal .= '          <strong>Ação:</strong> <span class="badge bg-primary">' . $acao . '</span><br>';
+            $modal .= '          <strong>Data:</strong> ' . $data . '<br>';
+            $modal .= '          <strong>Hora:</strong> ' . $hora;
+            $modal .= '        </div><hr>';
 
-            // Se houver detalhes, monta tabela interna
+            // Blocos de detalhes agrupados por tabela relacionada
             if (!empty($auditoria['detalhes'])) {
-                $modal .= '<div class="table-responsive">';
-                $modal .= '<table class="table table-sm table-bordered align-middle">';
-                $modal .= '<thead class="table-light">';
-                $modal .= '<tr>';
-                $modal .= '<th>Campo</th>';
-                $modal .= '<th>Valor Antigo</th>';
-                $modal .= '<th>Valor Novo</th>';
-                $modal .= '</tr>';
-                $modal .= '</thead>';
-                $modal .= '<tbody>';
-
+                $porTabela = [];
                 foreach ($auditoria['detalhes'] as $d) {
-                    $modal .= '<tr>';
-                    $modal .= '<td>' . htmlspecialchars($d['campo']) . '</td>';
-                    $modal .= '<td>' . htmlspecialchars($d['valor_antigo']) . '</td>';
-                    $modal .= '<td>' . htmlspecialchars($d['valor_novo']) . '</td>';
-                    $modal .= '</tr>';
+                    $tabela = $d['tabela'] ?? 'Principal';
+                    $porTabela[$tabela][] = $d;
                 }
 
-                $modal .= '</tbody></table></div>';
+                foreach ($porTabela as $tabelaNome => $campos) {
+                    $modal .= '<h6 class="mt-3 text-primary">Tabela: ' . htmlspecialchars($tabelaNome) . '</h6>';
+                    $modal .= '<div class="table-responsive">';
+                    $modal .= '<table class="table table-sm table-bordered">';
+                    $modal .= '<thead class="table-light">';
+                    $modal .= '<tr><th>Campo</th><th>Valor Antigo</th><th>Valor Novo</th></tr>';
+                    $modal .= '</thead><tbody>';
+
+                    foreach ($campos as $c) {
+                        $modal .= '<tr>';
+                        $modal .= '<td>' . htmlspecialchars($c['campo']) . '</td>';
+                        $modal .= '<td>' . htmlspecialchars($c['valor_antigo']) . '</td>';
+                        $modal .= '<td>' . htmlspecialchars($c['valor_novo']) . '</td>';
+                        $modal .= '</tr>';
+                    }
+                    $modal .= '</tbody></table></div>';
+                }
             } else {
                 $modal .= '<div class="alert alert-secondary">Sem detalhes registrados</div>';
             }
 
-            $modal .= '      </div>'; // modal-body
+            $modal .= '      </div>';
             $modal .= '      <div class="modal-footer">';
             $modal .= '        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>';
             $modal .= '      </div>';
@@ -5626,16 +5627,10 @@ class Controller
 
             $modals .= $modal;
         }
-        print '</tbody>';
-        print '</table>';
-        print '</div>';
 
-        // Renderiza os modais
+        print '</tbody></table></div>';
         print $modals;
     }
-
-
-
 
     //  Charts
     public function dashboardDados()
