@@ -439,7 +439,6 @@ if (isset($_POST['consultar_cliente'])) {
     $cnpj_cliente  = removerMascara($_POST['cnpj_cliente'], ['.', '-', '/']);
     $objController->consultar_Cliente($nome_fantasia, $razao_social, $cnpj_cliente);
 }
-
 // Função auxiliar para limpar limite de crédito (ex. "R$ 1.234,56" → 1234.56)
 function limparLimiteCredito($valor)
 {
@@ -463,8 +462,6 @@ if (isset($_POST['cadastrar_cliente'])) {
     $nome_fantasia      = sanitizar($_POST['nome_fantasia']);
     $cnpj_cliente       = removerMascara($_POST['cnpj_cliente'], ['.', '-', '/']);
     $inscricao_estadual = sanitizar($_POST['inscricao_estadual']);
-    $telefone_celular   = removerMascara($_POST['telefone_celular']);
-    $telefone_fixo      = removerMascara($_POST['telefone_fixo']);
     $email              = sanitizar($_POST['email']);
     $limite_credito     = limparLimiteCredito($_POST['limite_credito']);
     $cep                = removerMascara($_POST['cep'], ['-']);
@@ -473,6 +470,9 @@ if (isset($_POST['cadastrar_cliente'])) {
     $cidade             = sanitizar($_POST['cidade']);
     $estado             = sanitizar($_POST['estado']);
 
+    // Array de telefones será tratado depois
+    $telefones = $_POST['telefones'];
+
     $objController->cadastrar_Cliente(
         $nome_representante,
         $razao_social,
@@ -480,8 +480,7 @@ if (isset($_POST['cadastrar_cliente'])) {
         $cnpj_cliente,
         $email,
         $limite_credito,
-        $telefone_celular,
-        $telefone_fixo,
+        $telefones,           
         $inscricao_estadual,
         $cidade,
         $estado,

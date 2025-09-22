@@ -31,7 +31,7 @@
         </div>
         <!-- Modal de Verificação de CNPJ do Cliente -->
         <div class="modal fade" id="modal_consulta_cnpj_cliente" tabindex="-1" aria-labelledby="modal_consulta_cnpj_clienteLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-dialog modal-default modal-dialog-centered">
                 <div class="modal-content">
                     <!-- Cabeçalho -->
                     <div class="modal-header">

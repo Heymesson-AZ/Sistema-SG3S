@@ -2596,6 +2596,21 @@ class Controller
         print '</select>';
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // CLIENTE
 
     // verificar cliente
@@ -2668,6 +2683,7 @@ class Controller
     public function tabelaConsultarCliente($cliente)
     {
         if (empty($cliente)) return;
+
         print '<div class="table-responsive mt-4">';
         print '<table class="table table-striped table-hover table-bordered align-middle text-center">';
         print '<thead class="table-primary">';
@@ -2678,98 +2694,173 @@ class Controller
         print '<th scope="col">Telefone Celular</th>';
         print '<th scope="col">Telefone Fixo</th>';
         print '<th scope="col">Limite de Crédito</th>';
+
         if ($this->temPermissao(['Administrador'])) {
             print '<th scope="col">Ações</th>';
         }
+
         print '</tr>';
         print '</thead>';
         print '<tbody>';
+
         foreach ($cliente as $valor) {
+            // Arrays para acumular todos os números
+            $celulares = [];
+            $fixos     = [];
+
+            if (!empty($valor->telefones)) {
+                $lista = explode(',', $valor->telefones);
+
+                foreach ($lista as $t) {
+                    $partes = explode(':', $t, 2);
+                    if (count($partes) === 2) {
+                        $tipo   = strtolower(trim($partes[0]));
+                        $numero = $this->aplicarMascaraTelefone(trim($partes[1]));
+                        if ($tipo === 'celular') {
+                            $celulares[] = $numero;
+                        } elseif ($tipo === 'fixo') {
+                            $fixos[] = $numero;
+                        }
+                    }
+                }
+            }
+
+            // Junta múltiplos números separados por <br> (quebra de linha)
+            $celular = $celulares ? implode('<br> <hr>', $celulares) : '—';
+            $fixo    = $fixos     ? implode('<br> <hr>', $fixos)     : '—';
+
+            // Formata limite de crédito
+            $limite = number_format($valor->limite_credito, 2, ',', '.');
+
+            // Monta a linha da tabela
             print '<tr>';
-            print '<td>' . $valor->nome_representante . '</td>';
-            print '<td>' . $valor->nome_fantasia . '</td>';
-            print '<td>' . $valor->email . '</td>';
-            print '<td>' . $this->aplicarMascaraTelefone($valor->telefone_celular) . '</td>';
-            print '<td>' . $this->aplicarMascaraTelefone($valor->telefone_fixo) . '</td>';
-            // Limite de crédito com formatação
-            $valor->limite_credito = number_format($valor->limite_credito, 2, ',', '.');
-            // Exibe o limite de crédito
-            print '<td>R$'  . $valor->limite_credito . '</td>';
+            print '<td>' . htmlspecialchars($valor->nome_representante) . '</td>';
+            print '<td>' . htmlspecialchars($valor->nome_fantasia) . '</td>';
+            print '<td>' . htmlspecialchars($valor->email) . '</td>';
+            print '<td>' . $celular . '</td>';
+            print '<td>' . $fixo . '</td>';
+            print '<td>R$ ' . $limite . '</td>';
+
             if ($this->temPermissao(['Administrador'])) {
                 print '<td>';
-                //botoes
                 print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
                 print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_cliente' . $valor->id_cliente . '">
-                <i class="bi bi-pencil-square"></i><span class="d-none d-md-inline"></span>
-                </button>';
+                    <i class="bi bi-pencil-square"></i>
+                  </button>';
                 print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_cliente' . $valor->id_cliente . '">
-                <i class="bi bi-trash"></i><span class="d-none d-md-inline"></span>
-                </button>';
+                    <i class="bi bi-trash"></i>
+                  </button>';
                 print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_cliente' . $valor->id_cliente . '">
-                <i class="bi bi-eye"></i><span class="d-none d-md-inline"></span>
-                </button>';
+                    <i class="bi bi-eye"></i>
+                  </button>';
                 print '</div>';
                 print '</td>';
             }
+
             print '</tr>';
         }
+
         print '</tbody>';
         print '</table>';
         print '</div>';
     }
-    // modal detalhes do cliente
+    // modal de detalhes de um único cliente
     public function modalDetalhesCliente($cliente)
     {
         if (empty($cliente)) return;
+
         foreach ($cliente as $valor) {
+            // Telefones
+            $celular = [];
+            $fixo    = [];
+            if (!empty($valor->telefones)) {
+                $lista = explode(',', $valor->telefones);
+                foreach ($lista as $t) {
+                    $partes = explode(':', $t, 2);
+                    if (count($partes) === 2) {
+                        $tipo   = strtolower(trim($partes[0]));
+                        $numero = $this->aplicarMascaraTelefone(trim($partes[1]));
+                        if ($tipo === 'celular') {
+                            $celular[] = $numero;
+                        } elseif ($tipo === 'fixo') {
+                            $fixo[] = $numero;
+                        }
+                    }
+                }
+            }
+
             print '
-            <div class="modal fade" id="detalhes_cliente' . $valor->id_cliente . '" tabindex="-1" aria-labelledby="detalhesClienteLabel' . $valor->id_cliente . '" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                    <div class="modal-content">
-                        <div class="modal-header bg-info text-white">
-                            <h5 class="modal-title" id="detalhesClienteLabel' . $valor->id_cliente . '">Detalhes do Cliente</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="container">
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>Nome do Representante:</strong> ' . $valor->nome_representante . '</div>
-                                    <div class="col-md-6"><strong>Razão Social:</strong> ' . $valor->razao_social . '</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>Nome Fantasia:</strong> ' . $valor->nome_fantasia . '</div>
-                                    <div class="col-md-6"><strong>CNPJ:</strong> ' . $this->aplicarMascaraCNPJ($valor->cnpj_cliente) . '</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>Email:</strong> ' . $valor->email . '</div>
-                                    <div class="col-md-6"><strong>Inscrição Estadual:</strong> ' . $valor->inscricao_estadual . '</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>Limite de Crédito:</strong> R$ ' . $valor->limite_credito . '</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>Telefone Celular:</strong> ' . $this->aplicarMascaraTelefone($valor->telefone_celular) . '</div>
-                                    <div class="col-md-6"><strong>Telefone Fixo:</strong> ' . $this->aplicarMascaraTelefone($valor->telefone_fixo) . '</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-4"><strong>Cidade:</strong> ' . $valor->cidade . '</div>
-                                    <div class="col-md-4"><strong>Estado:</strong> ' . $valor->estado . '</div>
-                                    <div class="col-md-4"><strong>Bairro:</strong> ' . $valor->bairro . '</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>CEP:</strong> ' . $this->aplicarMascaraCEP($valor->cep) . '</div>
-                                    <div class="col-md-6"><strong>Complemento:</strong> ' . $valor->complemento . '</div>
-                                </div>
+        <div class="modal fade" id="detalhes_cliente' . $valor->id_cliente . '" tabindex="-1"
+            aria-labelledby="detalhesClienteLabel' . $valor->id_cliente . '" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title" id="detalhesClienteLabel' . $valor->id_cliente . '">
+                            Detalhes do Cliente
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="container text-center"> <!-- centraliza todo o conteúdo -->
+
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-md-6"><strong>Nome do Representante:</strong><br>' . htmlspecialchars($valor->nome_representante) . '</div>
+                                <div class="col-md-6"><strong>Razão Social:</strong><br>' . htmlspecialchars($valor->razao_social) . '</div>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-md-6"><strong>Nome Fantasia:</strong><br>' . htmlspecialchars($valor->nome_fantasia) . '</div>
+                                <div class="col-md-6"><strong>CNPJ:</strong><br>' . $this->aplicarMascaraCNPJ($valor->cnpj_cliente) . '</div>
+                            </div>
+
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-md-6"><strong>Email:</strong><br>' . htmlspecialchars($valor->email) . '</div>
+                                <div class="col-md-6"><strong>Inscrição Estadual:</strong><br>' . htmlspecialchars($valor->inscricao_estadual) . '</div>
+                            </div>
+
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-md-6"><strong>Limite de Crédito:</strong><br>R$ ' .
+                number_format($valor->limite_credito, 2, ',', '.') . '</div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-md-6"><strong>Celular:</strong><br>' .
+                (!empty($celular) ? implode('<br>', $celular) : '<span class="text-muted">—</span>') . '</div>
+                                <div class="col-md-6"><strong>Fixo:</strong><br>' .
+                (!empty($fixo) ? implode('<br>', $fixo) : '<span class="text-muted">—</span>') . '</div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-md-4"><strong>Cidade:</strong><br>' . htmlspecialchars($valor->cidade) . '</div>
+                                <div class="col-md-4"><strong>Estado:</strong><br>' . htmlspecialchars($valor->estado) . '</div>
+                                <div class="col-md-4"><strong>Bairro:</strong><br>' . htmlspecialchars($valor->bairro) . '</div>
+                            </div>
+
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-md-6"><strong>CEP:</strong><br>' . $this->aplicarMascaraCEP($valor->cep) . '</div>
+                                <div class="col-md-6"><strong>Complemento:</strong><br>' . htmlspecialchars($valor->complemento) . '</div>
+                            </div>
+
                         </div>
                     </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+
                 </div>
-            </div>';
+            </div>
+        </div>';
         }
     }
+
+
     // cadastrar cliente
     public function cadastrar_Cliente(
         $nome_representante,
@@ -2778,8 +2869,7 @@ class Controller
         $cnpj_cliente,
         $email,
         $limite_credito,
-        $telefone_celular,
-        $telefone_fixo,
+        $telefones,
         $inscricao_estadual,
         $cidade,
         $estado,
@@ -2806,8 +2896,7 @@ class Controller
                 $cnpj_cliente,
                 $email,
                 $limite_credito,
-                $telefone_celular,
-                $telefone_fixo,
+                $telefones,
                 $inscricao_estadual,
                 $cidade,
                 $estado,
@@ -2833,148 +2922,153 @@ class Controller
             }
         }
     }
+    // modal cadastro de cliente
     public function modal_CadastroCliente()
     {
         print '<div class="modal fade" id="modal_cliente" tabindex="-1" aria-labelledby="modalClienteLabel" aria-hidden="true">';
-        print '<div class="modal-dialog modal-lg modal-dialog-centered">';
-        print '<div class="modal-content">';
+        print '  <div class="modal-dialog modal-dialog-centered modal-lg">';
+        print '    <div class="modal-content">';
 
-        // Cabeçalho
-        print '<div class="modal-header">';
-        print '<h6 class="modal-title" id="modalClienteLabel"> Novo Cliente </h6>';
-        print '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>';
-        print '</div>';
+        // Cabeçalho da Modal
+        print '      <div class="modal-header">';
+        print '        <h6 class="modal-title" id="modalClienteLabel">Novo Cliente</h6>';
+        print '        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '      </div>';
 
-        // Corpo
-        print '<div class="modal-body">';
-        print '<form action="index.php" method="POST" id="formulario_cliente" class="needs-validation">';
-        print '<div class="row g-2">';
+        // Corpo da Modal
+        print '      <div class="modal-body">';
+        print '        <form action="index.php" method="POST" id="formulario_cliente" class="needs-validation">';
+        print '          <div class="row g-3">';
 
-        // Fieldset Dados Cadastrais
-        print '<div class="col-md-12">';
-        print '<fieldset class="border border-black p-1 mb-4">';
-        print '<legend class="float-none w-auto px-2">Dados Cadastrais</legend>';
-        print '<div class="row g-2">';
+        // ===== Fieldset Dados Cadastrais =====
+        print '            <div class="col-12">';
+        print '              <fieldset class="border border-black p-3 mb-4">';
+        print '                <legend class="float-none w-auto px-2">Dados Cadastrais</legend>';
+        print '                <div class="row g-3">';
 
-        print '<div class="col-md-6">';
-        print '<label for="responsavel" class="form-label">Nome do Responsável *</label>';
-        print '<input type="text" class="form-control" id="responsavel" name="nome_representante" required placeholder="Digite o nome do responsável" pattern="^[A-Za-zÀ-ÿ\s]{3,}$" minlength="3" maxlength="100" autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="responsavel" class="form-label">Nome do Responsável *</label>';
+        print '                    <input type="text" class="form-control" id="responsavel" name="nome_representante" required placeholder="Digite o nome do responsável" pattern="^[A-Za-zÀ-ÿ\s]{3,}$" minlength="3" maxlength="100" autocomplete="off">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label for="razao_social" class="form-label">Razão Social *</label>';
-        print '<input type="text" class="form-control" id="razao_social" name="razao_social" required placeholder="Digite a razão social" minlength="3" maxlength="150" autocomplete="off">';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="razao_social" class="form-label">Razão Social *</label>';
+        print '                    <input type="text" class="form-control" id="razao_social" name="razao_social" required placeholder="Digite a razão social" minlength="3" maxlength="150" autocomplete="off">';
+        print '                  </div>';
 
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="nome_fantasia" class="form-label">Nome Fantasia *</label>';
+        print '                    <input type="text" class="form-control" id="nome_fantasia" name="nome_fantasia" required placeholder="Digite o nome fantasia" minlength="3" maxlength="150" autocomplete="off">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label for="nome_fantasia" class="form-label">Nome Fantasia *</label>';
-        print '<input type="text" class="form-control" id="nome_fantasia" name="nome_fantasia" required placeholder="Digite o nome fantasia" minlength="3" maxlength="150" autocomplete="off">';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="cnpj_cliente" class="form-label">CNPJ *</label>';
+        print '                    <input type="text" class="form-control cnpj_cliente" id="cnpj_cliente"  name="cnpj_cliente" value="' . $_SESSION['cnpj_cliente'] . '" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" autocomplete="off">';
+        print '                  </div>';
+        // ===== Telefones com layout revisado =====
+        print '  <div class="col-md-12">';
+        print '    <div id="telefones-container">';
+        print '      <div class="row g-3 telefone-item mb-2">';
 
-        print '</div>';
+        print '        <div class="col-md-4">';
+        print '          <label class="form-label">Tipo de Telefone * </label>';
+        print '          <select name="telefones[0][tipo]" class="form-select telefone-tipo">';
+        print '            <option value="">Selecione</option>';
+        print '            <option value="celular">Celular</option>';
+        print '            <option value="fixo">Fixo</option>';
+        print '            <option value="comercial">Comercial</option>';
+        print '          </select>';
+        print '        </div>';
 
-        print '<div class="col-md-6">';
-        print '<label for="cnpj_cliente" class="form-label">CNPJ *</label>';
-        print '<input type="text" class="form-control cnpj_cliente" id="cnpj_cliente" name="cnpj_cliente" value="' . $_SESSION['cnpj_cliente'] . '" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" autocomplete="off">';
+        print '        <div class="col-md-8">';
+        print '          <label class="form-label">Número de Telefone *</label>';
+        print '          <div class="input-group">';
+        print '            <input type="tel"  name="telefones[0][numero]" class="form-control telefone telefone-numero" id="telefone_0" placeholder="(00) 00000-0000" autocomplete="off">';
+        print '            <button type="button" class="btn btn-outline-danger remover-telefone" title="Remover">';
+        print '              <i class="bi bi-x-lg"></i>';
+        print '            </button>';
+        print '           <button type="button" class="btn btn-outline-success add-telefone" title="Adicionar">';
+        print '              <i class="bi bi-plus-lg"></i> Adicionar';
+        print '            </button>';
+        print '          </div>';
+        print '        </div>';
+        print '      </div>'; // row
+        print '    </div>';   // telefones-container
+        print '  </div>';     // col-md-12
 
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>';
+        print '                    <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" maxlength="20" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" autocomplete="off">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label for="telefone_celular" class="form-label">Telefone Celular *</label>';
-        print '<input type="tel" class="form-control telefone_celular" id="telefone_celular" name="telefone_celular" required placeholder="(00) 00000-0000" pattern="\(\d{2}\) \d{5}-\d{4}" autocomplete="off">';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="email" class="form-label">E-mail *</label>';
+        print '                    <input type="email" class="form-control" id="email" name="email" required placeholder="Digite o email" maxlength="150" autocomplete="off">';
+        print '                  </div>';
 
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="limite_credito" class="form-label">Limite de Crédito *</label>';
+        print '                    <div class="input-group">';
+        print '                      <span class="input-group-text">R$</span>';
+        print '                      <input type="text" class="form-control dinheiro" id="limite_credito" name="limite_credito" required placeholder="0,00" autocomplete="off">';
+        print '                    </div>';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label for="telefone_fixo" class="form-label">Telefone Fixo</label>';
-        print '<input type="tel" class="form-control telefone_fixo" id="telefone_fixo" name="telefone_fixo" placeholder="(00) 0000-0000" pattern="\(\d{2}\) \d{4}-\d{4}" autocomplete="off">';
-        print '</div>';
+        print '                </div>'; // row g-3
+        print '              </fieldset>';
+        print '            </div>'; // col-12
 
-        print '<div class="col-md-6">';
-        print '<label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>';
-        print '<input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" maxlength="9" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" maxlength="20" autocomplete="off">';
-        print '</div>';
+        // ===== Fieldset Endereço =====
+        print '            <div class="col-12">';
+        print '              <fieldset class="border border-black p-3 mb-3">';
+        print '                <legend class="float-none w-auto px-2">Endereço</legend>';
+        print '                <div class="row g-3">';
 
-        print '<div class="col-md-6">';
-        print '<label for="email" class="form-label">E-mail *</label>';
-        print '<input type="email" class="form-control" id="email" name="email" required placeholder="Digite o email" maxlength="150" autocomplete="off">';
+        print '                  <div class="col-md-4">';
+        print '                    <label for="cep" class="form-label">CEP *</label>';
+        print '                    <input type="text" class="form-control cep" id="cep" name="cep" required placeholder="00000-000" pattern="\d{5}-\d{3}" autocomplete="off">';
+        print '                  </div>';
 
-        print '</div>';
+        print '                  <div class="col-md-4">';
+        print '                    <label for="cidade" class="form-label">Cidade *</label>';
+        print '                    <input type="text" class="form-control" id="cidade" name="cidade" required placeholder="Digite a cidade" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" maxlength="100" autocomplete="off">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label for="limite_credito" class="form-label">Limite de Crédito *</label>';
-        print '<div class="input-group">';
-        print '<span class="input-group-text">R$</span>';
-        print '<input type="text" class="form-control dinheiro" id="limite_credito" name="limite_credito" required placeholder="0,00" autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-4">';
+        print '                    <label for="estado" class="form-label">Estado (UF) *</label>';
+        print '                    <input type="text" class="form-control text-uppercase" id="estado" name="estado" required placeholder="Ex: DF" pattern="[A-Za-z]{2}" maxlength="2" autocomplete="off">';
+        print '                  </div>';
 
-        print '</div>';
+        print '                  <div class="col-md-4">';
+        print '                    <label for="bairro" class="form-label">Bairro *</label>';
+        print '                    <input type="text" class="form-control" id="bairro" name="bairro" required placeholder="Digite o bairro" maxlength="100" autocomplete="off">';
+        print '                  </div>';
 
-        print '</div>'; // fecha row
-        print '</fieldset>';
-        print '</div>'; // fecha col-md-12
+        print '                  <div class="col-md-8">';
+        print '                    <label for="complemento" class="form-label">Complemento</label>';
+        print '                    <input type="text" class="form-control" id="complemento" name="complemento" placeholder="Digite o complemento" maxlength="100" autocomplete="off">';
+        print '                  </div>';
 
-        // Fieldset Endereço
-        print '<div class="col-md-12">';
-        print '<fieldset class="border border-black p-1 mb-3">';
-        print '<legend class="float-none w-auto px-2">Endereço</legend>';
-        print '<div class="row g-2">';
+        print '                </div>';
+        print '              </fieldset>';
+        print '            </div>'; // col-12
 
-        print '<div class="col-md-4">';
-        print '<label for="cep" class="form-label">CEP *</label>';
-        print '<input type="text" class="form-control cep" id="cep" name="cep" required placeholder="00000-000" pattern="\d{5}-\d{3}" autocomplete="off">';
+        print '          </div>'; // row g-3
+        print '        </form>';
+        print '      </div>'; // modal-body
 
-        print '</div>';
+        // Rodapé da Modal
+        print '      <div class="modal-footer d-flex justify-content-end gap-2">';
+        print '        <button type="reset" form="formulario_cliente" class="btn btn-outline-secondary">';
+        print '          <i class="bi bi-arrow-counterclockwise"></i> Limpar';
+        print '        </button>';
+        print '        <button type="submit" form="formulario_cliente" class="btn btn-success" id="cadastrar_cliente" name="cadastrar_cliente">';
+        print '          <i class="bi bi-check-circle"></i> Cadastrar';
+        print '        </button>';
+        print '      </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="cidade" class="form-label">Cidade *</label>';
-        print '<input type="text" class="form-control" id="cidade" name="cidade" required placeholder="Digite a cidade" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" maxlength="100" autocomplete="off">';
-
-        print '</div>';
-
-        print '<div class="col-md-4">';
-        print '<label for="estado" class="form-label">Estado (UF) *</label>';
-        print '<input type="text" class="form-control text-uppercase" id="estado" name="estado" required placeholder="Ex: DF" pattern="[A-Za-z]{2}" maxlength="2" autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-4">';
-        print '<label for="bairro" class="form-label">Bairro *</label>';
-        print '<input type="text" class="form-control" id="bairro" name="bairro" required placeholder="Digite o bairro" maxlength="100" autocomplete="off">';
-
-        print '</div>';
-
-        print '<div class="col-md-8">';
-        print '<label for="complemento" class="form-label">Complemento</label>';
-        print '<input type="text" class="form-control" id="complemento" name="complemento" placeholder="Digite o complemento" maxlength="100" autocomplete="off">';
-        print '</div>';
-
-        print '</div>'; // fecha row
-        print '</fieldset>';
-        print '</div>'; // fecha col-md-12
-
-        print '</div>'; // fecha .row g-2
-        print '</div>'; // fecha .modal-body
-
-        // Rodapé
-        print '<div class="modal-footer">';
-        print '<div class="container-fluid">';
-        print '<div class="row g-2">';
-        print '<div class="col-md-6">';
-        print '<button type="reset" class="btn btn-outline-secondary w-100 py-2">';
-        print '<i class="bi bi-arrow-counterclockwise"></i> Limpar';
-        print '</button>';
-        print '</div>';
-        print '<div class="col-md-6">';
-        print '<button type="submit" class="btn btn-success w-100 py-2" id="cadastrar_cliente" name="cadastrar_cliente">';
-        print '<i class="bi bi-check-circle"></i> Cadastrar';
-        print '</button>';
-        print '</div>';
-        print '</div>';
-        print '</div>';
-        print '</div>'; // modal-footerF
-        print '</form>';
-        print '</div>'; // modal-content
-        print '</div>'; // modal-dialog
+        print '    </div>'; // modal-content
+        print '  </div>'; // modal-dialog
         print '</div>'; // modal
     }
     // alterar cliente
@@ -3272,6 +3366,21 @@ class Controller
         }
         print '</select>';
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // FORMA DE PAGAMENTO
 

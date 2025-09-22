@@ -87,8 +87,7 @@ class Cliente extends Conexao
         $cnpj_cliente,
         $email,
         $limite_credito,
-        $telefone_celular,
-        $telefone_fixo,
+        $telefones,              // array de telefones [['tipo'=>'celular','numero'=>'...'], ...]
         $inscricao_estadual,
         $cidade,
         $estado,
@@ -107,10 +106,10 @@ class Cliente extends Conexao
         try {
             // iniciar a transação
             $this->pdo->beginTransaction();
-            // query para inserir o cliente
+
+            // --- Inserir cliente ---
             $sql = "INSERT INTO cliente (nome_representante, razao_social, nome_fantasia, cnpj_cliente, email, limite_credito) 
-                    VALUES (:nome_representante, :razao_social, :nome_fantasia, :cnpj_cliente, :email, :limite_credito);";
-            // preparar a query e blindar os parâmetros
+                VALUES (:nome_representante, :razao_social, :nome_fantasia, :cnpj_cliente, :email, :limite_credito);";
             $query = $this->pdo->prepare($sql);
             $query->bindValue(":nome_representante", $this->getNomeRepresentante(), PDO::PARAM_STR);
             $query->bindValue(":razao_social", $this->getRazaoSocial(), PDO::PARAM_STR);
@@ -118,34 +117,50 @@ class Cliente extends Conexao
             $query->bindValue(":cnpj_cliente", $this->getCnpjCliente(), PDO::PARAM_STR);
             $query->bindValue(":email", $this->getEmail(), PDO::PARAM_STR);
             $query->bindValue(":limite_credito", $this->getLimiteCredito(), PDO::PARAM_STR);
-            // Executa o cadastro do cliente
-            $query->execute();
-            // pegar o id do cliente criado
-            $id_cliente = $this->pdo->lastInsertId();
-            // inserir na tabela telefone_cliente
-            $sqlTelefone = "INSERT INTO telefone_cliente (telefone_celular, telefone_fixo, id_cliente)
-                            VALUES (:telefone_celular, :telefone_fixo, :id_cliente)";
-            // preparar a query e blindar os parâmetros da tabela telefone_cliente
-            $query = $this->pdo->prepare($sqlTelefone);
-            $query->bindValue(":telefone_celular", $telefone_celular, PDO::PARAM_STR);
-            $query->bindValue(":telefone_fixo", $telefone_fixo, PDO::PARAM_STR);
-            $query->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
-            // Executa o cadastro do telefone_cliente
             $query->execute();
 
-            // inserir na tabela inscricao_estadual
+            $id_cliente = $this->pdo->lastInsertId();
+
+            // --- Inserir telefones ---
+            if (!empty($telefones)) {
+                $sqlTelefone = "INSERT INTO telefone_cliente (id_cliente, tipo, numero)
+                            VALUES (:id_cliente, :tipo, :numero)";
+                $stmtTel = $this->pdo->prepare($sqlTelefone);
+                // Array de numeros que ja foram inseridos
+                $numerosInseridos = [];
+                foreach ($telefones as $tel) {
+                    $tipo   = $tel['tipo'];
+                    $numero = preg_replace('/\D/', '', $tel['numero']);
+
+                    if ($tipo && $numero) {
+                        // Normaliza o número para comparação
+                        $numeroNormalizado = preg_replace('/\D/', '', $numero);
+                        // Valida duplicidade
+                        if (in_array($numeroNormalizado, $numerosInseridos)) {
+                            // Ignora número duplicado ou pode lançar exceção
+                            continue; // pula este número
+                        }
+                        // Executa inserção
+                        $stmtTel->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
+                        $stmtTel->bindValue(":tipo", $tipo, PDO::PARAM_STR);
+                        $stmtTel->bindValue(":numero", $numero, PDO::PARAM_STR);
+                        $stmtTel->execute();
+                        // Registra o número inserido
+                        $numerosInseridos[] = $numeroNormalizado;
+                    }
+                }
+            }
+            // --- Inserir inscrição estadual ---
             $sqlInscricao = "INSERT INTO inscricao_estadual (inscricao_estadual, id_cliente)
-                            VALUES (:inscricao_estadual, :id_cliente)";
-            // preparar a query e blindar os parâmetros da tabela inscricao_estadual
+                        VALUES (:inscricao_estadual, :id_cliente)";
             $query = $this->pdo->prepare($sqlInscricao);
             $query->bindValue(":inscricao_estadual", $inscricao_estadual, PDO::PARAM_STR);
             $query->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
-            // Executa o cadastro da inscricao_estadual
             $query->execute();
-            // inserir na tabela endereco
+
+            // --- Inserir endereço ---
             $sqlEndereco = "INSERT INTO endereco (cidade, estado, bairro, cep, complemento, id_cliente)
-                            VALUES (:cidade, :estado, :bairro, :cep, :complemento, :id_cliente)";
-            // preparar a query e blindar os parâmetros da tabela endereco
+                        VALUES (:cidade, :estado, :bairro, :cep, :complemento, :id_cliente)";
             $query = $this->pdo->prepare($sqlEndereco);
             $query->bindValue(":cidade", $cidade, PDO::PARAM_STR);
             $query->bindValue(":estado", $estado, PDO::PARAM_STR);
@@ -153,19 +168,19 @@ class Cliente extends Conexao
             $query->bindValue(":cep", $cep, PDO::PARAM_STR);
             $query->bindValue(":complemento", $complemento, PDO::PARAM_STR);
             $query->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
-            // Executa o cadastro do endereco
             $query->execute();
-            // commit da transação
+
+            // --- Commit da transação ---
             $this->pdo->commit();
             return true;
         } catch (Exception $e) {
-            // rollback da transação em caso de erro
             $this->pdo->rollBack();
             error_log("Erro ao cadastrar cliente: " . $e->getMessage());
             return false;
         }
     }
-    // metodo de consultar cliente
+
+    // método de consultar cliente
     public function consultarCliente($nome_fantasia, $razao_social, $cnpj_cliente)
     {
         // settar os atributos
@@ -173,18 +188,31 @@ class Cliente extends Conexao
         $this->setRazaoSocial($razao_social);
         $this->setCnpjCliente($cnpj_cliente);
 
-        // criar a query base
-        $sql = "SELECT cl.id_cliente, cl.nome_representante, cl.razao_social,
-                cl.nome_fantasia, cl.cnpj_cliente, cl.email, cl.limite_credito, ie.inscricao_estadual,
-                tc.telefone_celular, tc.telefone_fixo, e.cidade, e.estado, e.bairro,
-                e.cep, e.complemento
-                FROM cliente AS cl
-                LEFT JOIN inscricao_estadual AS ie ON cl.id_cliente = ie.id_inscricao
-                LEFT JOIN telefone_cliente AS tc ON cl.id_cliente = tc.id_telefone
-                LEFT JOIN endereco AS e ON cl.id_cliente = e.id_endereco";
-        // Array de condições
+        // Query base com GROUP_CONCAT para agrupar telefones
+        $sql = "SELECT 
+                cl.id_cliente,
+                cl.nome_representante,
+                cl.razao_social,
+                cl.nome_fantasia,
+                cl.cnpj_cliente,
+                cl.email,
+                cl.limite_credito,
+                ie.inscricao_estadual,
+                e.cidade,
+                e.estado,
+                e.bairro,
+                e.cep,
+                e.complemento,
+                GROUP_CONCAT(
+                    CONCAT(tc.tipo, ': ', tc.numero) 
+                    ORDER BY tc.id_telefone SEPARATOR ', ') AS telefones
+            FROM cliente AS cl
+            LEFT JOIN inscricao_estadual AS ie ON cl.id_cliente = ie.id_cliente
+            LEFT JOIN endereco AS e ON cl.id_cliente = e.id_cliente
+            LEFT JOIN telefone_cliente AS tc ON cl.id_cliente = tc.id_cliente";
+
+        // Condições dinâmicas
         $condicoes = [];
-        // Filtros com LIKE para busca parcial
         if (!empty($this->getNomeFantasia())) {
             $condicoes[] = "cl.nome_fantasia LIKE :nome_fantasia";
         }
@@ -194,18 +222,33 @@ class Cliente extends Conexao
         if (!empty($this->getCnpjCliente())) {
             $condicoes[] = "cl.cnpj_cliente LIKE :cnpj_cliente";
         }
-        // Adiciona cláusulas WHERE dinamicamente
-        if (count($condicoes) > 0) {
+
+        if ($condicoes) {
             $sql .= " WHERE " . implode(" AND ", $condicoes);
         }
-        // ordenação
-        $sql .= " ORDER BY cl.id_cliente ASC;";
-        // Executar a consulta
+
+        // Agrupamento para o GROUP_CONCAT
+        $sql .= " GROUP BY
+                cl.id_cliente,
+                cl.nome_representante,
+                cl.razao_social,
+                cl.nome_fantasia,
+                cl.cnpj_cliente,
+                cl.email,
+                cl.limite_credito,
+                ie.inscricao_estadual,
+                e.cidade,
+                e.estado,
+                e.bairro,
+                e.cep,
+                e.complemento
+                ORDER BY cl.nome_fantasia ASC";
+
         try {
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);
 
-            // Faz o bind dos parâmetros individualmente
+            // Bind dinâmico
             if (!empty($this->getNomeFantasia())) {
                 $query->bindValue(":nome_fantasia", "%" . $this->getNomeFantasia() . "%", PDO::PARAM_STR);
             }
@@ -215,17 +258,15 @@ class Cliente extends Conexao
             if (!empty($this->getCnpjCliente())) {
                 $query->bindValue(":cnpj_cliente", "%" . $this->getCnpjCliente() . "%", PDO::PARAM_STR);
             }
-            // Executa a consulta
-            $query->execute();
 
-            $cliente = $query->fetchAll(PDO::FETCH_OBJ);
-            return $cliente;
+            $query->execute();
+            return $query->fetchAll(PDO::FETCH_OBJ);
         } catch (PDOException $e) {
-            error_log("Erro ao consultar produtos: " . $e->getMessage());
-            print_r($e->getMessage());
+            error_log("Erro ao consultar clientes: " . $e->getMessage());
             return false;
         }
     }
+
     // metodo de alterar cliente
     public function alterarCliente(
         $id_cliente,
