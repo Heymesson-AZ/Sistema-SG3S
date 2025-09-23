@@ -14,8 +14,6 @@ class Controller
         $menu = $this->menu();
         include_once 'view/' . $pagina . '.php';
     }
-
-
     // calendario
     public function calendario()
     {
@@ -2859,8 +2857,6 @@ class Controller
         </div>';
         }
     }
-
-
     // cadastrar cliente
     public function cadastrar_Cliente(
         $nome_representante,
@@ -2976,7 +2972,6 @@ class Controller
         print '            <option value="">Selecione</option>';
         print '            <option value="celular">Celular</option>';
         print '            <option value="fixo">Fixo</option>';
-        print '            <option value="comercial">Comercial</option>';
         print '          </select>';
         print '        </div>';
 
@@ -3031,17 +3026,17 @@ class Controller
 
         print '                  <div class="col-md-4">';
         print '                    <label for="cidade" class="form-label">Cidade *</label>';
-        print '                    <input type="text" class="form-control" id="cidade" name="cidade" required placeholder="Digite a cidade" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" maxlength="100" autocomplete="off">';
+        print '                    <input type="text" class="form-control" id="cidade" name="cidade" required placeholder="Digite a cidade" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" maxlength="100" autocomplete="off" readolnly>';
         print '                  </div>';
 
         print '                  <div class="col-md-4">';
         print '                    <label for="estado" class="form-label">Estado (UF) *</label>';
-        print '                    <input type="text" class="form-control text-uppercase" id="estado" name="estado" required placeholder="Ex: DF" pattern="[A-Za-z]{2}" maxlength="2" autocomplete="off">';
+        print '                    <input type="text" class="form-control text-uppercase" id="estado" name="estado" required placeholder="Ex: DF" pattern="[A-Za-z]{2}" maxlength="2" autocomplete="off" readonly>';
         print '                  </div>';
 
         print '                  <div class="col-md-4">';
         print '                    <label for="bairro" class="form-label">Bairro *</label>';
-        print '                    <input type="text" class="form-control" id="bairro" name="bairro" required placeholder="Digite o bairro" maxlength="100" autocomplete="off">';
+        print '                    <input type="text" class="form-control" id="bairro" name="bairro" required placeholder="Digite o bairro" maxlength="100" autocomplete="off" readonly>';
         print '                  </div>';
 
         print '                  <div class="col-md-8">';
@@ -3136,7 +3131,6 @@ class Controller
             }
         }
     }
-    // modal alterar cliente
     public function modal_AlterarCliente(
         $id_cliente,
         $nome_representante,
@@ -3146,8 +3140,7 @@ class Controller
         $email,
         $limite_credito,
         $inscricao_estadual,
-        $telefone_celular,
-        $telefone_fixo,
+        $telefones,
         $cidade,
         $estado,
         $bairro,
@@ -3155,138 +3148,212 @@ class Controller
         $complemento
     ) {
         print '<div class="modal fade" id="alterar_cliente' . $id_cliente . '" tabindex="-1" aria-labelledby="alterarClienteLabel' . $id_cliente . '" aria-hidden="true">';
-        print '<div class="modal-dialog modal-lg modal-dialog-centered">';
-        print '<div class="modal-content">';
+        print '  <div class="modal-dialog modal-dialog-centered modal-lg">';
+        print '    <div class="modal-content">';
 
         // Cabeçalho
-        print '<div class="modal-header">';
-        print '<h6 class="modal-title" id="alterarClienteLabel' . $id_cliente . '">Alterar Cliente</h6>';
-        print '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
-        print '</div>';
+        print '      <div class="modal-header">';
+        print '        <h6 class="modal-title" id="alterarClienteLabel' . $id_cliente . '">Alterar Cliente</h6>';
+        print '        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '      </div>';
 
         // Corpo
-        print '<div class="modal-body">';
-        print '<form action="index.php" method="POST">';
-        print '<input type="hidden" name="id_cliente" value="' . $id_cliente . '">';
-        print '<div class="row g-2">';
+        print '      <div class="modal-body">';
+        print '        <form action="index.php" method="POST" id="form_alterar_cliente' . $id_cliente . '" class="needs-validation">';
+        print '          <input type="hidden" name="id_cliente" value="' . $id_cliente . '">';
+        print '          <div class="row g-3">';
 
-        // Dados cadastrais
-        print '<div class="col-md-12">';
-        print '<fieldset class="border border-black p-1 mb-4">';
-        print '<legend class="float-none w-auto px-2">Dados Cadastrais</legend>';
-        print '<div class="row g-2">';
+        // ===== Fieldset Dados Cadastrais =====
+        print '            <div class="col-12">';
+        print '              <fieldset class="border border-black p-3 mb-4">';
+        print '                <legend class="float-none w-auto px-2">Dados Cadastrais</legend>';
+        print '                <div class="row g-3">';
 
-        print '<div class="col-md-6">';
-        print '<label class="form-label">Nome do Responsável</label>';
-        print '<input type="text" class="form-control" name="nome_representante" required placeholder="Digite o nome do responsável" pattern="^[A-Za-zÀ-ÿ\s]{3,}$" value="' . $nome_representante . '" autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="responsavel_' . $id_cliente . '" class="form-label">Nome do Responsável *</label>';
+        print '                    <input type="text" class="form-control" id="responsavel_' . $id_cliente . '" name="nome_representante" required placeholder="Digite o nome do responsável" pattern="^[A-Za-zÀ-ÿ\s]{3,}$" minlength="3" maxlength="100" autocomplete="off" value="' . $nome_representante . '">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label class="form-label">Razão Social</label>';
-        print '<input type="text" class="form-control" name="razao_social" required placeholder="Digite a razão social" pattern=".{3,}" value="' . $razao_social . '" autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="razao_social_' . $id_cliente . '" class="form-label">Razão Social *</label>';
+        print '                    <input type="text" class="form-control" id="razao_social_' . $id_cliente . '" name="razao_social" required placeholder="Digite a razão social" minlength="3" maxlength="150" autocomplete="off" value="' . $razao_social . '">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label class="form-label">Nome Fantasia</label>';
-        print '<input type="text" class="form-control" name="nome_fantasia" required placeholder="Digite o nome fantasia" pattern=".{3,}" value="' . $nome_fantasia . '" autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="nome_fantasia_' . $id_cliente . '" class="form-label">Nome Fantasia *</label>';
+        print '                    <input type="text" class="form-control" id="nome_fantasia_' . $id_cliente . '" name="nome_fantasia" required placeholder="Digite o nome fantasia" minlength="3" maxlength="150" autocomplete="off" value="' . $nome_fantasia . '">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label class="form-label">CNPJ</label>';
-        print '<input type="text" class="form-control cnpj_cliente" name="cnpj_cliente" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" value="' . $cnpj_cliente . '" autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="cnpj_cliente_' . $id_cliente . '" class="form-label">CNPJ *</label>';
+        print '                    <input type="text" class="form-control cnpj_cliente" id="cnpj_cliente_' . $id_cliente . '" name="cnpj_cliente" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" autocomplete="off" value="' . $cnpj_cliente . '">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label class="form-label">Telefone Celular</label>';
-        print '<input type="tel" class="form-control telefone_celular" name="telefone_celular" required placeholder="(00) 00000-0000" pattern="\(\d{2}\) \d{4,5}-\d{4}" value="' . $telefone_celular . '" autocomplete="off">';
-        print '</div>';
+        // Telefones com parsing inteligente (aceita string do GROUP_CONCAT ou array)
+        print '                  <div class="col-md-12">';
+        print '                    <fieldset class="border p-2 mb-3">';
+        print '                      <legend class="float-none w-auto px-2">Telefones</legend>';
+        print '                      <div id="telefones-container-' . $id_cliente . '">';
 
-        print '<div class="col-md-6">';
-        print '<label class="form-label">Telefone Fixo</label>';
-        print '<input type="tel" class="form-control telefone_fixo" name="telefone_fixo" placeholder="(00) 0000-0000" pattern="\(\d{2}\) \d{4}-\d{4}" value="' . $telefone_fixo . '" autocomplete="off">';
-        print '</div>';
+        // Preparar linhas de telefone a partir de $telefones
+        $rows = [];
+        if (!empty($telefones)) {
+            if (is_array($telefones)) {
+                foreach ($telefones as $t) {
+                    $tipoRaw   = $t['tipo'] ?? '';
+                    $numeroRaw = $t['numero'] ?? '';
+                    $numeroLimpo = preg_replace('/\D/', '', $numeroRaw);
+                    $rows[] = ['tipo' => strtolower(trim($tipoRaw)), 'numero' => $numeroLimpo];
+                }
+            } else {
+                // string do GROUP_CONCAT, ex: "celular: 61999998888, fixo: 6133334444"
+                $lista = preg_split('/\s*,\s*/', $telefones);
+                foreach ($lista as $item) {
+                    $item = trim($item);
+                    if ($item === '') continue;
+                    $partes = preg_split('/\s*:\s*/', $item, 2);
+                    if (count($partes) === 2) {
+                        $tipo = strtolower(trim($partes[0]));
+                        $numeroRaw = trim($partes[1]);
+                    } else {
+                        $tipo = '';
+                        $numeroRaw = trim($partes[0]);
+                    }
+                    $numeroLimpo = preg_replace('/\D/', '', $numeroRaw);
+                    $rows[] = ['tipo' => $tipo, 'numero' => $numeroLimpo];
+                }
+            }
+        }
 
-        print '<div class="col-md-6">';
-        print '<label class="form-label">Inscrição Estadual</label>';
-        print '<input type="text" class="form-control" name="inscricao_estadual" maxlength="9" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" value="' . $inscricao_estadual . '" autocomplete="off">';
-        print '</div>';
+        // Sempre imprime uma primeira linha vazia (para adicionar novo telefone)
+        print '      <div class="row g-3 telefone-item mb-2">';
+        print '        <div class="col-md-4">';
+        print '          <label class="form-label">Tipo de Telefone *</label>';
+        print '          <select name="telefones[0][tipo]" class="form-select telefone-tipo">';
+        $options = ['' => 'Selecione...', 'celular' => 'Celular', 'fixo' => 'Fixo'];
+        foreach ($options as $val => $label) {
+            print "<option value=\"$val\">$label</option>";
+        }
+        print '          </select>';
+        print '        </div>';
+        print '        <div class="col-md-8">';
+        print '          <label class="form-label">Número de Telefone *</label>';
+        print '          <div class="input-group">';
+        print '            <input type="tel" name="telefones[0][numero]" class="form-control telefone telefone-numero" id="telefone_' . $id_cliente . '_0" placeholder="(00) 00000-0000" autocomplete="off">';
+        print '            <button type="button" class="btn btn-outline-danger remover-telefone" title="Remover"><i class="bi bi-x-lg"></i></button>';
+        print '            <button type="button" class="btn btn-outline-success add-telefone" title="Adicionar"><i class="bi bi-plus-lg"></i> Adicionar</button>';
+        print '          </div>';
+        print '        </div>';
+        print '      </div>';
 
-        print '<div class="col-md-6">';
-        print '<label class="form-label">E-mail</label>';
-        print '<input type="email" class="form-control" name="email" required placeholder="exemplo@email.com" pattern="^[\\w\\.-]+@[\\w\\.-]+\\.\\w{2,}$" value="' . $email . '" autocomplete="off">';
-        print '</div>';
+        // Agora imprime os telefones existentes (com índice a partir de 1)
+        if (!empty($rows)) {
+            $index = 1;
+            foreach ($rows as $r) {
+                $tipoNorm = htmlspecialchars($r['tipo']);
+                $numeroVal = htmlspecialchars($r['numero']);
+                print '      <div class="row g-3 telefone-item mb-2">';
+                print '        <div class="col-md-4">';
+                print '          <label class="form-label">Tipo de Telefone *</label>';
+                print '          <select name="telefones[' . $index . '][tipo]" class="form-select telefone-tipo" required>';
+                $options = ['celular' => 'Celular', 'fixo' => 'Fixo'];
+                foreach ($options as $val => $label) {
+                    $sel = ($val === strtolower($tipoNorm)) ? 'selected' : '';
+                    print "<option value=\"$val\" $sel>$label</option>";
+                }
+                print '          </select>';
+                print '        </div>';
+                print '        <div class="col-md-8">';
+                print '          <label class="form-label">Número de Telefone *</label>';
+                print '          <div class="input-group">';
+                print '            <input type="tel" name="telefones[' . $index . '][numero]" class="form-control telefone telefone-numero" id="telefone_' . $id_cliente . '_' . $index . '" placeholder="(00) 00000-0000" autocomplete="off" value="' . $numeroVal . '" required>';
+                print '            <button type="button" class="btn btn-outline-danger remover-telefone" title="Remover"><i class="bi bi-x-lg"></i></button>';
+                print '            <button type="button" class="btn btn-outline-success add-telefone" title="Adicionar"><i class="bi bi-plus-lg"></i> Adicionar</button>';
+                print '          </div>';
+                print '        </div>';
+                print '      </div>';
+                $index++;
+            }
+        }
+        print '                      </div>'; // telefones-container
+        print '                    </fieldset>';
+        print '                  </div>'; // col-md-12
 
-        print '<div class="col-md-6">';
-        print '<label class="form-label">Limite de Crédito</label>';
-        print '<div class="input-group">';
-        print '<span class="input-group-text">R$</span>';
-        print '<input type="text" class="form-control dinheiro" name="limite_credito" required placeholder="Digite o limite de crédito" value="' . $limite_credito . '" autocomplete="off">';
-        print '</div>';
-        print '</div>';
 
-        print '</div>'; // fecha row
-        print '</fieldset>';
-        print '</div>'; // col-md-12
+        // Outros dados
+        print '                  <div class="col-md-6">';
+        print '                    <label for="inscricao_estadual_' . $id_cliente . '" class="form-label">Inscrição Estadual</label>';
+        print '                    <input type="text" class="form-control" id="inscricao_estadual_' . $id_cliente . '" name="inscricao_estadual" maxlength="20" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" autocomplete="off" value="' . $inscricao_estadual . '">';
+        print '                  </div>';
 
-        // Endereço
-        print '<div class="col-md-12">';
-        print '<fieldset class="border border-black p-1 mb-3">';
-        print '<legend class="float-none w-auto px-2">Endereço</legend>';
-        print '<div class="row g-2">';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="email_' . $id_cliente . '" class="form-label">E-mail *</label>';
+        print '                    <input type="email" class="form-control" id="email_' . $id_cliente . '" name="email" required placeholder="Digite o email" maxlength="150" autocomplete="off" value="' . $email . '">';
+        print '                  </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="cep' . $id_cliente . '" class="form-label">CEP *</label>';
-        print '<input type="text" class="form-control cep" id="cep' . $id_cliente . '" name="cep" required placeholder="00000-000" pattern="\d{5}-\d{3}" value="' . $cep . '" autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="limite_credito_' . $id_cliente . '" class="form-label">Limite de Crédito *</label>';
+        print '                    <div class="input-group">';
+        print '                      <span class="input-group-text">R$</span>';
+        print '                      <input type="text" class="form-control dinheiro" id="limite_credito_' . $id_cliente . '" name="limite_credito" required placeholder="0,00" autocomplete="off" value="' . $limite_credito . '">';
+        print '                    </div>';
+        print '                  </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="cidade' . $id_cliente . '" class="form-label">Cidade *</label>';
-        print '<input type="text" class="form-control" id="cidade' . $id_cliente . '" name="cidade" required placeholder="Digite a cidade" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" value="' . $cidade . '" autocomplete="off">';
-        print '</div>';
+        print '                </div>'; // row g-3
+        print '              </fieldset>';
+        print '            </div>'; // col-12
 
-        print '<div class="col-md-4">';
-        print '<label for="estado' . $id_cliente . '" class="form-label">Estado *</label>';
-        print '<input type="text" class="form-control" id="estado' . $id_cliente . '" name="estado" required placeholder="Digite o estado" pattern="^[A-Za-zÀ-ÿ\s]{2,}$" value="' . $estado . '" autocomplete="off">';
-        print '</div>';
+        /// ===== Fieldset Endereço (readonly exceto CEP) =====
+        print '            <div class="col-12">';
+        print '              <fieldset class="border border-black p-3 mb-3">';
+        print '                <legend class="float-none w-auto px-2">Endereço</legend>';
+        print '                <div class="row g-3">';
 
-        print '<div class="col-md-4">';
-        print '<label for="bairro' . $id_cliente . '" class="form-label">Bairro *</label>';
-        print '<input type="text" class="form-control" id="bairro' . $id_cliente . '" name="bairro" required placeholder="Digite o bairro" value="' . $bairro . '" autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-4">';
+        print '                    <label for="cep_' . $id_cliente . '" class="form-label">CEP *</label>';
+        print '                    <input type="text" class="form-control cep" id="cep_' . $id_cliente . '" name="cep" required value="' . htmlspecialchars($cep) . '" placeholder="00000-000">';
+        print '                  </div>';
 
-        print '<div class="col-md-8">';
-        print '<label for="complemento' . $id_cliente . '" class="form-label">Complemento</label>';
-        print '<input type="text" class="form-control" id="complemento' . $id_cliente . '" name="complemento" placeholder="Digite o complemento" value="' . $complemento . '" autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-4">';
+        print '                    <label for="cidade_' . $id_cliente . '" class="form-label">Cidade *</label>';
+        print '                    <input type="text" class="form-control" id="cidade_' . $id_cliente . '" name="cidade" value="' . htmlspecialchars($cidade) . '" readonly>';
+        print '                  </div>';
 
-        print '</div>'; // row
-        print '</fieldset>';
-        print '</div>'; // col-md-12
+        print '                  <div class="col-md-4">';
+        print '                    <label for="estado_' . $id_cliente . '" class="form-label">Estado *</label>';
+        print '                    <input type="text" class="form-control" id="estado_' . $id_cliente . '" name="estado" value="' . htmlspecialchars($estado) . '" readonly>';
+        print '                  </div>';
 
-        print '</div>'; // row g-2
+        print '                  <div class="col-md-4">';
+        print '                    <label for="bairro_' . $id_cliente . '" class="form-label">Bairro *</label>';
+        print '                    <input type="text" class="form-control" id="bairro_' . $id_cliente . '" name="bairro" value="' . htmlspecialchars($bairro) . '" readonly>';
+        print '                  </div>';
+
+        print '                  <div class="col-md-8">';
+        print '                    <label for="complemento_' . $id_cliente . '" class="form-label">Complemento</label>';
+        print '                    <input type="text" class="form-control" id="complemento_' . $id_cliente . '" name="complemento" value="' . htmlspecialchars($complemento) . '" readonly>';
+        print '                  </div>';
+
+        print '                </div>';
+        print '              </fieldset>';
+        print '            </div>'; // col-12
+
+        print '          </div>'; // row g-3
 
         // Rodapé
-        print '<div class="modal-footer">';
-        print '<div class="container-fluid">';
-        print '<div class="row g-2">';
-        print '<div class="col-md-6">';
-        print '<button type="button" class="btn btn-outline-secondary w-100 py-2" data-bs-dismiss="modal">';
-        print '<i class="bi bi-x-circle"></i> Cancelar';
-        print '</button>';
-        print '</div>';
-        print '<div class="col-md-6">';
-        print '<button type="submit" class="btn btn-primary w-100 py-2" name="alterar_cliente">';
-        print '<i class="bi bi-check-circle"></i> Alterar';
-        print '</button>';
-        print '</div>';
-        print '</div>';
-        print '</div>';
-        print '</div>'; // modal-footer
+        print '          <div class="modal-footer d-flex justify-content-end gap-2">';
+        print '            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">';
+        print '              <i class="bi bi-x-circle"></i> Cancelar';
+        print '            </button>';
+        print '            <button type="submit" class="btn btn-primary" name="alterar_cliente">';
+        print '              <i class="bi bi-check-circle"></i> Alterar';
+        print '            </button>';
+        print '          </div>';
+        print '        </form>';
+        print '      </div>'; // modal-body
 
-        print '</form>';
-        print '</div>'; // modal-body
-        print '</div>'; // modal-content
-        print '</div>'; // modal-dialog
+        print '    </div>'; // modal-content
+        print '  </div>'; // modal-dialog
         print '</div>'; // modal
     }
     // excluir cliente
