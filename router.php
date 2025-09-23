@@ -454,7 +454,6 @@ function limparLimiteCredito($valor)
     // Retorna em formato float
     return trim($valor);
 }
-
 // ================= CADASTRAR CLIENTE =================
 if (isset($_POST['cadastrar_cliente'])) {
     $nome_representante = sanitizar($_POST['nome_representante']);
@@ -480,7 +479,7 @@ if (isset($_POST['cadastrar_cliente'])) {
         $cnpj_cliente,
         $email,
         $limite_credito,
-        $telefones,           
+        $telefones,
         $inscricao_estadual,
         $cidade,
         $estado,
@@ -489,7 +488,6 @@ if (isset($_POST['cadastrar_cliente'])) {
         $complemento
     );
 }
-
 // ================= ALTERAR CLIENTE =================
 if (isset($_POST['alterar_cliente'])) {
     $id_cliente         = $_POST['id_cliente'];
@@ -498,8 +496,6 @@ if (isset($_POST['alterar_cliente'])) {
     $nome_fantasia      = sanitizar($_POST['nome_fantasia']);
     $cnpj_cliente       = removerMascara($_POST['cnpj_cliente'], ['.', '-', '/']);
     $inscricao_estadual = sanitizar($_POST['inscricao_estadual']);
-    $telefone_celular   = removerMascara($_POST['telefone_celular']);
-    $telefone_fixo      = removerMascara($_POST['telefone_fixo']);
     $email              = sanitizar($_POST['email']);
     $limite_credito     = limparLimiteCredito($_POST['limite_credito']);
     $cep                = removerMascara($_POST['cep'], ['-']);
@@ -507,6 +503,9 @@ if (isset($_POST['alterar_cliente'])) {
     $bairro             = sanitizar($_POST['bairro']);
     $cidade             = sanitizar($_POST['cidade']);
     $estado             = sanitizar($_POST['estado']);
+
+    // Array de telefones (tipo e numero)
+    $telefones = $_POST['telefones'];
 
     $objController->alterar_Cliente(
         $id_cliente,
@@ -516,9 +515,8 @@ if (isset($_POST['alterar_cliente'])) {
         $cnpj_cliente,
         $email,
         $limite_credito,
+        $telefones,
         $inscricao_estadual,
-        $telefone_celular,
-        $telefone_fixo,
         $cidade,
         $estado,
         $bairro,

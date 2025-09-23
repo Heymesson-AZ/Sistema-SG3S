@@ -167,7 +167,7 @@ $(document).ready(function () {
       if (i === 0) {
         $btnAdd.show();
         $btnRem.hide();
-        $(this).find('.telefone-tipo, .telefone').attr('required', true);
+        $(this).find('.telefone-tipo, .telefone').attr('required');
       } else {
         $btnAdd.hide();
         $btnRem.show();

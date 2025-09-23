@@ -79,6 +79,94 @@ class Cliente extends Conexao
         $this->limite_credito = $limite_credito;
     }
 
+    // método de consultar cliente
+    public function consultarCliente($nome_fantasia, $razao_social, $cnpj_cliente)
+    {
+        // settar os atributos
+        $this->setNomeFantasia($nome_fantasia);
+        $this->setRazaoSocial($razao_social);
+        $this->setCnpjCliente($cnpj_cliente);
+
+        // Query base com GROUP_CONCAT para agrupar telefones
+        $sql = "SELECT 
+                cl.id_cliente,
+                cl.nome_representante,
+                cl.razao_social,
+                cl.nome_fantasia,
+                cl.cnpj_cliente,
+                cl.email,
+                cl.limite_credito,
+                ie.inscricao_estadual,
+                e.cidade,
+                e.estado,
+                e.bairro,
+                e.cep,
+                e.complemento,
+                GROUP_CONCAT(
+                CONCAT(tc.id_telefone, ':', tc.tipo, ':', tc.numero)
+                ORDER BY tc.id_telefone SEPARATOR ',')
+                AS telefones
+            FROM cliente AS cl
+            LEFT JOIN inscricao_estadual AS ie ON cl.id_cliente = ie.id_cliente
+            LEFT JOIN endereco AS e ON cl.id_cliente = e.id_cliente
+            LEFT JOIN telefone_cliente AS tc ON cl.id_cliente = tc.id_cliente";
+
+        // Condições dinâmicas
+        $condicoes = [];
+        if (!empty($this->getNomeFantasia())) {
+            $condicoes[] = "cl.nome_fantasia LIKE :nome_fantasia";
+        }
+        if (!empty($this->getRazaoSocial())) {
+            $condicoes[] = "cl.razao_social LIKE :razao_social";
+        }
+        if (!empty($this->getCnpjCliente())) {
+            $condicoes[] = "cl.cnpj_cliente LIKE :cnpj_cliente";
+        }
+
+        if ($condicoes) {
+            $sql .= " WHERE " . implode(" AND ", $condicoes);
+        }
+
+        // Agrupamento para o GROUP_CONCAT
+        $sql .= " GROUP BY
+                cl.id_cliente,
+                cl.nome_representante,
+                cl.razao_social,
+                cl.nome_fantasia,
+                cl.cnpj_cliente,
+                cl.email,
+                cl.limite_credito,
+                ie.inscricao_estadual,
+                e.cidade,
+                e.estado,
+                e.bairro,
+                e.cep,
+                e.complemento
+                ORDER BY cl.nome_fantasia ASC";
+
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+
+            // Bind dinâmico
+            if (!empty($this->getNomeFantasia())) {
+                $query->bindValue(":nome_fantasia", "%" . $this->getNomeFantasia() . "%", PDO::PARAM_STR);
+            }
+            if (!empty($this->getRazaoSocial())) {
+                $query->bindValue(":razao_social", "%" . $this->getRazaoSocial() . "%", PDO::PARAM_STR);
+            }
+            if (!empty($this->getCnpjCliente())) {
+                $query->bindValue(":cnpj_cliente", "%" . $this->getCnpjCliente() . "%", PDO::PARAM_STR);
+            }
+
+            $query->execute();
+            return $query->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $e) {
+            error_log("Erro ao consultar clientes: " . $e->getMessage());
+            return false;
+        }
+    }
+
     // metodo de cadastra cliente
     public function cadastrarCliente(
         $nome_representante,
@@ -180,94 +268,8 @@ class Cliente extends Conexao
         }
     }
 
-    // método de consultar cliente
-    public function consultarCliente($nome_fantasia, $razao_social, $cnpj_cliente)
-    {
-        // settar os atributos
-        $this->setNomeFantasia($nome_fantasia);
-        $this->setRazaoSocial($razao_social);
-        $this->setCnpjCliente($cnpj_cliente);
+    // método de alterar cliente
 
-        // Query base com GROUP_CONCAT para agrupar telefones
-        $sql = "SELECT 
-                cl.id_cliente,
-                cl.nome_representante,
-                cl.razao_social,
-                cl.nome_fantasia,
-                cl.cnpj_cliente,
-                cl.email,
-                cl.limite_credito,
-                ie.inscricao_estadual,
-                e.cidade,
-                e.estado,
-                e.bairro,
-                e.cep,
-                e.complemento,
-                GROUP_CONCAT(
-                    CONCAT(tc.tipo, ': ', tc.numero) 
-                    ORDER BY tc.id_telefone SEPARATOR ', ') AS telefones
-            FROM cliente AS cl
-            LEFT JOIN inscricao_estadual AS ie ON cl.id_cliente = ie.id_cliente
-            LEFT JOIN endereco AS e ON cl.id_cliente = e.id_cliente
-            LEFT JOIN telefone_cliente AS tc ON cl.id_cliente = tc.id_cliente";
-
-        // Condições dinâmicas
-        $condicoes = [];
-        if (!empty($this->getNomeFantasia())) {
-            $condicoes[] = "cl.nome_fantasia LIKE :nome_fantasia";
-        }
-        if (!empty($this->getRazaoSocial())) {
-            $condicoes[] = "cl.razao_social LIKE :razao_social";
-        }
-        if (!empty($this->getCnpjCliente())) {
-            $condicoes[] = "cl.cnpj_cliente LIKE :cnpj_cliente";
-        }
-
-        if ($condicoes) {
-            $sql .= " WHERE " . implode(" AND ", $condicoes);
-        }
-
-        // Agrupamento para o GROUP_CONCAT
-        $sql .= " GROUP BY
-                cl.id_cliente,
-                cl.nome_representante,
-                cl.razao_social,
-                cl.nome_fantasia,
-                cl.cnpj_cliente,
-                cl.email,
-                cl.limite_credito,
-                ie.inscricao_estadual,
-                e.cidade,
-                e.estado,
-                e.bairro,
-                e.cep,
-                e.complemento
-                ORDER BY cl.nome_fantasia ASC";
-
-        try {
-            $bd = $this->conectarBanco();
-            $query = $bd->prepare($sql);
-
-            // Bind dinâmico
-            if (!empty($this->getNomeFantasia())) {
-                $query->bindValue(":nome_fantasia", "%" . $this->getNomeFantasia() . "%", PDO::PARAM_STR);
-            }
-            if (!empty($this->getRazaoSocial())) {
-                $query->bindValue(":razao_social", "%" . $this->getRazaoSocial() . "%", PDO::PARAM_STR);
-            }
-            if (!empty($this->getCnpjCliente())) {
-                $query->bindValue(":cnpj_cliente", "%" . $this->getCnpjCliente() . "%", PDO::PARAM_STR);
-            }
-
-            $query->execute();
-            return $query->fetchAll(PDO::FETCH_OBJ);
-        } catch (PDOException $e) {
-            error_log("Erro ao consultar clientes: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    // metodo de alterar cliente
     public function alterarCliente(
         $id_cliente,
         $nome_representante,
@@ -276,9 +278,8 @@ class Cliente extends Conexao
         $cnpj_cliente,
         $email,
         $limite_credito,
+        $telefones,
         $inscricao_estadual,
-        $telefone_celular,
-        $telefone_fixo,
         $cidade,
         $estado,
         $bairro,
@@ -295,13 +296,17 @@ class Cliente extends Conexao
         $this->setLimiteCredito($limite_credito);
 
         try {
-            // iniciar a transação
             $this->pdo->beginTransaction();
-            // query para atualizar o cliente
-            $sql = "UPDATE cliente SET nome_representante = :nome_representante, razao_social = :razao_social,
-                    nome_fantasia = :nome_fantasia, cnpj_cliente = :cnpj_cliente, email = :email, limite_credito = :limite_credito
-                    WHERE id_cliente = :id_cliente";
-            // preparar a query e blindar os parâmetros
+
+            // --- Atualizar cliente ---
+            $sql = "UPDATE cliente
+                SET nome_representante = :nome_representante,
+                    razao_social = :razao_social,
+                    nome_fantasia = :nome_fantasia,
+                    cnpj_cliente = :cnpj_cliente,
+                    email = :email,
+                    limite_credito = :limite_credito
+                WHERE id_cliente = :id_cliente";
             $query = $this->pdo->prepare($sql);
             $query->bindValue(":id_cliente", $this->getIdCliente(), PDO::PARAM_INT);
             $query->bindValue(":nome_representante", $this->getNomeRepresentante(), PDO::PARAM_STR);
@@ -310,31 +315,86 @@ class Cliente extends Conexao
             $query->bindValue(":cnpj_cliente", $this->getCnpjCliente(), PDO::PARAM_STR);
             $query->bindValue(":email", $this->getEmail(), PDO::PARAM_STR);
             $query->bindValue(":limite_credito", $this->getLimiteCredito(), PDO::PARAM_STR);
-            // Executa o cadastro do cliente
             $query->execute();
-            // atualizar na tabela telefone_cliente
-            $sqlTelefone = "UPDATE telefone_cliente SET telefone_celular = :telefone_celular,
-                            telefone_fixo = :telefone_fixo WHERE id_cliente = :id_cliente;";
-            // preparar a query e blindar os parâmetros da tabela telefone_cliente
-            $query = $this->pdo->prepare($sqlTelefone);
-            $query->bindValue(":telefone_celular", $telefone_celular, PDO::PARAM_STR);
-            $query->bindValue(":telefone_fixo", $telefone_fixo, PDO::PARAM_STR);
-            $query->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
-            // Executa o cadastro do telefone_cliente
-            $query->execute();
-            // atualizar na tabela inscricao_estadual
-            $sqlInscricao = "UPDATE inscricao_estadual SET inscricao_estadual = :inscricao_estadual
-                                WHERE id_cliente = :id_cliente;";
-            // preparar a query e blindar os parâmetros da tabela inscricao_estadual
+
+            // --- Buscar os telefones atuais ---
+            $sqlFones = "SELECT id_telefone, numero 
+                     FROM telefone_cliente 
+                     WHERE id_cliente = :id_cliente";
+            $stmtFones = $this->pdo->prepare($sqlFones);
+            $stmtFones->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
+            $stmtFones->execute();
+            $telefonesAtuais = $stmtFones->fetchAll(PDO::FETCH_KEY_PAIR);
+
+            $idsEnviados = [];
+
+            // --- Inserir/Atualizar telefones ---
+            if (!empty($telefones)) {
+                foreach ($telefones as $tel) {
+                    $tipo   = $tel['tipo'] ?? null;
+                    $numero = isset($tel['numero']) ? preg_replace('/\D/', '', $tel['numero']) : null;
+                    $id_tel = $tel['id_telefone'] ?? null;
+
+                    if ($tipo && $numero) {
+                        if (!empty($id_tel) && isset($telefonesAtuais[$id_tel])) {
+                            // Atualizar existente
+                            $sqlUpdateTel = "UPDATE telefone_cliente
+                                         SET tipo = :tipo, numero = :numero
+                                         WHERE id_telefone = :id_telefone AND id_cliente = :id_cliente";
+                            $stmtUpdateTel = $this->pdo->prepare($sqlUpdateTel);
+                            $stmtUpdateTel->bindValue(":tipo", $tipo, PDO::PARAM_STR);
+                            $stmtUpdateTel->bindValue(":numero", $numero, PDO::PARAM_STR);
+                            $stmtUpdateTel->bindValue(":id_telefone", $id_tel, PDO::PARAM_INT);
+                            $stmtUpdateTel->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
+                            $stmtUpdateTel->execute();
+
+                            $idsEnviados[] = $id_tel;
+                        } else {
+                            // Inserir novo
+                            $sqlInsertTel = "INSERT INTO telefone_cliente (id_cliente, tipo, numero)
+                                         VALUES (:id_cliente, :tipo, :numero)";
+                            $stmtInsertTel = $this->pdo->prepare($sqlInsertTel);
+                            $stmtInsertTel->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
+                            $stmtInsertTel->bindValue(":tipo", $tipo, PDO::PARAM_STR);
+                            $stmtInsertTel->bindValue(":numero", $numero, PDO::PARAM_STR);
+                            $stmtInsertTel->execute();
+
+                            $idsEnviados[] = $this->pdo->lastInsertId();
+                        }
+                    }
+                }
+            }
+
+            // --- Excluir telefones que não foram enviados ---
+            foreach ($telefonesAtuais as $id_tel => $numero) {
+                if (!in_array($id_tel, $idsEnviados)) {
+                    $sqlDeleteTel = "DELETE FROM telefone_cliente 
+                                 WHERE id_telefone = :id_telefone 
+                                 AND id_cliente = :id_cliente";
+                    $stmtDeleteTel = $this->pdo->prepare($sqlDeleteTel);
+                    $stmtDeleteTel->bindValue(":id_telefone", $id_tel, PDO::PARAM_INT);
+                    $stmtDeleteTel->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
+                    $stmtDeleteTel->execute();
+                }
+            }
+
+            // --- Atualizar inscrição estadual ---
+            $sqlInscricao = "UPDATE inscricao_estadual
+                         SET inscricao_estadual = :inscricao_estadual
+                         WHERE id_cliente = :id_cliente";
             $query = $this->pdo->prepare($sqlInscricao);
             $query->bindValue(":inscricao_estadual", $inscricao_estadual, PDO::PARAM_STR);
             $query->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
-            // Executa o cadastro da inscricao_estadual
             $query->execute();
-            // atualizar na tabela endereco
-            $sqlEndereco = "UPDATE endereco SET cidade = :cidade, estado = :estado, bairro = :bairro,
-                            cep = :cep, complemento = :complemento WHERE id_cliente = :id_cliente;";
-            // preparar a query e blindar os parâmetros da tabela endereco
+
+            // --- Atualizar endereço ---
+            $sqlEndereco = "UPDATE endereco 
+                        SET cidade = :cidade,
+                            estado = :estado,
+                            bairro = :bairro,
+                            cep = :cep,
+                            complemento = :complemento
+                        WHERE id_cliente = :id_cliente";
             $query = $this->pdo->prepare($sqlEndereco);
             $query->bindValue(":cidade", $cidade, PDO::PARAM_STR);
             $query->bindValue(":estado", $estado, PDO::PARAM_STR);
@@ -342,13 +402,11 @@ class Cliente extends Conexao
             $query->bindValue(":cep", $cep, PDO::PARAM_STR);
             $query->bindValue(":complemento", $complemento, PDO::PARAM_STR);
             $query->bindValue(":id_cliente", $id_cliente, PDO::PARAM_INT);
-            // Executa o cadastro do endereco
             $query->execute();
-            // commit da transação
+
             $this->pdo->commit();
             return true;
         } catch (Exception $e) {
-            // rollback da transação em caso de erro
             $this->pdo->rollBack();
             error_log("Erro ao alterar cliente: " . $e->getMessage());
             return false;
@@ -391,7 +449,6 @@ class Cliente extends Conexao
             return false;
         }
     }
-
 
     public function verificar_LimiteCredito($id_cliente, $valor_totalPedido)
     {

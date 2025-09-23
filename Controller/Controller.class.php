@@ -2677,7 +2677,7 @@ class Controller
     {
         return preg_replace("/^(\d{5})(\d{3})$/", "$1-$2", $cep);
     }
-    // tabela de clientes
+    // tabela de consulta de cliente
     public function tabelaConsultarCliente($cliente)
     {
         if (empty($cliente)) return;
@@ -2710,10 +2710,13 @@ class Controller
                 $lista = explode(',', $valor->telefones);
 
                 foreach ($lista as $t) {
-                    $partes = explode(':', $t, 2);
-                    if (count($partes) === 2) {
-                        $tipo   = strtolower(trim($partes[0]));
-                        $numero = $this->aplicarMascaraTelefone(trim($partes[1]));
+                    // Agora dividimos em 3 partes: id_telefone, tipo, numero
+                    $partes = explode(':', $t, 3);
+                    if (count($partes) === 3) {
+                        $idTel  = (int) $partes[0]; // pode ser útil depois
+                        $tipo   = strtolower(trim($partes[1]));
+                        $numero = $this->aplicarMascaraTelefone(trim($partes[2]));
+
                         if ($tipo === 'celular') {
                             $celulares[] = $numero;
                         } elseif ($tipo === 'fixo') {
@@ -2743,14 +2746,14 @@ class Controller
                 print '<td>';
                 print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
                 print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_cliente' . $valor->id_cliente . '">
-                    <i class="bi bi-pencil-square"></i>
-                  </button>';
+                <i class="bi bi-pencil-square"></i>
+              </button>';
                 print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_cliente' . $valor->id_cliente . '">
-                    <i class="bi bi-trash"></i>
-                  </button>';
+                <i class="bi bi-trash"></i>
+              </button>';
                 print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_cliente' . $valor->id_cliente . '">
-                    <i class="bi bi-eye"></i>
-                  </button>';
+                <i class="bi bi-eye"></i>
+              </button>';
                 print '</div>';
                 print '</td>';
             }
@@ -2762,6 +2765,7 @@ class Controller
         print '</table>';
         print '</div>';
     }
+
     // modal de detalhes de um único cliente
     public function modalDetalhesCliente($cliente)
     {
@@ -2774,10 +2778,10 @@ class Controller
             if (!empty($valor->telefones)) {
                 $lista = explode(',', $valor->telefones);
                 foreach ($lista as $t) {
-                    $partes = explode(':', $t, 2);
-                    if (count($partes) === 2) {
-                        $tipo   = strtolower(trim($partes[0]));
-                        $numero = $this->aplicarMascaraTelefone(trim($partes[1]));
+                    $partes = explode(':', $t, 3);
+                    if (count($partes) === 3) {
+                        $tipo   = strtolower(trim($partes[1]));
+                        $numero = $this->aplicarMascaraTelefone(trim($partes[2]));
                         if ($tipo === 'celular') {
                             $celular[] = $numero;
                         } elseif ($tipo === 'fixo') {
@@ -3065,6 +3069,13 @@ class Controller
         print '    </div>'; // modal-content
         print '  </div>'; // modal-dialog
         print '</div>'; // modal
+        // script para abrir a modal
+        print '<script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var myModal = new bootstrap.Modal(document.getElementById("modal_cliente"));
+                myModal.show();
+            });
+        </script>';
     }
     // alterar cliente
     public function alterar_Cliente(
@@ -3075,9 +3086,8 @@ class Controller
         $cnpj_cliente,
         $email,
         $limite_credito,
+        $telefones,
         $inscricao_estadual,
-        $telefone_celular,
-        $telefone_fixo,
         $cidade,
         $estado,
         $bairro,
@@ -3104,9 +3114,8 @@ class Controller
                 $cnpj_cliente,
                 $email,
                 $limite_credito,
+                $telefones,
                 $inscricao_estadual,
-                $telefone_celular,
-                $telefone_fixo,
                 $cidade,
                 $estado,
                 $bairro,
@@ -3206,21 +3215,30 @@ class Controller
                     $rows[] = ['tipo' => strtolower(trim($tipoRaw)), 'numero' => $numeroLimpo];
                 }
             } else {
-                // string do GROUP_CONCAT, ex: "celular: 61999998888, fixo: 6133334444"
+                // string do GROUP_CONCAT, ex: "1:celular:61999998888,2:fixo:6133334444"
                 $lista = preg_split('/\s*,\s*/', $telefones);
                 foreach ($lista as $item) {
                     $item = trim($item);
                     if ($item === '') continue;
-                    $partes = preg_split('/\s*:\s*/', $item, 2);
-                    if (count($partes) === 2) {
-                        $tipo = strtolower(trim($partes[0]));
-                        $numeroRaw = trim($partes[1]);
+
+                    $partes = explode(':', $item, 3);
+                    if (count($partes) === 3) {
+                        $idTel     = (int) $partes[0];
+                        $tipo      = strtolower(trim($partes[1]));
+                        $numeroRaw = trim($partes[2]);
                     } else {
-                        $tipo = '';
-                        $numeroRaw = trim($partes[0]);
+                        // fallback de segurança
+                        $idTel     = null;
+                        $tipo      = '';
+                        $numeroRaw = trim($item);
                     }
+
                     $numeroLimpo = preg_replace('/\D/', '', $numeroRaw);
-                    $rows[] = ['tipo' => $tipo, 'numero' => $numeroLimpo];
+                    $rows[] = [
+                        'id_telefone' => $idTel,
+                        'tipo'        => $tipo,
+                        'numero'      => $numeroLimpo
+                    ];
                 }
             }
         }
@@ -3250,6 +3268,7 @@ class Controller
         if (!empty($rows)) {
             $index = 1;
             foreach ($rows as $r) {
+                $idTel = $r['id_telefone'];
                 $tipoNorm = htmlspecialchars($r['tipo']);
                 $numeroVal = htmlspecialchars($r['numero']);
                 print '      <div class="row g-3 telefone-item mb-2">';
@@ -3267,6 +3286,7 @@ class Controller
                 print '          <label class="form-label">Número de Telefone *</label>';
                 print '          <div class="input-group">';
                 print '            <input type="tel" name="telefones[' . $index . '][numero]" class="form-control telefone telefone-numero" id="telefone_' . $id_cliente . '_' . $index . '" placeholder="(00) 00000-0000" autocomplete="off" value="' . $numeroVal . '" required>';
+                print '            <input type="hidden" name="telefones[' . $index . '][id_telefone]" value="' . $idTel . '">';
                 print '            <button type="button" class="btn btn-outline-danger remover-telefone" title="Remover"><i class="bi bi-x-lg"></i></button>';
                 print '            <button type="button" class="btn btn-outline-success add-telefone" title="Adicionar"><i class="bi bi-plus-lg"></i> Adicionar</button>';
                 print '          </div>';
