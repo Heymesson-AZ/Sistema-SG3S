@@ -2071,7 +2071,7 @@ class Controller
         print '<button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
         print '</div>';
 
-        // Corpo com scroll interno controlado
+        // Corpo
         print '<div class="modal-body" style="max-height: 90vh; overflow-y: auto;">';
         print '<form action="index.php" method="POST" enctype="multipart/form-data" id="formulario_produto">';
         print '<input type="hidden" name="origem" value="produto">';
@@ -2082,7 +2082,7 @@ class Controller
         print '<legend class="float-none w-auto px-2">Dados do Produto</legend>';
         print '<div class="row g-2">';
 
-        // Imagem e Preview
+        // Imagem
         print '<div class="col-md-6">';
         print '<label for="img_produto" class="form-label">Imagem *</label>';
         print '<input type="file" class="form-control" id="img_produto" name="img_produto" accept="image/*">';
@@ -2098,17 +2098,25 @@ class Controller
         print '<input type="text" class="form-control" id="nome_produto" name="nome_produto" value="' . $_SESSION['produto']['nome_produto'] . '" required>';
         print '</div>';
 
-        // Tipo, Cor, Quantidade
+        // Tipo com botão +
         print '<div class="col-md-4">';
         print '<label for="tipo_produto" class="form-label">Tipo *</label>';
-        print '<input type="text" class="form-control" id="tipo_produto" name="tipo_produto" placeholder="Ex: Matéria-prima" required>';
+        print '<div class="input-group">';
+        print '<input type="text" class="form-control" id="tipo_produto" name="tipo_produto" placeholder="Ex: Matéria-prima" required autocomplete="off">';
+        print '<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_tipo_produto" ><i class="bi bi-plus-lg"></i></button>';
+        print '</div>';
         print '</div>';
 
+        // Cor com botão +
         print '<div class="col-md-4">';
         print '<label for="cor" class="form-label">Cor *</label>';
-        print '<input type="text" class="form-control" id="cor" name="cor" value="' . $_SESSION['produto']['cor'] . '" required>';
+        print '<div class="input-group">';
+        print '<input type="text" class="form-control" id="cor" name="cor" value="' . $_SESSION['produto']['cor'] . '" required autocomplete="off">';
+        print '<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_cor"><i class="bi bi-plus-lg"></i></button>';
+        print '</div>';
         print '</div>';
 
+        // Quantidade
         print '<div class="col-md-4">';
         print '<label for="quantidade" class="form-label">Qtd. (m) *</label>';
         print '<input type="text" class="form-control quantidade" id="quantidade" name="quantidade" required autocomplete="off">';
@@ -2122,7 +2130,7 @@ class Controller
 
         print '<div class="col-md-4">';
         print '<label for="largura" class="form-label">Largura (m) *</label>';
-        print '<input type="text" class="form-control" id="largura" name="largura" value="' . $_SESSION['produto']['largura'] . '" required autocomplete="off" >';
+        print '<input type="text" class="form-control" id="largura" name="largura" value="' . $_SESSION['produto']['largura'] . '" required autocomplete="off">';
         print '</div>';
 
         print '<div class="col-md-4">';
@@ -2135,7 +2143,7 @@ class Controller
         print '<label for="custo_compra" class="form-label">Custo de Compra *</label>';
         print '<div class="input-group">';
         print '<span class="input-group-text">R$</span>';
-        print '<input type="text" class="form-control dinheiro" id="custo_compra" name="custo_compra" required autocomplete="off" >';
+        print '<input type="text" class="form-control dinheiro" id="custo_compra" name="custo_compra" required autocomplete="off">';
         print '</div>';
         print '</div>';
 
@@ -2143,7 +2151,7 @@ class Controller
         print '<label for="valor_venda" class="form-label">Valor de Venda *</label>';
         print '<div class="input-group">';
         print '<span class="input-group-text">R$</span>';
-        print '<input type="text" class="form-control dinheiro" id="valor_venda" name="valor_venda" required autocomplete="off" >';
+        print '<input type="text" class="form-control dinheiro" id="valor_venda" name="valor_venda" required autocomplete="off">';
         print '</div>';
         print '</div>';
 
@@ -2152,23 +2160,25 @@ class Controller
         print '<input type="date" class="form-control" id="data_compra" name="data_compra" required autocomplete="off">';
         print '</div>';
 
+        // NCM e Fornecedor
         print '<div class="col-md-6">';
         print '<label for="ncm_produto" class="form-label">NCM *</label>';
         print '<input type="text" class="form-control" id="ncm_produto" name="ncm_produto" required autocomplete="off">';
         print '</div>';
-        // Fornecedor
+
         print '<div class="col-md-6">';
         print '<label for="produto_custo" class="form-label">Fornecedor *</label>';
         print '<div class="position-relative">';
-        print '<div class="input-group"> ';
+        print '<div class="input-group">';
         print '<span class="input-group-text"><i class="bi bi-search"></i></span>';
         print '<input type="hidden" id="id_fornecedor_hidden_cadastro" name="id_fornecedor" value="" />';
         print '<input type="text" class="form-control" id="id_fornecedor_produto_cadastro" placeholder="Digite o nome do fornecedor" autocomplete="off" />';
         print '</div>';
-        print '<div id="resultado_busca_fornecedor_cadastro" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;">';
+        print '<div id="resultado_busca_fornecedor_cadastro" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>';
         print '</div>';
         print '</div>';
-        print '</div>'; // fecha row do fieldset
+
+        print '</div>'; // row fieldset
         print '</fieldset>';
         print '</div>'; // col-md-12
         print '</div>'; // row g-2
@@ -2179,19 +2189,16 @@ class Controller
         print '<div class="container-fluid">';
         print '<div class="row g-2">';
         print '<div class="col-md-4">';
-        print '<button type="reset" class="btn btn-outline-secondary w-100 py-2">';
-        print '<i class="bi bi-arrow-counterclockwise"></i> Limpar</button>';
+        print '<button type="reset" class="btn btn-outline-secondary w-100 py-2"><i class="bi bi-arrow-counterclockwise"></i> Limpar</button>';
         print '</div>';
         print '<div class="col-md-4">';
-        print '<button type="submit" class="btn btn-success w-100 py-2" name="cadastrar_produto">';
-        print '<i class="bi bi-check-circle-fill"></i> Cadastrar</button>';
+        print '<button type="submit" class="btn btn-success w-100 py-2" name="cadastrar_produto"><i class="bi bi-check-circle-fill"></i> Cadastrar</button>';
         print '</div>';
         print '<div class="col-md-4">';
-        print '<button type="button" class="btn btn-danger w-100 py-2" data-bs-dismiss="modal">';
-        print '<i class="bi bi-x-octagon"></i> Cancelar</button>';
+        print '<button type="button" class="btn btn-danger w-100 py-2" data-bs-dismiss="modal"><i class="bi bi-x-octagon"></i> Cancelar</button>';
         print '</div>';
-        print '</div>'; // row
-        print '</div>'; // container-fluid
+        print '</div>';
+        print '</div>';
         print '</div>'; // modal-footer
 
         print '</form>';
@@ -2199,18 +2206,16 @@ class Controller
         print '</div>'; // modal-dialog
         print '</div>'; // modal
 
-        // Script de preview de imagem e exibição automática
+        // Script preview imagem
         print '<script>';
         print 'document.addEventListener("DOMContentLoaded", function() {';
         print '  const modal = document.getElementById("modal_produto");';
         print '  const instance = bootstrap.Modal.getOrCreateInstance(modal);';
         print '  instance.show();';
 
-        // Preview imagem
         print '  const inputImagemCadastro = document.querySelector("#img_produto");';
         print '  const previewDivCadastro = document.querySelector("#preview_imagem_cadastro");';
         print '  const legendaLabelCadastro = document.querySelector("#legenda_imagem_cadastro");';
-
         print '  if (inputImagemCadastro && previewDivCadastro && legendaLabelCadastro) {';
         print '    inputImagemCadastro.addEventListener("change", function () {';
         print '      const file = this.files[0];';
@@ -2230,6 +2235,7 @@ class Controller
         print '});';
         print '</script>';
     }
+
     // Cadastrar Produto
     public function cadastrar_Produto(
         $nome_produto,

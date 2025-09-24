@@ -1,6 +1,5 @@
     <!DOCTYPE html>
     <html lang="pt-br">
-
     <head>
         <title>Sistema de Gerenciamento SG3S</title>
         <meta charset="utf-8" />
@@ -21,8 +20,9 @@
                 <h1 class="display-9">Sistema de Gerenciamento SG3S</h1>
                 <p class="lead">Utilize as opções acima para navegar pelo Sistema</p>
             </div>
-            <div class="row justify-content-center g-3 mt-4">
+            <div class="row justify-content-center g-4 mt-4">
                 <?php if ($this->temPermissao(['Administrador'])): ?>
+                    <!-- Linha de Cadastros -->
                     <div class="col-md-auto">
                         <button class="btn btn-primary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_verificar_produto">
                             <i class="bi bi-plus-circle"></i> Cadastrar Produto
@@ -34,28 +34,49 @@
                         </button>
                     </div>
                     <div class="col-md-auto">
-                        <button class="btn btn-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#modal_consulta_fornecedor">
+                        <button class="btn btn-primary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_cor">
+                            <i class="bi bi-plus-lg"></i> Cadastrar Cor
+                        </button>
+                    </div>
+                    <div class="col-md-auto">
+                        <button class="btn btn-primary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_tipo_produto">
+                            <i class="bi bi-plus-lg"></i> Cadastrar Tipo de Produto
+                        </button>
+                    </div>
+                    <!-- Linha de Consultas -->
+                    <div class="w-100"></div> <!-- quebra de linha -->
+                    <div class="col-md-auto">
+                        <button class="btn btn-secondary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_consultar_produto">
+                            <i class="bi bi-file-earmark-text"></i> Consultar Produto
+                        </button>
+                    </div>
+                    <div class="col-md-auto">
+                        <button class="btn btn-secondary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_consulta_fornecedor">
                             <i class="bi bi-file-earmark-text"></i> Consultar Fornecedor
                         </button>
                     </div>
+                    <div class="col-md-auto">
+                        <button class="btn btn-secondary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_consultar_cor">
+                            <i class="bi bi-file-earmark-text"></i> Consultar Cor
+                        </button>
+                    </div>
+                    <div class="col-md-auto">
+                        <button class="btn btn-secondary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_consultar_tipo_produto">
+                            <i class="bi bi-file-earmark-text"></i> Consultar Tipo de Produto
+                        </button>
+                    </div>
                 <?php endif; ?>
-                <div class="col-md-auto">
-                    <button class="btn btn-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#modal_consultar_produto">
-                        <i class="bi bi-file-earmark-text"></i> Consultar Produto
-                    </button>
-                </div>
             </div>
+
             <!-- Modal de Verificação de Produto -->
             <div class="modal fade" id="modal_verificar_produto" tabindex="-1" aria-labelledby="modalVerificarProdutoLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
-
                         <!-- Cabeçalho -->
                         <div class="modal-header">
                             <h6 class="modal-title" id="modalVerificarProdutoLabel">Consultar Produto</h6>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
-
                         <!-- Corpo -->
                         <div class="modal-body">
                             <form action="index.php" method="POST" id="formulario_verificar_produto">
@@ -150,6 +171,164 @@
                     </div>
                 </div>
             </div>
+            <!-- Modal de cadastro de tipo de produto -->
+            <div class="modal fade" id="modal_tipo_produto" tabindex="-1" aria-labelledby="modalTipoProdutoLabel" aria-hidden="true">
+                <div class="modal-dialog modal-default modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h6 class="modal-title" id="modalTipoProdutoLabel">Novo Tipo de Produto</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="index.php" method="POST">
+                                <fieldset class="border border-black p-3 mb-4">
+                                    <legend class="float-none w-auto px-2">Dados do Tipo de Produto</legend>
+                                    <div class="mb-3">
+                                        <label for="nome_tipo_produto" class="form-label">Nome do Tipo de Produto *</label>
+                                        <input type="text" class="form-control" id="nome_tipo_produto" name="nome_tipo_produto"
+                                            required autocomplete="off" placeholder="Digite o nome do tipo de produto"
+                                            pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$"
+                                            title="Somente letras e espaços são permitidos" />
+                                    </div>
+                                </fieldset>
+                                <!-- Rodapé com botões -->
+                                <div class="d-flex justify-content-center gap-2 mt-4">
+                                    <button type="reset" class="btn btn-outline-secondary w-50 py-2">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Limpar
+                                    </button>
+                                    <button type="submit" name="cadastrar_tipo_produto" class="btn btn-success w-50 py-2">
+                                        <i class="bi bi-plus"></i> Cadastrar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal de cadastro de Cor -->
+            <div class="modal fade" id="modal_cor" tabindex="-1" aria-labelledby="modalCorLabel" aria-hidden="true">
+                <div class="modal-dialog modal-default modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h6 class="modal-title" id="modalCorLabel">Nova Cor</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="index.php" method="POST" id="formulario_cor_cadastro">
+                                <fieldset class="border border-black p-3 mb-4">
+                                    <legend class="float-none w-auto px-2">Dados da Cor</legend>
+                                    <div class="mb-3">
+                                        <label for="nome_cor" class="form-label">Nome da Cor *</label>
+                                        <input type="text" class="form-control" id="nome_cor" name="nome_cor"
+                                            required autocomplete="off" placeholder="Digite o nome da cor"
+                                            pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$"
+                                            title="Somente letras e espaços são permitidos" />
+                                    </div>
+                                </fieldset>
+                                <!-- Rodapé com botões -->
+                                <div class="d-flex justify-content-center gap-2 mt-4">
+                                    <button type="reset" class="btn btn-outline-secondary w-50 py-2">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Limpar
+                                    </button>
+                                    <button type="submit" name="cadastrar_cor" class="btn btn-success w-50 py-2">
+                                        <i class="bi bi-plus"></i> Cadastrar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal de Consulta de Tipo de Produto -->
+            <div class="modal fade" id="modal_consultar_tipo_produto" tabindex="-1" aria-labelledby="modalTipoProdutoLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="bi bi-search"></i> Consulta de Tipo de Produto</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="index.php" method="POST">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label for="nome_tipo_produto" class="form-label">Nome do Tipo de Produto</label>
+                                        <input type="text" class="form-control" id="nome_tipo_produto" name="nome_tipo_produto"
+                                            placeholder="Digite o nome do tipo de produto"
+                                            autocomplete="off"
+                                            pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$"
+                                            title="Somente letras e espaços são permitidos" />
+                                        <div class="invalid-feedback">Informe o nome do tipo de produto.</div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <button type="submit" name="consultar_tipo_produto" class="btn btn-primary">
+                                        <i class="bi bi-search"></i> Consultar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal de Consulta de Cor -->
+            <div class="modal fade" id="modal_consultar_cor" tabindex="-1" aria-labelledby="modalCorLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="bi bi-search"></i> Consulta de Cor</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="index.php" method="POST">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label for="nome_cor" class="form-label">Nome da Cor</label>
+                                        <input type="text" class="form-control" id="nome_cor" name="nome_cor"
+                                            placeholder="Digite o nome da cor"
+                                            autocomplete="off"
+                                            pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$"
+                                            title="Somente letras e espaços são permitidos" />
+                                        <div class="invalid-feedback">Informe o nome da cor.</div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <button type="submit" name="consultar_cor" class="btn btn-primary">
+                                        <i class="bi bi-search"></i> Consultar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal de Consulta de Fornecedor -->
+            <div class="modal fade" id="modal_consulta_fornecedor" tabindex="-1" aria-labelledby="modalConsultaFornecedorLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="bi bi-search"></i> Consulta de Fornecedor</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="index.php" method="POST">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label for="razao_social_consulta" class="form-label">Razão Social</label>
+                                        <input type="text" class="form-control" id="razao_social_consulta" name="razao_social"
+                                            placeholder="Digite a razão social" autocomplete="off" />
+                                        <div class="invalid-feedback">Informe a razão social.</div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <button type="submit" id="consultar_fornecedor" name="consultar_fornecedor" class="btn btn-primary">
+                                        <i class="bi bi-search"></i> Consultar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Modal de Verificação de CNPJ do Fornecedor -->
             <div class="modal fade" id="modal_cnpj" tabindex="-1" aria-labelledby="modalCnpjLabel" aria-hidden="true">
                 <div class="modal-dialog modal-default modal-dialog-centered">
@@ -180,34 +359,6 @@
                                     </button>
                                     <button type="submit" name="verificar_cnpj" class="btn btn-success w-50 py-2">
                                         <i class="bi bi-check-circle-fill"></i> Verificar
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Modal de Consulta de Fornecedor -->
-            <div class="modal fade" id="modal_consulta_fornecedor" tabindex="-1" aria-labelledby="modalConsultaFornecedorLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title"><i class="bi bi-search"></i> Consulta de Fornecedor</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form action="index.php" method="POST">
-                                <div class="row g-3">
-                                    <div class="col-md-12">
-                                        <label for="razao_social_consulta" class="form-label">Razão Social *</label>
-                                        <input type="text" class="form-control" id="razao_social_consulta" name="razao_social"
-                                            placeholder="Digite a razão social" autocomplete="off" />
-                                        <div class="invalid-feedback">Informe a razão social.</div>
-                                    </div>
-                                </div>
-                                <div class="text-center mt-4">
-                                    <button type="submit" id="consultar_fornecedor" name="consultar_fornecedor" class="btn btn-primary">
-                                        <i class="bi bi-search"></i> Consultar
                                     </button>
                                 </div>
                             </form>
