@@ -267,9 +267,7 @@ class Cliente extends Conexao
             return false;
         }
     }
-
     // método de alterar cliente
-
     public function alterarCliente(
         $id_cliente,
         $nome_representante,

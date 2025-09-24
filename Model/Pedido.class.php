@@ -203,6 +203,9 @@ class Pedido extends Conexao
         $this->setValorFrete($valor_frete);
         $this->setItens($itens);
 
+        //id do usuario a para o pedido
+
+        $id_usuario = $_SESSION['id_usuario'];
         $statusValidos = ['Pendente', 'Aguardando Pagamento', 'Finalizado', 'Cancelado'];
         if (!in_array($status_pedido, $statusValidos)) {
             throw new Exception("Status de pedido inválido.");
@@ -625,9 +628,9 @@ class Pedido extends Conexao
             $query = $bd->prepare($sql);
             $query->bindValue(':id_pedido', $this->getIdPedido(), PDO::PARAM_INT);
             $query->bindValue(':status_pedido', $this->getStatusPedido(), PDO::PARAM_STR);
-
             if (in_array($this->getStatusPedido(), ['Finalizado'])) {
-                $query->bindValue(':data_finalizacao', date('Y-m-d'));
+                // data e hora atual `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
+                $query->bindValue(':data_finalizacao', date('Y-m-d H:i:s'));
             }
 
             $query->execute();

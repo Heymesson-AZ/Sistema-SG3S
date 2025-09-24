@@ -152,7 +152,7 @@
             </div>
             <!-- Modal de Verificação de CNPJ do Fornecedor -->
             <div class="modal fade" id="modal_cnpj" tabindex="-1" aria-labelledby="modalCnpjLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-dialog modal-default modal-dialog-centered">
                     <div class="modal-content">
                         <!-- Cabeçalho -->
                         <div class="modal-header">
@@ -256,14 +256,15 @@
                     $valor->razao_social,
                     $valor->cnpj_fornecedor,
                     $valor->email,
-                    $valor->telefone_celular,
-                    $valor->telefone_fixo
+                    $valor->telefones,
                 );
                 //modal excluir usuario
                 $this->modalExcluirFornecedor(
                     $valor->id_fornecedor,
                     $valor->razao_social
                 );
+                // modal de detalhes de Fornecedor
+                $this->modalDetalhesFornecedor($fornecedor);
             };
             // produto
             foreach ($produto as $key => $valor) {
@@ -327,6 +328,7 @@
 
         <!-- Seu arquivo JavaScript personalizado -->
         <script src="assets/js/produto.js"></script>
+        <script src="assets/js/fornecedor.js"></script>
         <!-- ajax de produtos com baixo estoque-->
         <script src="assets/js/notificacao.js"></script>
     </body>

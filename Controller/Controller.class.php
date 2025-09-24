@@ -1454,105 +1454,106 @@ class Controller
             include_once 'view/produto.php';
         }
     }
-    // Modal de cadastro de fornecedor
+    // modal de cadastro de fornecedor
     public function modal_CadastroFornecedor()
     {
         print '<div class="modal fade" id="modal_fornecedor" tabindex="-1" aria-labelledby="modalFornecedorLabel" aria-hidden="true">';
-        print '<div class="modal-dialog modal-lg modal-dialog-centered">';
-        print '<div class="modal-content">';
+        print '  <div class="modal-dialog modal-dialog-centered modal-lg">';
+        print '    <div class="modal-content">';
 
         // Cabeçalho
-        print '<div class="modal-header">';
-        print '<h6 class="modal-title" id="modalFornecedorLabel">Novo Fornecedor</h6>';
-        print '<button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
-        print '</div>';
+        print '      <div class="modal-header">';
+        print '        <h6 class="modal-title" id="modalFornecedorLabel">Novo Fornecedor</h6>';
+        print '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '      </div>';
 
         // Corpo da modal
-        print '<div class="modal-body">';
-        print '<form action="index.php" method="POST" id="formulario_fornecedor">';
-        print '<input type="hidden" name="origem" value="fornecedor">';
-        print '<div class="row g-2">';
+        print '      <div class="modal-body">';
+        print '        <form action="index.php" method="POST" id="formulario_fornecedor" class="needs-validation">';
+        print '          <input type="hidden" name="origem" value="fornecedor">';
+        print '          <div class="row g-3">';
 
-        // Fieldset Dados Cadastrais
-        print '<div class="col-md-12">';
-        print '<fieldset class="border border-black p-1 mb-4">';
-        print '<legend class="float-none w-auto px-2">Dados Cadastrais</legend>';
-        print '<div class="row g-2">';
+        // ===== Fieldset Dados Cadastrais =====
+        print '            <div class="col-12">';
+        print '              <fieldset class="border border-black p-3 mb-4">';
+        print '                <legend class="float-none w-auto px-2">Dados Cadastrais</legend>';
+        print '                <div class="row g-3">';
 
-        print '<div class="col-md-6">';
-        print '<label for="razao_social" class="form-label">Razão Social *</label>';
-        print '<input type="text" class="form-control" id="razao_social" name="razao_social" required autocomplete="off"
-            placeholder="Ex: Empresa XYZ">';
-        print '</div>';
-        print '<div class="col-md-6">';
-        print '<label for="cnpj" class="form-label">CNPJ *</label>';
-        print '<input type="text" class="form-control cnpj" id="cnpj" name="cnpj"
-            value="' . $_SESSION['cnpj_cadastro'] . '" required
-            placeholder="00.000.000/0000-00" autocomplete="off"
-            pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" title="Formato esperado: 00.000.000/0000-00">';
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="razao_social" class="form-label">Razão Social *</label>';
+        print '                    <input type="text" class="form-control" id="razao_social" name="razao_social" required placeholder="Digite a razão social" minlength="3" maxlength="150" autocomplete="off">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label for="email_fornecedor" class="form-label">Email *</label>';
-        print '<input type="email" class="form-control" id="email_fornecedor" name="email" required
-            placeholder="exemplo@email.com" autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="cnpj" class="form-label">CNPJ *</label>';
+        print '                    <input type="text" class="form-control cnpj" id="cnpj" name="cnpj" value="' . ($_SESSION['cnpj_cadastro']) . '" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" autocomplete="off">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label for="telefone_celular" class="form-label">Telefone Celular *</label>';
-        print '<input type="tel" class="form-control telefone_celular" id="telefone_celular" name="telefone_celular" required
-            placeholder="(00) 00000-0000" autocomplete="off"
-            pattern="\(\d{2}\) \d{4,5}-\d{4}" title="Formato esperado: (XX) XXXXX-XXXX">';
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="email_fornecedor" class="form-label">E-mail *</label>';
+        print '                    <input type="email" class="form-control" id="email_fornecedor" name="email" required placeholder="exemplo@email.com" maxlength="150" autocomplete="off">';
+        print '                  </div>';
 
-        print '<div class="col-md-6">';
-        print '<label for="telefone_fixo" class="form-label">Telefone Fixo *</label>';
-        print '<input type="tel" class="form-control telefone_fixo" id="telefone_fixo" name="telefone_fixo" required
-            placeholder="(00) 0000-0000" autocomplete="off"
-            pattern="\(\d{2}\) \d{4}-\d{4}" title="Formato esperado: (XX) XXXX-XXXX">';
-        print '</div>';
+        // ===== Telefones dinâmicos =====
+        print '                  <div class="col-md-12">';
+        print '                    <div id="telefones-container-fornecedor">';
+        print '                      <div class="row g-3 telefone-item mb-2">';
 
-        print '</div>'; // fecha row
-        print '</fieldset>';
-        print '</div>'; // fecha col-md-12
+        print '                        <div class="col-md-4">';
+        print '                          <label class="form-label">Tipo de Telefone *</label>';
+        print '                          <select name="telefones[0][tipo]" class="form-select telefone-tipo">';
+        print '                            <option value="">Selecione</option>';
+        print '                            <option value="celular">Celular</option>';
+        print '                            <option value="fixo">Fixo</option>';
+        print '                          </select>';
+        print '                        </div>';
 
-        print '</div>'; // fecha .row g-2
-        print '</div>'; // fecha .modal-body
+        print '                        <div class="col-md-8">';
+        print '                          <label class="form-label">Número de Telefone *</label>';
+        print '                          <div class="input-group">';
+        print '                            <input type="tel" name="telefones[0][numero]" class="form-control telefone telefone-numero" id="telefone_fornecedor_0" placeholder="(00) 00000-0000" autocomplete="off">';
+        print '                            <button type="button" class="btn btn-outline-danger remover-telefone" title="Remover">';
+        print '                              <i class="bi bi-x-lg"></i>';
+        print '                            </button>';
+        print '                            <button type="button" class="btn btn-outline-success add-telefone" title="Adicionar">';
+        print '                              <i class="bi bi-plus-lg"></i> Adicionar';
+        print '                            </button>';
+        print '                          </div>';
+        print '                        </div>';
 
-        // Rodapé da modal com botões
-        print '<div class="modal-footer">';
-        print '<div class="container-fluid">';
-        print '<div class="row g-2">';
-        print '<div class="col-md-6">';
-        print '<button type="reset" class="btn btn-outline-secondary w-100 py-2">';
-        print '<i class="bi bi-arrow-counterclockwise"></i> Limpar';
-        print '</button>';
-        print '</div>';
-        print '<div class="col-md-6">';
-        print '<button type="submit" name="cadastrar_fornecedor" class="btn btn-success w-100 py-2">';
-        print '<i class="bi bi-check-circle"></i> Cadastrar';
-        print '</button>';
-        print '</div>';
-        print '</div>'; // row
-        print '</div>'; // container-fluid
-        print '</div>'; // modal-footer
+        print '                      </div>'; // row telefone
+        print '                    </div>';   // telefones-container-fornecedor
+        print '                  </div>';     // col-md-12
 
-        print '</form>';
-        print '</div>'; // modal-content
-        print '</div>'; // modal-dialog
+        print '                </div>'; // row g-3
+        print '              </fieldset>';
+        print '            </div>'; // col-12
+
+        print '          </div>'; // row g-3
+        print '        </form>';
+        print '      </div>'; // modal-body
+
+        // Rodapé da modal
+        print '      <div class="modal-footer d-flex justify-content-end gap-2">';
+        print '        <button type="reset" form="formulario_fornecedor" class="btn btn-outline-secondary">';
+        print '          <i class="bi bi-arrow-counterclockwise"></i> Limpar';
+        print '        </button>';
+        print '        <button type="submit" form="formulario_fornecedor" class="btn btn-success" id="cadastrar_fornecedor" name="cadastrar_fornecedor">';
+        print '          <i class="bi bi-check-circle"></i> Cadastrar';
+        print '        </button>';
+        print '      </div>';
+
+        print '    </div>'; // modal-content
+        print '  </div>'; // modal-dialog
         print '</div>'; // modal
 
-        // Script para exibir automaticamente
-        // Script para abrir a modal automaticamente
-        print '<script>';
-        print '  document.addEventListener("DOMContentLoaded", function() {';
-        print '    const modalFornecedor = document.getElementById("modal_fornecedor");';
-        // o getOrCreateInstance é usado para garantir que a instância da modal seja criada ou recuperada
-        print '    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalFornecedor);';
-        // Exibe a modal
-        print '    modalInstance.show();';
-        print '  });';
-        print '</script>';
+        // Script para abrir automaticamente
+        print '<script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var myModal = new bootstrap.Modal(document.getElementById("modal_fornecedor"));
+                myModal.show();
+            });
+        </script>';
     }
     //Consultar Fornecedor
     public function consultar_Fornecedor($razao_social)
@@ -1580,8 +1581,12 @@ class Controller
         }
     }
     // cadastrar fornecedor
-    public function cadastrar_Fornecedor($razao_social, $cnpj, $email, $telefone_celular, $telefone_fixo)
-    {
+    public function cadastrar_Fornecedor(
+        $razao_social,
+        $cnpj,
+        $email,
+        $telefones
+    ) {
         // instancia a classe
         $objFornecedor = new Fornecedor();
         if ($this->validarCNPJ($cnpj) == false) {
@@ -1591,7 +1596,12 @@ class Controller
             $this->mostrarMensagemErro("CNPJ inválido");
         } else {
             // Invocar o método da classe Usuario para cadastrar o perfil de usuário
-            if ($objFornecedor->cadastrarFornecedor($razao_social, $cnpj, $email, $telefone_celular, $telefone_fixo) == true) {
+            if ($objFornecedor->cadastrarFornecedor(
+                $razao_social,
+                $cnpj,
+                $email,
+                $telefones
+            ) == true) {
                 session_start();
                 // Carregar o menu
                 $menu = $this->menu();
@@ -1611,8 +1621,13 @@ class Controller
         }
     }
     // alterar fornecedor
-    public function alterar_Fornecedor($id_fornecedor, $razao_social, $cnpj, $email, $telefone_celular, $telefone_fixo)
-    {
+    public function alterar_Fornecedor(
+        $id_fornecedor,
+        $razao_social,
+        $cnpj,
+        $email,
+        $telefones
+    ) {
         // instancia a classe
         $objFornecedor = new Fornecedor();
         // usand o metodo de validar cnpj e o metodo de cadastrar fornecedor
@@ -1623,7 +1638,13 @@ class Controller
             $this->mostrarMensagemErro("CNPJ inválido");
         } else {
             // Invocar o método da classe Usuario para cadastrar o perfil de usuário
-            if ($objFornecedor->alterarFornecedor($id_fornecedor, $razao_social, $cnpj, $email, $telefone_celular, $telefone_fixo) == true) {
+            if ($objFornecedor->alterarFornecedor(
+                $id_fornecedor,
+                $razao_social,
+                $cnpj,
+                $email,
+                $telefones
+            ) == true) {
                 session_start();
                 // Carregar o menu
                 $menu = $this->menu();
@@ -1666,74 +1687,149 @@ class Controller
             $this->mostrarMensagemErro("Erro ao excluir Fornecedor");
         }
     }
-    // modal alterar fornecedor
-    public function modal_AlterarFornecedor($id_fornecedor, $razao_social, $cnpj, $email, $telefone_celular, $telefone_fixo)
+    // Modal de Alterar Fornecedor
+    public function modal_AlterarFornecedor($id_fornecedor, $razao_social, $cnpj, $email, $telefones)
     {
-        print '<div class="modal fade" id="alterar_fornecedor' . $id_fornecedor . '" tabindex="-1" aria-labelledby="alterarFornecedorLabel" aria-hidden="true">';
-        print '<div class="modal-dialog modal-lg modal-dialog-centered">';
-        print '<div class="modal-content">';
+        print '<div class="modal fade" id="alterar_fornecedor' . $id_fornecedor . '" tabindex="-1" aria-labelledby="alterarFornecedorLabel' . $id_fornecedor . '" aria-hidden="true">';
+        print '  <div class="modal-dialog modal-lg modal-dialog-centered">';
+        print '    <div class="modal-content">';
 
         // Cabeçalho
-        print '<div class="modal-header">';
-        print '<h6 class="modal-title" id="alterarFornecedorLabel">Alterar Fornecedor</h6>';
-        print '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
-        print '</div>';
+        print '      <div class="modal-header">';
+        print '        <h6 class="modal-title" id="alterarFornecedorLabel' . $id_fornecedor . '">Alterar Fornecedor</h6>';
+        print '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '      </div>';
 
         // Corpo
-        print '<div class="modal-body">';
-        print '<form action="index.php" method="POST" id="formulario_alterar_fornecedor">';
+        print '      <div class="modal-body">';
+        print '        <form action="index.php" method="POST" id="form_alterar_fornecedor' . $id_fornecedor . '" class="needs-validation">';
+        print '          <input type="hidden" name="id_fornecedor" value="' . $id_fornecedor . '">';
 
-        print '<fieldset class="border border-black p-3 mb-4">';
-        print '<legend class="float-none w-auto px-2">Dados do Fornecedor</legend>';
-
-        print '<div class="row g-3">';
+        print '          <fieldset class="border border-black p-3 mb-4">';
+        print '            <legend class="float-none w-auto px-2">Dados do Fornecedor</legend>';
+        print '            <div class="row g-3">';
 
         // Razão Social
-        print '<div class="col-md-6">';
-        print '<label for="razao_social" class="form-label">Razão Social *</label>';
-        print '<input type="text" class="form-control" id="razao_social" name="razao_social" value="' . $razao_social . '" required>';
-        print '</div>';
+        print '              <div class="col-md-6">';
+        print '                <label for="razao_social_' . $id_fornecedor . '" class="form-label">Razão Social *</label>';
+        print '                <input type="text" class="form-control" id="razao_social_' . $id_fornecedor . '" name="razao_social" value="' . htmlspecialchars($razao_social) . '" required>';
+        print '              </div>';
 
         // CNPJ
-        print '<div class="col-md-6">';
-        print '<label for="cnpj" class="form-label">CNPJ *</label>';
-        print '<input type="text" class="form-control cnpj" id="cnpj" name="cnpj" value="' . $cnpj . '" required>';
-        print '</div>';
+        print '              <div class="col-md-6">';
+        print '                <label for="cnpj_' . $id_fornecedor . '" class="form-label">CNPJ *</label>';
+        print '                <input type="text" class="form-control cnpj" id="cnpj_' . $id_fornecedor . '" name="cnpj" value="' . htmlspecialchars($cnpj) . '" required>';
+        print '              </div>';
 
         // Email
-        print '<div class="col-md-6">';
-        print '<label for="email" class="form-label">E-mail *</label>';
-        print '<input type="email" class="form-control" id="email" name="email" value="' . $email . '" required>';
-        print '</div>';
+        print '              <div class="col-md-6">';
+        print '                <label for="email_' . $id_fornecedor . '" class="form-label">E-mail *</label>';
+        print '                <input type="email" class="form-control" id="email_' . $id_fornecedor . '" name="email" value="' . htmlspecialchars($email) . '" required>';
+        print '              </div>';
 
-        // Telefone Celular
-        print '<div class="col-md-6">';
-        print '<label for="telefone_celular" class="form-label">Telefone Celular *</label>';
-        print '<input type="text" class="form-control telefone_celular" id="telefone_celular" name="telefone_celular" value="' . $telefone_celular . '" required>';
-        print '</div>';
+        // Telefones
+        print '              <div class="col-md-12">';
+        print '                <fieldset class="border p-2 mb-3">';
+        print '                  <legend class="float-none w-auto px-2">Telefones</legend>';
+        print '                  <div id="telefones-container-fornecedor-' . $id_fornecedor . '">';
 
-        // Telefone Fixo
-        print '<div class="col-md-6">';
-        print '<label for="telefone_fixo" class="form-label">Telefone Fixo</label>';
-        print '<input type="text" class="form-control telefone_fixo" id="telefone_fixo" name="telefone_fixo" value="' . $telefone_fixo . '">';
-        print '</div>';
+        // Primeira linha vazia (para adicionar novo)
+        print '                    <div class="row g-3 telefone-item mb-2">';
+        print '                      <div class="col-md-4">';
+        print '                        <label class="form-label">Tipo de Telefone *</label>';
+        print '                        <select name="telefones[0][tipo]" class="form-select telefone-tipo">';
+        print '                          <option value="">Selecione...</option>';
+        print '                          <option value="celular">Celular</option>';
+        print '                          <option value="fixo">Fixo</option>';
+        print '                        </select>';
+        print '                      </div>';
+        print '                      <div class="col-md-8">';
+        print '                        <label class="form-label">Número de Telefone *</label>';
+        print '                        <div class="input-group">';
+        print '                          <input type="tel" name="telefones[0][numero]" class="form-control telefone telefone-numero" id="telefone_fornecedor_' . $id_fornecedor . '_0" placeholder="(00) 00000-0000" autocomplete="off">';
+        print '                          <button type="button" class="btn btn-outline-danger remover-telefone" title="Remover"><i class="bi bi-x-lg"></i></button>';
+        print '                          <button type="button" class="btn btn-outline-success add-telefone" title="Adicionar"><i class="bi bi-plus-lg"></i> Adicionar</button>';
+        print '                        </div>';
+        print '                      </div>';
+        print '                    </div>';
 
-        print '</div>'; // row
-        print '</fieldset>';
+        // Telefones existentes
+        if (!empty($telefones)) {
+            $rows = [];
+            if (is_array($telefones)) {
+                foreach ($telefones as $t) {
+                    $rows[] = [
+                        'id_telefone' => $t['id_telefone'] ?? null,
+                        'tipo'        => strtolower(trim($t['tipo'] ?? '')),
+                        'numero'      => preg_replace('/\D/', '', $t['numero'] ?? '')
+                    ];
+                }
+            } else {
+                // string do GROUP_CONCAT
+                $lista = preg_split('/\s*,\s*/', $telefones);
+                foreach ($lista as $item) {
+                    $partes = explode(':', $item, 3);
+                    if (count($partes) === 3) {
+                        $rows[] = [
+                            'id_telefone' => (int)$partes[0],
+                            'tipo'        => strtolower(trim($partes[1])),
+                            'numero'      => preg_replace('/\D/', '', $partes[2])
+                        ];
+                    }
+                }
+            }
 
-        // Rodapé com botões
-        print '<div class="d-flex justify-content-center gap-2 mt-4">';
-        print '<input type="hidden" name="id_fornecedor" value="' . $id_fornecedor . '">';
-        print '<button type="button" class="btn btn-outline-secondary w-50 py-2" data-bs-dismiss="modal">';
-        print '<i class="bi bi-x-circle"></i> Fechar</button>';
-        print '<button type="submit" name="alterar_fornecedor" class="btn btn-primary w-50 py-2">';
-        print '<i class="bi bi-check-circle-fill"></i> Alterar</button>';
-        print '</div>';
+            $index = 1;
+            foreach ($rows as $r) {
+                $idTel = $r['id_telefone'];
+                $tipo  = htmlspecialchars($r['tipo']);
+                $num   = htmlspecialchars($r['numero']);
 
-        print '</form>';
-        print '</div>'; // modal-body
-        print '</div>'; // modal-content
-        print '</div>'; // modal-dialog
+                print '                    <div class="row g-3 telefone-item mb-2">';
+                print '                      <div class="col-md-4">';
+                print '                        <label class="form-label">Tipo de Telefone *</label>';
+                print '                        <select name="telefones[' . $index . '][tipo]" class="form-select telefone-tipo" required>';
+                $options = ['celular' => 'Celular', 'fixo' => 'Fixo'];
+                foreach ($options as $val => $label) {
+                    $sel = ($val === $tipo) ? 'selected' : '';
+                    print "<option value=\"$val\" $sel>$label</option>";
+                }
+                print '                        </select>';
+                print '                      </div>';
+                print '                      <div class="col-md-8">';
+                print '                        <label class="form-label">Número de Telefone *</label>';
+                print '                        <div class="input-group">';
+                print '                          <input type="tel" name="telefones[' . $index . '][numero]" class="form-control telefone telefone-numero" id="telefone_fornecedor_' . $id_fornecedor . '_' . $index . '" value="' . $num . '" placeholder="(00) 00000-0000" autocomplete="off" required>';
+                if ($idTel) {
+                    print '                          <input type="hidden" name="telefones[' . $index . '][id_telefone]" value="' . $idTel . '">';
+                }
+                print '                          <button type="button" class="btn btn-outline-danger remover-telefone" title="Remover"><i class="bi bi-x-lg"></i></button>';
+                print '                          <button type="button" class="btn btn-outline-success add-telefone" title="Adicionar"><i class="bi bi-plus-lg"></i> Adicionar</button>';
+                print '                        </div>';
+                print '                      </div>';
+                print '                    </div>';
+                $index++;
+            }
+        }
+
+        print '                  </div>'; // telefones-container
+        print '                </fieldset>';
+        print '              </div>'; // col-md-12
+
+        print '            </div>'; // row g-3
+        print '          </fieldset>';
+
+        // Rodapé
+        print '          <div class="modal-footer d-flex justify-content-end gap-2">';
+        print '            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>';
+        print '            <button type="submit" class="btn btn-primary" name="alterar_fornecedor"><i class="bi bi-check-circle"></i> Alterar</button>';
+        print '          </div>';
+
+        print '        </form>';
+        print '      </div>'; // modal-body
+
+        print '    </div>'; // modal-content
+        print '  </div>'; // modal-dialog
         print '</div>'; // modal
     }
     // modal excluir fornecedor
@@ -1771,35 +1867,114 @@ class Controller
         print '<thead class="table-primary">';
         print '<tr>';
         print '<th scope="col">Razão Social</th>';
-        print '<th scope="col">CNPJ</th>';
         print '<th scope="col">E-mail</th>';
-        print '<th scope="col">Telefone Celular</th>';
-        print '<th scope="col">Telefone Fixo</th>';
-        print '<th scope="col">Ações</th>';
+
+        if ($this->temPermissao(['Administrador'])) {
+            print '<th scope="col">Ações</th>';
+        }
+
         print '</tr>';
         print '</thead>';
         print '<tbody>';
 
         foreach ($fornecedor as $valor) {
             print '<tr>';
-            print '<td>' . $valor->razao_social . '</td>';
-            print '<td>' . $this->aplicarMascaraCNPJ($valor->cnpj_fornecedor) . '</td>';
-            print '<td>' . $valor->email . '</td>';
-            print '<td>' . $this->aplicarMascaraTelefone($valor->telefone_celular) . '</td>';
-            print '<td>' . $this->aplicarMascaraTelefone($valor->telefone_fixo) . '</td>';
-            print '<td>';
-            // Botões de ação
-            print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
-            print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_fornecedor' . $valor->id_fornecedor . '"><i class="bi bi-pencil-square"></i></button>';
-            print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_fornecedor' . $valor->id_fornecedor . '"><i class="bi bi-trash"></i></button>';
-            print '</div>';
-            print '</td>';
+            print '<td>' . htmlspecialchars($valor->razao_social) . '</td>';
+            print '<td>' . htmlspecialchars($valor->email) . '</td>';
+
+            if ($this->temPermissao(['Administrador'])) {
+                print '<td>';
+                print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
+                print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_fornecedor' . $valor->id_fornecedor . '">
+                    <i class="bi bi-pencil-square"></i>
+                   </button>';
+                print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_fornecedor' . $valor->id_fornecedor . '">
+                    <i class="bi bi-trash"></i>
+                   </button>';
+                print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_fornecedor' . $valor->id_fornecedor . '">
+                    <i class="bi bi-eye"></i>
+                   </button>';
+                print '</div>';
+                print '</td>';
+            }
+
             print '</tr>';
         }
 
         print '</tbody>';
         print '</table>';
         print '</div>';
+    }
+    // modal de detalhes de um único fornecedor
+    public function modalDetalhesFornecedor($fornecedor)
+    {
+        if (empty($fornecedor)) return;
+
+        foreach ($fornecedor as $valor) {
+            // Telefones
+            $celular = [];
+            $fixo    = [];
+            if (!empty($valor->telefones)) {
+                $lista = explode(',', $valor->telefones);
+                foreach ($lista as $t) {
+                    $partes = explode(':', $t, 3);
+                    if (count($partes) === 3) {
+                        $tipo   = strtolower(trim($partes[1]));
+                        $numero = $this->aplicarMascaraTelefone(trim($partes[2]));
+                        if ($tipo === 'celular') {
+                            $celular[] = $numero;
+                        } elseif ($tipo === 'fixo') {
+                            $fixo[] = $numero;
+                        }
+                    }
+                }
+            }
+
+            print '
+        <div class="modal fade" id="detalhes_fornecedor' . $valor->id_fornecedor . '" tabindex="-1"
+            aria-labelledby="detalhesFornecedorLabel' . $valor->id_fornecedor . '" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title" id="detalhesFornecedorLabel' . $valor->id_fornecedor . '">
+                            Detalhes do Fornecedor
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="container text-center">
+
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-md-6"><strong>Razão Social:</strong><br>' . htmlspecialchars($valor->razao_social) . '</div>
+                                <div class="col-md-6"><strong>CNPJ:</strong><br>' . $this->aplicarMascaraCNPJ($valor->cnpj_fornecedor) . '</div>
+                            </div>
+
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-md-6"><strong>Email:</strong><br>' . htmlspecialchars($valor->email) . '</div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-md-6"><strong>Celular:</strong><br>' .
+                (!empty($celular) ? implode('<br>', $celular) : '<span class="text-muted">—</span>') . '</div>
+                                <div class="col-md-6"><strong>Fixo:</strong><br>' .
+                (!empty($fixo) ? implode('<br>', $fixo) : '<span class="text-muted">—</span>') . '</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>';
+        }
     }
     // select com dados da classe Fornecedor
     public function selectFornecedores($id_fornecedor = null)
@@ -2058,8 +2233,8 @@ class Controller
     // Cadastrar Produto
     public function cadastrar_Produto(
         $nome_produto,
-        $tipo_produto,
-        $cor,
+        $id_tipo_produto,
+        $id_cor,
         $composicao,
         $quantidade,
         $quantidade_minima,
@@ -2076,8 +2251,8 @@ class Controller
         // Invocar o método da classe Usuario para cadastrar produto
         if ($objproduto->cadastrarProduto(
             $nome_produto,
-            $tipo_produto,
-            $cor,
+            $id_tipo_produto,
+            $id_cor,
             $composicao,
             $quantidade,
             $quantidade_minima,
@@ -2131,10 +2306,9 @@ class Controller
     }
     // alterar  produdo
     public function alterar_Produto(
-        $id_produto,
         $nome_produto,
-        $tipo_produto,
-        $cor,
+        $id_tipo_produto,
+        $id_cor,
         $composicao,
         $quantidade,
         $quantidade_minima,
@@ -2144,6 +2318,7 @@ class Controller
         $data_compra,
         $ncm_produto,
         $id_fornecedor,
+        $id_produto,
         $img_produto
     ) {
         // instancia a classe
@@ -2152,8 +2327,8 @@ class Controller
 
         if ($objproduto->alterarProduto(
             $nome_produto,
-            $tipo_produto,
-            $cor,
+            $id_tipo_produto,
+            $id_cor,
             $composicao,
             $quantidade,
             $quantidade_minima,
@@ -2452,7 +2627,7 @@ class Controller
         print '</div>';
         print '</div>';
     }
-    // tabela de consulta de produto
+    // Tabela de consulta de produto
     public function tabelaConsultarProduto($produto)
     {
         if (empty($produto)) return;
@@ -2463,6 +2638,7 @@ class Controller
         print '<tr>';
         print '<th scope="col">Imagem</th>';
         print '<th scope="col">Produto</th>';
+        print '<th scope="col">Tipo</th>';
         print '<th scope="col">Cor</th>';
         print '<th scope="col">Largura</th>';
         print '<th scope="col">Quantidade</th>';
@@ -2479,7 +2655,7 @@ class Controller
         foreach ($produto as $valor) {
             print '<tr>';
 
-            // NOVO: exibição da imagem do produto
+            // Imagem do produto
             print '<td>';
             if (!empty($valor->img_produto) && file_exists($valor->img_produto)) {
                 print '<img src="' . $valor->img_produto . '" alt="Imagem do Produto" class="img-thumbnail rounded mx-auto d-block" style="max-width: 70px; max-height: 70px;">';
@@ -2488,92 +2664,82 @@ class Controller
             }
             print '</td>';
 
-            // Campos normais
+            // Campos
             print '<td>' . $valor->nome_produto . '</td>';
+            print '<td>' . $valor->tipo_produto . '</td>';
             print '<td>' . $valor->cor . '</td>';
             print '<td>' . $valor->largura . ' m</td>';
             print '<td>' . $valor->quantidade . ' m</td>';
             print '<td>R$ ' . $valor->valor_venda . '</td>';
 
-            // Ações para administradores
+            // Ações
             if ($this->temPermissao(['Administrador'])) {
                 print '<td>';
                 print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
-
-                // Botão Alterar
-                print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_produto' . $valor->id_produto . '">';
-                print '<i class="bi bi-pencil-square"></i>';
-                print '</button>';
-
-                // Botão Excluir
-                print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_produto' . $valor->id_produto . '">';
-                print '<i class="bi bi-trash"></i>';
-                print '</button>';
-
-                // Botão Detalhes
-                print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_produto' . $valor->id_produto . '">';
-                print '<i class="bi bi-eye"></i>';
-                print '</button>';
-
+                print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_produto' . $valor->id_produto . '"><i class="bi bi-pencil-square"></i></button>';
+                print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_produto' . $valor->id_produto . '"><i class="bi bi-trash"></i></button>';
+                print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_produto' . $valor->id_produto . '"><i class="bi bi-eye"></i></button>';
                 print '</div>';
                 print '</td>';
             }
+
             print '</tr>';
         }
+
         print '</tbody>';
         print '</table>';
         print '</div>';
     }
-    // modal de detalhes de um único produto
+    // Modal de detalhes de um único produto
     public function modalDetalhesProduto($produto)
     {
         if (empty($produto)) return;
+
         foreach ($produto as $valor) {
             print '
-            <div class="modal fade" id="detalhes_produto' . $valor->id_produto . '" tabindex="-1" aria-labelledby="detalhesProdutoLabel' . $valor->id_produto . '" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                    <div class="modal-content">
-                        <div class="modal-header bg-info text-white">
-                            <h5 class="modal-title" id="detalhesProdutoLabel' . $valor->id_produto . '">Detalhes do Produto</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="container">
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>Tipo:</strong> ' . $valor->tipo_produto . '</div>
-                                    <div class="col-md-6"><strong>Cor:</strong> ' . $valor->cor . '</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>Composição:</strong> ' . $valor->composicao . '</div>
-                                    <div class="col-md-6"><strong>Quantidade:</strong> ' . $valor->quantidade . ' metros</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>Quantidade Mínima:</strong> ' . $valor->quantidade_minima . ' metros</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>Largura (m):</strong> ' . $valor->largura . '</div>
-                                    <div class="col-md-6"><strong>Valor Venda (R$):</strong> ' . $valor->valor_venda . '</div>
-                                </div>
-                                ' . ($this->temPermissao(['Administrador']) ? '
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>Custo Compra (R$):</strong> ' . $valor->custo_compra . '</div>
-                                    <div class="col-md-6"><strong>Data Compra:</strong> ' . date('d/m/Y', strtotime($valor->data_compra)) . '</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6"><strong>NCM:</strong> ' . $valor->ncm_produto . '</div>
-                                    <div class="col-md-6"><strong>Fornecedor:</strong> ' . $valor->razao_social . '</div>' : '') . '
-                                </div>
-
+        <div class="modal fade" id="detalhes_produto' . $valor->id_produto . '" tabindex="-1" aria-labelledby="detalhesProdutoLabel' . $valor->id_produto . '" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title" id="detalhesProdutoLabel' . $valor->id_produto . '">Detalhes do Produto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container">
+                            <div class="row mb-2">
+                                <div class="col-md-6"><strong>Tipo:</strong> ' . $valor->tipo_produto . '</div>
+                                <div class="col-md-6"><strong>Cor:</strong> ' . $valor->cor . '</div>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            <div class="row mb-2">
+                                <div class="col-md-6"><strong>Composição:</strong> ' . $valor->composicao . '</div>
+                                <div class="col-md-6"><strong>Quantidade:</strong> ' . $valor->quantidade . ' metros</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-6"><strong>Quantidade Mínima:</strong> ' . $valor->quantidade_minima . ' metros</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-6"><strong>Largura (m):</strong> ' . $valor->largura . '</div>
+                                <div class="col-md-6"><strong>Valor Venda (R$):</strong> ' . $valor->valor_venda . '</div>
+                            </div>'
+                . ($this->temPermissao(['Administrador']) ? '
+                            <div class="row mb-2">
+                                <div class="col-md-6"><strong>Custo Compra (R$):</strong> ' . $valor->custo_compra . '</div>
+                                <div class="col-md-6"><strong>Data Compra:</strong> ' . date('d/m/Y', strtotime($valor->data_compra)) . '</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-6"><strong>NCM:</strong> ' . $valor->ncm_produto . '</div>
+                                <div class="col-md-6"><strong>Fornecedor:</strong> ' . $valor->fornecedor . '</div>' : '') . '
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
                 </div>
-            </div>';
+            </div>
+        </div>';
         }
     }
+
     // select de produtos
     public function selectProdutos($id_produto = null)
     {
@@ -2593,21 +2759,6 @@ class Controller
         }
         print '</select>';
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     // CLIENTE
 
@@ -2689,8 +2840,6 @@ class Controller
         print '<th scope="col">Responsável</th>';
         print '<th scope="col">Nome Fantasia</th>';
         print '<th scope="col">E-mail</th>';
-        print '<th scope="col">Telefone Celular</th>';
-        print '<th scope="col">Telefone Fixo</th>';
         print '<th scope="col">Limite de Crédito</th>';
 
         if ($this->temPermissao(['Administrador'])) {
@@ -2702,44 +2851,13 @@ class Controller
         print '<tbody>';
 
         foreach ($cliente as $valor) {
-            // Arrays para acumular todos os números
-            $celulares = [];
-            $fixos     = [];
-
-            if (!empty($valor->telefones)) {
-                $lista = explode(',', $valor->telefones);
-
-                foreach ($lista as $t) {
-                    // Agora dividimos em 3 partes: id_telefone, tipo, numero
-                    $partes = explode(':', $t, 3);
-                    if (count($partes) === 3) {
-                        $idTel  = (int) $partes[0]; // pode ser útil depois
-                        $tipo   = strtolower(trim($partes[1]));
-                        $numero = $this->aplicarMascaraTelefone(trim($partes[2]));
-
-                        if ($tipo === 'celular') {
-                            $celulares[] = $numero;
-                        } elseif ($tipo === 'fixo') {
-                            $fixos[] = $numero;
-                        }
-                    }
-                }
-            }
-
-            // Junta múltiplos números separados por <br> (quebra de linha)
-            $celular = $celulares ? implode('<br> <hr>', $celulares) : '—';
-            $fixo    = $fixos     ? implode('<br> <hr>', $fixos)     : '—';
-
             // Formata limite de crédito
             $limite = number_format($valor->limite_credito, 2, ',', '.');
-
             // Monta a linha da tabela
             print '<tr>';
             print '<td>' . htmlspecialchars($valor->nome_representante) . '</td>';
             print '<td>' . htmlspecialchars($valor->nome_fantasia) . '</td>';
             print '<td>' . htmlspecialchars($valor->email) . '</td>';
-            print '<td>' . $celular . '</td>';
-            print '<td>' . $fixo . '</td>';
             print '<td>R$ ' . $limite . '</td>';
 
             if ($this->temPermissao(['Administrador'])) {
@@ -2765,7 +2883,6 @@ class Controller
         print '</table>';
         print '</div>';
     }
-
     // modal de detalhes de um único cliente
     public function modalDetalhesCliente($cliente)
     {
@@ -2932,7 +3049,7 @@ class Controller
         // Cabeçalho da Modal
         print '      <div class="modal-header">';
         print '        <h6 class="modal-title" id="modalClienteLabel">Novo Cliente</h6>';
-        print '        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
         print '      </div>';
 
         // Corpo da Modal
@@ -3163,7 +3280,7 @@ class Controller
         // Cabeçalho
         print '      <div class="modal-header">';
         print '        <h6 class="modal-title" id="alterarClienteLabel' . $id_cliente . '">Alterar Cliente</h6>';
-        print '        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
         print '      </div>';
 
         // Corpo
@@ -3453,22 +3570,6 @@ class Controller
         }
         print '</select>';
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // FORMA DE PAGAMENTO
 
     // Método de consultar Forma de Pagamento
@@ -3676,9 +3777,7 @@ class Controller
         print '</select>';
     }
 
-
     //Pedido
-
 
     // metodo de buscar cliente AJAX
     public function buscarCliente($cliente)
@@ -5827,7 +5926,6 @@ class Controller
         print '</tbody></table></div>';
         print $modals;
     }
-
     //  Charts
     public function dashboardDados()
     {

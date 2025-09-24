@@ -457,8 +457,16 @@ $(document).ready(function () {
     const ano = hoje.getFullYear();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
     const dia = String(hoje.getDate()).padStart(2, '0');
-    const data = `${ano}-${mes}-${dia}`;
+    const hora = String(hoje.getHours()).padStart(2, '0');
+    const minuto = String(hoje.getMinutes()).padStart(2, '0');
+    const segundo = String(hoje.getSeconds()).padStart(2, '0');
+    const data = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
     const frete = valorFrete.toFixed(2);
+    // id tipo de produto
+    const idTipoProduto = document.getElementById("id_tipo_produto").value;
+    // id da cor do produto
+    const idCorProduto = document.getElementById("id_cor_produto").value;
+
     const total = Number((valorTotal + valorFrete).toFixed(2));
 
     const itens = [];
@@ -485,6 +493,8 @@ $(document).ready(function () {
       <input type="hidden" name="id_forma_pagamento" value="${idPagamento}">
       <input type="hidden" name="valor_frete" value="${frete}">
       <input type="hidden" name="origem" value="${origem}">
+      <input type="hidden" name="id_tipo_produto" value="${idTipoProduto}">
+      <input type="hidden" name="id_cor_produto" value="${idCorProduto}">
     `;
     itens.forEach((item, i) => {
       form.innerHTML += `

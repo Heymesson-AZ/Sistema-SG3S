@@ -49,19 +49,23 @@ class Fornecedor extends Conexao
         $this->email_fornecedor = $email_fornecedor;
     }
 
-    // Cadastrar fornecedor
-    public function cadastrarFornecedor($razao_social, $cnpj, $email, $telefone_celular, $telefone_fixo)
-    {
-        // settar os atributos
+    // ===============================
+    // Cadastrar Fornecedor
+    // ===============================
+    public function cadastrarFornecedor(
+        $razao_social,
+        $cnpj,
+        $email,
+        $telefones
+    ) {
         $this->setRazaoSocialFornecedor($razao_social);
         $this->setCnpjFornecedor($cnpj);
         $this->setEmailFornecedor($email);
 
         try {
-            // iniciar a transação
             $this->pdo->beginTransaction();
 
-            // query para inserir o fornecedor
+            // --- Inserir fornecedor ---
             $sql = "INSERT INTO fornecedor (razao_social, cnpj_fornecedor, email) 
                 VALUES (:razao_social, :cnpj_fornecedor, :email)";
             $query = $this->pdo->prepare($sql);
@@ -70,73 +74,145 @@ class Fornecedor extends Conexao
             $query->bindValue(':email', $this->getEmailFornecedor(), PDO::PARAM_STR);
             $query->execute();
 
-            // pegar o id do fornecedor criado
-            $idFornecedor = $this->pdo->lastInsertId();
+            $id_fornecedor = $this->pdo->lastInsertId();
 
-            // inserir na tabela telefone
-            $sqlTelefone = "INSERT INTO telefone_fornecedor (id_fornecedor, telefone_celular, telefone_fixo) 
-                        VALUES (:id_fornecedor, :telefone_celular, :telefone_fixo)";
-            $query = $this->pdo->prepare($sqlTelefone);
-            $query->bindValue(':id_fornecedor', $idFornecedor, PDO::PARAM_INT);
-            $query->bindValue(':telefone_celular', $telefone_celular, PDO::PARAM_STR);
-            $query->bindValue(':telefone_fixo', $telefone_fixo, PDO::PARAM_STR);
-            $query->execute();
+            // --- Inserir telefones ---
+            if (!empty($telefones)) {
+                $sqlTelefone = "INSERT INTO telefone_fornecedor (id_fornecedor, tipo, numero)
+                            VALUES (:id_fornecedor, :tipo, :numero)";
+                $stmtTel = $this->pdo->prepare($sqlTelefone);
 
-            // commit da transação
+                $numerosInseridos = [];
+                foreach ($telefones as $tel) {
+                    $tipo   = $tel['tipo'] ?? null;
+                    $numero = isset($tel['numero']) ? preg_replace('/\D/', '', $tel['numero']) : null;
+
+                    if ($tipo && $numero) {
+                        $numeroNormalizado = preg_replace('/\D/', '', $numero);
+
+                        if (in_array($numeroNormalizado, $numerosInseridos)) {
+                            continue; // ignora duplicado
+                        }
+
+                        $stmtTel->bindValue(":id_fornecedor", $id_fornecedor, PDO::PARAM_INT);
+                        $stmtTel->bindValue(":tipo", $tipo, PDO::PARAM_STR);
+                        $stmtTel->bindValue(":numero", $numero, PDO::PARAM_STR);
+                        $stmtTel->execute();
+
+                        $numerosInseridos[] = $numeroNormalizado;
+                    }
+                }
+            }
+
             $this->pdo->commit();
             return true;
         } catch (Exception $e) {
-            // rollback em caso de erro
             $this->pdo->rollBack();
-            print "Erro: " . $e->getMessage();
+            error_log("Erro ao cadastrar fornecedor: " . $e->getMessage());
             return false;
         }
     }
-    //Alterar fornecedor
-    public function alterarFornecedor($id_fornecedor, $razao_social, $cnpj, $email, $telefone_celular, $telefone_fixo)
-    {
-        // settar os atributos
+
+    // ===============================
+    // Alterar Fornecedor
+    // ===============================
+    public function alterarFornecedor(
+        $id_fornecedor,
+        $razao_social,
+        $cnpj,
+        $email,
+        $telefones // array [['id_telefone'=>?, 'tipo'=>'...', 'numero'=>'...'], ...]
+    ) {
         $this->setRazaoSocialFornecedor($razao_social);
         $this->setCnpjFornecedor($cnpj);
         $this->setEmailFornecedor($email);
+
         try {
-            // iniciar a transacao
             $this->pdo->beginTransaction();
-            // conectar com o banco
-            $bd = $this->conectarBanco();
 
-            // atualizar dados na tabela fornecedor
+            // --- Atualizar fornecedor ---
             $sql = "UPDATE fornecedor 
-                SET razao_social = :razao_social, 
-                cnpj_fornecedor = :cnpj_fornecedor, 
-                email = :email 
+                SET razao_social = :razao_social,
+                    cnpj_fornecedor = :cnpj_fornecedor,
+                    email = :email
                 WHERE id_fornecedor = :id_fornecedor";
-
-            $query = $bd->prepare($sql);
+            $query = $this->pdo->prepare($sql);
             $query->bindValue(':razao_social', $this->getRazaoSocialFornecedor(), PDO::PARAM_STR);
             $query->bindValue(':cnpj_fornecedor', $this->getCnpjFornecedor(), PDO::PARAM_STR);
             $query->bindValue(':email', $this->getEmailFornecedor(), PDO::PARAM_STR);
             $query->bindValue(':id_fornecedor', $id_fornecedor, PDO::PARAM_INT);
             $query->execute();
-            // atualizar dados na tabela telefone_fornecedor
-            $sqlTelefone = "UPDATE telefone_fornecedor 
-                        SET telefone_celular = :telefone_celular, 
-                        telefone_fixo = :telefone_fixo 
+
+            // --- Buscar telefones atuais ---
+            $sqlFones = "SELECT id_telefone, numero 
+                        FROM telefone_fornecedor 
                         WHERE id_fornecedor = :id_fornecedor";
-            $query = $bd->prepare($sqlTelefone);
-            $query->bindValue(':telefone_celular', $telefone_celular, PDO::PARAM_STR);
-            $query->bindValue(':telefone_fixo', $telefone_fixo, PDO::PARAM_STR);
-            $query->bindValue(':id_fornecedor', $id_fornecedor, PDO::PARAM_INT);
-            $query->execute();
-            // commit
+            $stmtFones = $this->pdo->prepare($sqlFones);
+            $stmtFones->bindValue(":id_fornecedor", $id_fornecedor, PDO::PARAM_INT);
+            $stmtFones->execute();
+            $telefonesAtuais = $stmtFones->fetchAll(PDO::FETCH_KEY_PAIR);
+
+            $idsEnviados = [];
+
+            // --- Inserir/Atualizar telefones ---
+            if (!empty($telefones)) {
+                foreach ($telefones as $tel) {
+                    $tipo   = $tel['tipo'] ?? null;
+                    $numero = isset($tel['numero']) ? preg_replace('/\D/', '', $tel['numero']) : null;
+                    $id_tel = $tel['id_telefone'] ?? null;
+
+                    if ($tipo && $numero) {
+                        if (!empty($id_tel) && isset($telefonesAtuais[$id_tel])) {
+                            // Atualizar existente
+                            $sqlUpdateTel = "UPDATE telefone_fornecedor
+                                            SET tipo = :tipo, numero = :numero
+                                            WHERE id_telefone = :id_telefone AND id_fornecedor = :id_fornecedor";
+                            $stmtUpdateTel = $this->pdo->prepare($sqlUpdateTel);
+                            $stmtUpdateTel->bindValue(":tipo", $tipo, PDO::PARAM_STR);
+                            $stmtUpdateTel->bindValue(":numero", $numero, PDO::PARAM_STR);
+                            $stmtUpdateTel->bindValue(":id_telefone", $id_tel, PDO::PARAM_INT);
+                            $stmtUpdateTel->bindValue(":id_fornecedor", $id_fornecedor, PDO::PARAM_INT);
+                            $stmtUpdateTel->execute();
+
+                            $idsEnviados[] = $id_tel;
+                        } else {
+                            // Inserir novo
+                            $sqlInsertTel = "INSERT INTO telefone_fornecedor (id_fornecedor, tipo, numero)
+                                            VALUES (:id_fornecedor, :tipo, :numero)";
+                            $stmtInsertTel = $this->pdo->prepare($sqlInsertTel);
+                            $stmtInsertTel->bindValue(":id_fornecedor", $id_fornecedor, PDO::PARAM_INT);
+                            $stmtInsertTel->bindValue(":tipo", $tipo, PDO::PARAM_STR);
+                            $stmtInsertTel->bindValue(":numero", $numero, PDO::PARAM_STR);
+                            $stmtInsertTel->execute();
+
+                            $idsEnviados[] = $this->pdo->lastInsertId();
+                        }
+                    }
+                }
+            }
+
+            // --- Excluir telefones não enviados ---
+            foreach ($telefonesAtuais as $id_tel => $numero) {
+                if (!in_array($id_tel, $idsEnviados)) {
+                    $sqlDeleteTel = "DELETE FROM telefone_fornecedor
+                                    WHERE id_telefone = :id_telefone 
+                                    AND id_fornecedor = :id_fornecedor";
+                    $stmtDeleteTel = $this->pdo->prepare($sqlDeleteTel);
+                    $stmtDeleteTel->bindValue(":id_telefone", $id_tel, PDO::PARAM_INT);
+                    $stmtDeleteTel->bindValue(":id_fornecedor", $id_fornecedor, PDO::PARAM_INT);
+                    $stmtDeleteTel->execute();
+                }
+            }
+
             $this->pdo->commit();
             return true;
         } catch (Exception $e) {
             $this->pdo->rollBack();
-            print "Erro: " . $e->getMessage();
+            error_log("Erro ao alterar fornecedor: " . $e->getMessage());
             return false;
-        };
+        }
     }
+
     //Excluir fornecedor
     public function excluirFornecedor($id_fornecedor)
     {
@@ -159,47 +235,70 @@ class Fornecedor extends Conexao
             return false;
         }
     }
-    //Consultar fornecedores
-    public function consultarFornecedor($razao_social = null)
+    // ================================
+    // Consultar Fornecedor
+    // ================================
+    public function consultarFornecedor($razao_social = null, $cnpj_fornecedor = null)
     {
-        // settar os atributos
+        // settar atributos
         $this->setRazaoSocialFornecedor($razao_social);
-        // query sql para buscar o fornecedor no banco de dados
-        // Iniciar a query
-        $sql = "SELECT f.id_fornecedor,f.razao_social,f.cnpj_fornecedor,f.email,
-        tf.telefone_celular,tf.telefone_fixo 
-        FROM fornecedor as f 
-        left join telefone_fornecedor as tf 
-        on f.id_fornecedor = tf.id_fornecedor WHERE 1=1 ";
+        $this->setCnpjFornecedor($cnpj_fornecedor);
 
-        // Filtrar por razão social
-        if ($razao_social !== null) {
-            $sql .= " AND razao_social LIKE :razao_social";
+        // Query base com GROUP_CONCAT para agrupar telefones
+        $sql = "SELECT 
+                f.id_fornecedor,
+                f.razao_social,
+                f.cnpj_fornecedor,
+                f.email,
+                GROUP_CONCAT(
+                    CONCAT(tf.id_telefone, ':', tf.tipo, ':', tf.numero)
+                    ORDER BY tf.id_telefone SEPARATOR ','
+                ) AS telefones
+            FROM fornecedor AS f
+            LEFT JOIN telefone_fornecedor AS tf 
+                ON f.id_fornecedor = tf.id_fornecedor";
+
+        // Condições dinâmicas
+        $condicoes = [];
+        if (!empty($this->getRazaoSocialFornecedor())) {
+            $condicoes[] = "f.razao_social LIKE :razao_social";
         }
-        // ordenar
-        $sql .= " ORDER BY id_fornecedor ASC";
-        // Tentar executar a query
+        if (!empty($this->getCnpjFornecedor())) {
+            $condicoes[] = "f.cnpj_fornecedor LIKE :cnpj_fornecedor";
+        }
+
+        if ($condicoes) {
+            $sql .= " WHERE " . implode(" AND ", $condicoes);
+        }
+
+        // Agrupamento para o GROUP_CONCAT
+        $sql .= " GROUP BY 
+                f.id_fornecedor,
+                f.razao_social,
+                f.cnpj_fornecedor,
+                f.email
+              ORDER BY f.razao_social ASC";
+
         try {
-            // Conectar ao banco
             $bd = $this->conectarBanco();
-            // Preparar a query
             $query = $bd->prepare($sql);
-            // Bindar valores
-            if ($razao_social !== null) {
-                $razao_social = "%" . $razao_social . "%";
-                $query->bindParam(':razao_social', $razao_social, PDO::PARAM_STR);
+
+            // Bind dinâmico
+            if (!empty($this->getRazaoSocialFornecedor())) {
+                $query->bindValue(":razao_social", "%" . $this->getRazaoSocialFornecedor() . "%", PDO::PARAM_STR);
             }
-            // Executar query
+            if (!empty($this->getCnpjFornecedor())) {
+                $query->bindValue(":cnpj_fornecedor", "%" . $this->getCnpjFornecedor() . "%", PDO::PARAM_STR);
+            }
+
             $query->execute();
-            // Retornar resultados
-            $fornecedor = $query->fetchAll(PDO::FETCH_OBJ);
-            return $fornecedor;
+            return $query->fetchAll(PDO::FETCH_OBJ);
         } catch (PDOException $e) {
-            // Em caso de erro
-            print "Erro ao consultar: " . $e->getMessage();
+            error_log("Erro ao consultar fornecedores: " . $e->getMessage());
             return false;
         }
     }
+
     // metodo de consultar fornecedor por cnpj
     public function consultarFornecedorCnpj($cnpj_fornecedor)
     {

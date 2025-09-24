@@ -41,7 +41,6 @@ class Produto extends Conexao
         $this->custo_compra = $custo_compra;
     }
 
-
     public function getValorVenda()
     {
         return $this->valor_venda;
@@ -145,8 +144,8 @@ class Produto extends Conexao
     // Cadastrar Produtos
     public function cadastrarProduto(
         $nome_produto,
-        $tipo_produto,
-        $cor,
+        $id_tipo_produto,
+        $id_cor,
         $composicao,
         $quantidade,
         $quantidade_minima,
@@ -160,8 +159,8 @@ class Produto extends Conexao
     ) {
         // Setando os atributos
         $this->setNomeProduto($nome_produto);
-        $this->setTipoProduto($tipo_produto);
-        $this->setCor($cor);
+        $this->setTipoProduto($id_tipo_produto);   // agora é ID
+        $this->setCor($id_cor);                    // agora é ID
         $this->setComposicao($composicao);
         $this->setQuantidade($quantidade);
         $this->setQuantidadeMinima($quantidade_minima);
@@ -174,19 +173,23 @@ class Produto extends Conexao
         $this->setImgProduto($img_produto);
 
         // Query para inserir produto
-        $sql = "INSERT INTO produto (nome_produto, tipo_produto, cor, composicao, quantidade, largura,
-                    custo_compra, valor_venda, data_compra, ncm_produto, id_fornecedor, img_produto, quantidade_minima)
-                    VALUES (:nome_produto, :tipo_produto, :cor, :composicao, :quantidade, :largura,
-                    :custo_compra, :valor_venda, :data_compra, :ncm_produto, :id_fornecedor, :img_produto, :quantidade_minima)";
+        $sql = "INSERT INTO produto (
+                nome_produto, id_tipo_produto, id_cor, composicao, quantidade, largura,
+                custo_compra, valor_venda, data_compra, ncm_produto, id_fornecedor, img_produto, quantidade_minima
+            ) VALUES (
+                :nome_produto, :id_tipo_produto, :id_cor, :composicao, :quantidade, :largura,
+                :custo_compra, :valor_venda, :data_compra, :ncm_produto, :id_fornecedor, :img_produto, :quantidade_minima
+            )";
+
         try {
             // Conectar com o banco
             $bd = $this->conectarBanco();
-            // Preparar o SQL
             $query = $bd->prepare($sql);
-            // Blindagem dos dados
+
+            // Bind dos parâmetros
             $query->bindValue(':nome_produto', $this->getNomeProduto(), PDO::PARAM_STR);
-            $query->bindValue(':tipo_produto', $this->getTipoProduto(), PDO::PARAM_STR);
-            $query->bindValue(':cor', $this->getCor(), PDO::PARAM_STR);
+            $query->bindValue(':id_tipo_produto', $this->getTipoProduto(), PDO::PARAM_INT);
+            $query->bindValue(':id_cor', $this->getCor(), PDO::PARAM_INT);
             $query->bindValue(':composicao', $this->getComposicao(), PDO::PARAM_STR);
             $query->bindValue(':quantidade', $this->getQuantidade(), PDO::PARAM_STR);
             $query->bindValue(':largura', $this->getLargura(), PDO::PARAM_STR);
@@ -197,74 +200,93 @@ class Produto extends Conexao
             $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
             $query->bindValue(':img_produto', $this->getImgProduto(), PDO::PARAM_STR);
             $query->bindValue(':quantidade_minima', $this->getQuantidadeMinima(), PDO::PARAM_STR);
+
             // Executar a query
             $query->execute();
-            // Retorna true caso tenha sido cadastrado com sucesso
+
             return true;
         } catch (PDOException $e) {
             error_log("Erro ao cadastrar produto: " . $e->getMessage());
             return false;
         }
     }
-    // consultar Produtos
-    public function consultarProduto($nome_produto, $tipo_produto, $cor, $id_fornecedor)
+
+    // Consultar Produtos
+    public function consultarProduto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor)
     {
         // Setando os atributos
         $this->setNomeProduto($nome_produto);
-        $this->setTipoProduto($tipo_produto);
-        $this->setCor($cor);
+        $this->setTipoProduto($id_tipo_produto);  // agora é ID
+        $this->setCor($id_cor);                   // agora é ID
         $this->setIdFornecedor($id_fornecedor);
 
-        // Base da query
-        $sql = "SELECT p.id_produto, p.nome_produto, p.tipo_produto, p.cor, p.composicao,
-            p.quantidade, p.largura, p.custo_compra, p.valor_venda, p.data_compra,
-            p.ncm_produto, p.id_fornecedor, f.razao_social, p.img_produto,p.quantidade_minima
+        // Base da query com JOINs para trazer nomes de fornecedor, cor e tipo
+        $sql = "SELECT 
+                p.id_produto, 
+                p.nome_produto, 
+                p.id_tipo_produto,
+                t.nome_tipo AS tipo_produto,
+                p.id_cor,
+                c.nome_cor AS cor,
+                p.composicao,
+                p.quantidade,
+                p.largura,
+                p.custo_compra,
+                p.valor_venda,
+                p.data_compra,
+                p.ncm_produto,
+                p.id_fornecedor,
+                f.razao_social AS fornecedor,
+                p.img_produto,
+                p.quantidade_minima
             FROM produto AS p
-            LEFT JOIN fornecedor AS f ON p.id_fornecedor = f.id_fornecedor";
+            LEFT JOIN fornecedor AS f ON p.id_fornecedor = f.id_fornecedor
+            LEFT JOIN cor AS c ON p.id_cor = c.id_cor
+            LEFT JOIN tipo_produto AS t ON p.id_tipo_produto = t.id_tipo_produto";
+
         // Array de condições
         $condicoes = [];
 
-        // Filtros com LIKE para busca parcial
+        // Filtros
         if (!empty($this->getNomeProduto())) {
             $condicoes[] = "p.nome_produto LIKE :nome_produto";
         }
-
         if (!empty($this->getTipoProduto())) {
-            $condicoes[] = "p.tipo_produto LIKE :tipo_produto";
+            $condicoes[] = "p.id_tipo_produto = :id_tipo_produto";
         }
-
         if (!empty($this->getCor())) {
-            $condicoes[] = "p.cor LIKE :cor";
+            $condicoes[] = "p.id_cor = :id_cor";
         }
-
-        // Filtro exato por ID do fornecedor
         if (!empty($this->getIdFornecedor())) {
             $condicoes[] = "p.id_fornecedor = :id_fornecedor";
         }
 
-        // Adiciona cláusulas WHERE dinamicamente
+        // Adiciona WHERE se houver condições
         if (count($condicoes) > 0) {
             $sql .= " WHERE " . implode(" AND ", $condicoes);
         }
+
         // Ordenação
         $sql .= " ORDER BY p.nome_produto ASC";
+
         try {
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);
 
-            // Bind individual com bindValue()
+            // Bind dos parâmetros
             if (!empty($this->getNomeProduto())) {
                 $query->bindValue(':nome_produto', "%" . $this->getNomeProduto() . "%", PDO::PARAM_STR);
             }
             if (!empty($this->getTipoProduto())) {
-                $query->bindValue(':tipo_produto', "%" . $this->getTipoProduto() . "%", PDO::PARAM_STR);
+                $query->bindValue(':id_tipo_produto', $this->getTipoProduto(), PDO::PARAM_INT);
             }
             if (!empty($this->getCor())) {
-                $query->bindValue(':cor', "%" . $this->getCor() . "%", PDO::PARAM_STR);
+                $query->bindValue(':id_cor', $this->getCor(), PDO::PARAM_INT);
             }
             if (!empty($this->getIdFornecedor())) {
                 $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
             }
+
             $query->execute();
             $produto = $query->fetchAll(PDO::FETCH_OBJ);
             return $produto;
@@ -273,11 +295,12 @@ class Produto extends Conexao
             return false;
         }
     }
-    // alterar Produtos
+
+    // Alterar Produtos
     public function alterarProduto(
         $nome_produto,
-        $tipo_produto,
-        $cor,
+        $id_tipo_produto,
+        $id_cor,
         $composicao,
         $quantidade,
         $quantidade_minima,
@@ -293,8 +316,8 @@ class Produto extends Conexao
         // Setando os atributos
         $this->setIdProduto($id_produto);
         $this->setNomeProduto($nome_produto);
-        $this->setTipoProduto($tipo_produto);
-        $this->setCor($cor);
+        $this->setTipoProduto($id_tipo_produto);
+        $this->setCor($id_cor);
         $this->setComposicao($composicao);
         $this->setQuantidade($quantidade);
         $this->setQuantidadeMinima($quantidade_minima);
@@ -307,24 +330,31 @@ class Produto extends Conexao
         $this->setImgProduto($img_produto);
 
         // Query para alterar produto
-        $sql = "UPDATE produto SET nome_produto = :nome_produto, tipo_produto = :tipo_produto,
-        cor = :cor, composicao = :composicao, quantidade = :quantidade,
-        quantidade_minima = :quantidade_minima, largura = :largura
-        , custo_compra = :custo_compra,
-        valor_venda = :valor_venda, data_compra = :data_compra, ncm_produto = :ncm_produto,
-        id_fornecedor = :id_fornecedor, img_produto = :img_produto
-        WHERE id_produto = :id_produto";
+        $sql = "UPDATE produto SET 
+                nome_produto = :nome_produto,
+                id_tipo_produto = :id_tipo_produto,
+                id_cor = :id_cor,
+                composicao = :composicao,
+                quantidade = :quantidade,
+                quantidade_minima = :quantidade_minima,
+                largura = :largura,
+                custo_compra = :custo_compra,
+                valor_venda = :valor_venda,
+                data_compra = :data_compra,
+                ncm_produto = :ncm_produto,
+                id_fornecedor = :id_fornecedor,
+                img_produto = :img_produto
+            WHERE id_produto = :id_produto";
+
         try {
-            // Conectar com o banco
             $bd = $this->conectarBanco();
-            // Preparar o SQL
             $query = $bd->prepare($sql);
 
-            // Blindagem dos dados
+            // Bind dos parâmetros
             $query->bindValue(':id_produto', $this->getIdProduto(), PDO::PARAM_INT);
             $query->bindValue(':nome_produto', $this->getNomeProduto(), PDO::PARAM_STR);
-            $query->bindValue(':tipo_produto', $this->getTipoProduto(), PDO::PARAM_STR);
-            $query->bindValue(':cor', $this->getCor(), PDO::PARAM_STR);
+            $query->bindValue(':id_tipo_produto', $this->getTipoProduto(), PDO::PARAM_INT);
+            $query->bindValue(':id_cor', $this->getCor(), PDO::PARAM_INT);
             $query->bindValue(':composicao', $this->getComposicao(), PDO::PARAM_STR);
             $query->bindValue(':quantidade', $this->getQuantidade(), PDO::PARAM_STR);
             $query->bindValue(':quantidade_minima', $this->getQuantidadeMinima(), PDO::PARAM_STR);
@@ -335,24 +365,17 @@ class Produto extends Conexao
             $query->bindValue(':ncm_produto', $this->getNcmProduto(), PDO::PARAM_STR);
             $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
             $query->bindValue(':img_produto', $this->getImgProduto(), PDO::PARAM_STR);
-            // Verifica se a imagem foi alterada
-            if ($this->getImgProduto() !== $img_produto) {
-                // Se a imagem foi alterada, atualiza o campo no banco
-                $query->bindValue(':img_produto', $this->getImgProduto(), PDO::PARAM_STR);
-            }
-            // Se a imagem não foi alterada, mantém o valor atual
-            else {
-                $query->bindValue(':img_produto', $img_produto, PDO::PARAM_STR);
-            }
+
             // Executar a query
             $query->execute();
-            // Retorna true caso tenha sido alterado com sucesso
+
             return true;
         } catch (PDOException $e) {
             error_log("Erro ao alterar produto: " . $e->getMessage());
             return false;
         }
     }
+
     // verifica se o produto está vinculado a algum pedido
     public function produtoEmAlgumPedido($id_produto)
     {
@@ -537,7 +560,6 @@ class Produto extends Conexao
 
     //  Relatórios
 
-    //produtos com baixo estoque
     // Produtos com baixo estoque (limite opcional)
     public function produtosComBaixoEstoque($limite = null)
     {

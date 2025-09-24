@@ -182,10 +182,10 @@ if (isset($_POST['cadastrar_fornecedor'])) {
     $razao_social = limparTexto($_POST['razao_social']);
     $cnpj = limparCNPJ($_POST['cnpj']);
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-    $telefone_celular = limparTelefone($_POST['telefone_celular']);
-    $telefone_fixo = limparTelefone($_POST['telefone_fixo']);
+    // Array de telefones será tratado depois
+    $telefones = $_POST['telefones'];
 
-    $objController->cadastrar_Fornecedor($razao_social, $cnpj, $email, $telefone_celular, $telefone_fixo);
+    $objController->cadastrar_Fornecedor($razao_social, $cnpj, $email, $telefones);
 }
 // ================= ALTERAR FORNECEDOR =================
 if (isset($_POST['alterar_fornecedor'])) {
@@ -193,10 +193,10 @@ if (isset($_POST['alterar_fornecedor'])) {
     $razao_social = limparTexto($_POST['razao_social']);
     $cnpj = limparCNPJ($_POST['cnpj']);
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-    $telefone_celular = limparTelefone($_POST['telefone_celular']);
-    $telefone_fixo = limparTelefone($_POST['telefone_fixo']);
+    // Array de telefones será tratado depois
+    $telefones = $_POST['telefones'];
 
-    $objController->alterar_Fornecedor($id_fornecedor, $razao_social, $cnpj, $email, $telefone_celular, $telefone_fixo);
+    $objController->alterar_Fornecedor($id_fornecedor, $razao_social, $cnpj, $email, $telefones);
 }
 // ================= EXCLUIR FORNECEDOR =================
 if (isset($_POST['excluir_fornecedor'])) {
@@ -230,8 +230,8 @@ if (isset($_POST['consultar_produto'])) {
 // ================= CADASTRAR PRODUTO =================
 if (isset($_POST['cadastrar_produto'])) {
     $nome_produto      = limparTexto($_POST['nome_produto']);
-    $tipo_produto      = limparTexto($_POST['tipo_produto']);
-    $cor               = limparTexto($_POST['cor']);
+    $id_tipo_produto      = limparTexto($_POST['id_tipo_produto']);
+    $id_cor               = limparTexto($_POST['id_cor']);
     $composicao        = limparTexto($_POST['composicao']);
     $quantidade        = limparNumero($_POST['quantidade']);
     $quantidade_minima = limparNumero($_POST['quantidade_minima']);
@@ -296,8 +296,8 @@ if (isset($_POST['cadastrar_produto'])) {
 
     $objController->cadastrar_Produto(
         $nome_produto,
-        $tipo_produto,
-        $cor,
+        $id_tipo_produto,
+        $id_cor,
         $composicao,
         $quantidade,
         $quantidade_minima,
@@ -314,8 +314,8 @@ if (isset($_POST['cadastrar_produto'])) {
 if (isset($_POST['alterar_produto'])) {
     $id_produto         = $_POST['id_produto'];
     $nome_produto       = limparTexto($_POST['nome_produto']);
-    $tipo_produto       = limparTexto($_POST['tipo_produto']);
-    $cor                = limparTexto($_POST['cor']);
+    $id_tipo_produto       = limparTexto($_POST['tipo_produto']);
+    $id_cor                = limparTexto($_POST['cor']);
     $composicao         = limparTexto($_POST['composicao']);
     $quantidade         = limparNumero($_POST['quantidade']);
     $quantidade_minima  = limparNumero($_POST['quantidade_minima']);
@@ -383,10 +383,9 @@ if (isset($_POST['alterar_produto'])) {
     }
 
     $objController->alterar_Produto(
-        $id_produto,
         $nome_produto,
-        $tipo_produto,
-        $cor,
+        $id_tipo_produto,
+        $id_cor,
         $composicao,
         $quantidade,
         $quantidade_minima,
@@ -396,6 +395,7 @@ if (isset($_POST['alterar_produto'])) {
         $data_compra,
         $ncm_produto,
         $id_fornecedor,
+        $id_produto,
         $img_produto
     );
 }
