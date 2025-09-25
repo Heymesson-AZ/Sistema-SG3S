@@ -1,5 +1,4 @@
 $(document).ready(function () {
-
   // ===========================
   // MÁSCARAS DE CAMPOS pela classe
   // ===========================
@@ -182,6 +181,17 @@ $(document).ready(function () {
       document.getElementById("resultado_busca_fornecedor")
     );
   }
+
+  // --- Consulta ---
+  const inputFornecedorVerificar = document.getElementById("id_fornecedor_produto_verificar");
+  if (inputFornecedorVerificar) {
+    inicializarBuscaFornecedor(
+      inputFornecedorVerificar,
+      document.getElementById("id_fornecedor_hidden_verificar"),
+      document.getElementById("resultado_busca_fornecedor_verificar")
+    );
+  }
+
   // --- Cadastro ---
   const inputFornecedorCadastro = document.getElementById("id_fornecedor_produto_cadastro");
   if (inputFornecedorCadastro) {
@@ -201,4 +211,144 @@ $(document).ready(function () {
     );
   });
 
+
+  // ===========================
+  // BUSCA DE COR DO PRODUTO
+  // ===========================
+  function inicializarBuscaCor(inputCor, hiddenCor, resultadoCor) {
+    function buscarCor(termo) {
+      if (!termo) {
+        resultadoCor.innerHTML = "";
+        return;
+      }
+      fetch("index.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `cor_produto=${encodeURIComponent(termo)}`
+      })
+        .then(res => res.text())
+        .then(data => {
+          resultadoCor.innerHTML = data;
+          resultadoCor.querySelectorAll(".cor-item").forEach(item => {
+            item.addEventListener("click", function () {
+              inputCor.value = this.dataset.nome;
+              hiddenCor.value = this.dataset.id;
+              resultadoCor.innerHTML = "";
+            });
+          });
+        })
+        .catch(() => mostrarAlerta("Erro ao buscar cor."));
+    }
+
+    inputCor.addEventListener("input", () => {
+      hiddenCor.value = "";
+      buscarCor(inputCor.value.trim());
+    });
+
+    inputCor.closest("form").addEventListener("submit", function (e) {
+      if (inputCor.value.trim() !== "" && !hiddenCor.value) {
+        e.preventDefault();
+        mostrarAlerta("Por favor, selecione uma cor da lista.");
+      }
+    });
+  }
+
+  // ===========================
+  // BUSCA DE TIPO DO PRODUTO
+  // ===========================
+  function inicializarBuscaTipo(inputTipo, hiddenTipo, resultadoTipo) {
+    function buscarTipo(termo) {
+      if (!termo) {
+        resultadoTipo.innerHTML = "";
+        return;
+      }
+      fetch("index.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `tipo_produto=${encodeURIComponent(termo)}`
+      })
+        .then(res => res.text())
+        .then(data => {
+          resultadoTipo.innerHTML = data;
+          resultadoTipo.querySelectorAll(".tipo-item").forEach(item => {
+            item.addEventListener("click", function () {
+              inputTipo.value = this.dataset.nome;
+              hiddenTipo.value = this.dataset.id;
+              resultadoTipo.innerHTML = "";
+            });
+          });
+        })
+        .catch(() => mostrarAlerta("Erro ao buscar tipo de produto."));
+    }
+
+    inputTipo.addEventListener("input", () => {
+      hiddenTipo.value = "";
+      buscarTipo(inputTipo.value.trim());
+    });
+
+    inputTipo.closest("form").addEventListener("submit", function (e) {
+      if (inputTipo.value.trim() !== "" && !hiddenTipo.value) {
+        e.preventDefault();
+        mostrarAlerta("Por favor, selecione um tipo da lista.");
+      }
+    });
+  }
+
+  // ===========================
+  // INICIALIZAÇÃO NA PÁGINA
+  // ===========================
+  const inputCor = document.getElementById("cor");
+  if (inputCor) {
+    inicializarBuscaCor(
+      inputCor,
+      document.getElementById("id_cor_hidden"),
+      document.getElementById("resultado_busca_cor")
+    );
+  }
+
+  const inputTipo = document.getElementById("tipo_produto");
+  if (inputTipo) {
+    inicializarBuscaTipo(
+      inputTipo,
+      document.getElementById("id_tipo_hidden"),
+      document.getElementById("resultado_busca_tipo")
+    );
+  }
+
+
+  const inputCorCadastro = document.getElementById("cor_cadastro");
+  if (inputCorCadastro) {
+    inicializarBuscaCor(
+      inputCorCadastro,
+      document.getElementById("id_cor_hidden_cadastro"),
+      document.getElementById("resultado_busca_cor_cadastro")
+    );
+  }
+
+  const inputTipoCadastro = document.getElementById("tipo_produto_cadastro");
+  if (inputTipoCadastro) {
+    inicializarBuscaTipo(
+      inputTipoCadastro,
+      document.getElementById("id_tipo_hidden_cadastro"),
+      document.getElementById("resultado_busca_tipo_cadastro")
+    );
+  }
+
+  const inputCorConsulta = document.getElementById("cor_consulta");
+  if (inputCorConsulta) {
+    inicializarBuscaCor(
+      inputCorConsulta,
+      document.getElementById("id_cor_hidden_consulta"),
+      document.getElementById("resultado_busca_cor_consulta")
+    );
+  }
+
+  const inputTipoConsulta = document.getElementById("tipo_produto_consulta");
+  if (inputTipoConsulta) {
+    inicializarBuscaTipo(
+      inputTipoConsulta,
+      document.getElementById("id_tipo_hidden_consulta"),
+      document.getElementById("resultado_busca_tipo_consulta")
+    );
+  }
 });

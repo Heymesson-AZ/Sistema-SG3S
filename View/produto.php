@@ -1,5 +1,6 @@
     <!DOCTYPE html>
     <html lang="pt-br">
+
     <head>
         <title>Sistema de Gerenciamento SG3S</title>
         <meta charset="utf-8" />
@@ -82,27 +83,40 @@
                             <form action="index.php" method="POST" id="formulario_verificar_produto">
                                 <fieldset class="border border-black p-3 mb-4">
                                     <legend class="float-none w-auto px-2">Informe os dados do Produto</legend>
-
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="nome_produto" class="form-label">Nome do Produto *</label>
-                                            <input type="text" class="form-control" id="nome_produto" name="nome_produto"
-                                                placeholder="Digite o nome do produto" required autocomplete="off" />
-                                            <div class="invalid-feedback">Informe um nome válido.</div>
-                                        </div>
-
-                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="nome_produto" name="nome_produto"
+                                                    placeholder="Digite o nome do produto" required autocomplete="off" />
+                                            </div>
+                                            <br>
                                             <label for="cor" class="form-label">Cor *</label>
-                                            <input type="text" class="form-control" id="cor" name="cor"
-                                                placeholder="Informe a cor do produto" required autocomplete="off" />
-                                            <div class="invalid-feedback">Informe a cor do produto.</div>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                                <input type="hidden" id="id_cor_hidden" name="id_cor" value="" />
+                                                <input type="text" class="form-control" id="cor" placeholder="Digite a cor" autocomplete="off" required />
+                                                <div id="resultado_busca_cor" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;">
+                                                </div>
+                                            </div>
                                         </div>
-
                                         <div class="col-md-6">
                                             <label for="largura" class="form-label">Largura (m) *</label>
-                                            <input type="text" class="form-control" id="largura" name="largura"
-                                                placeholder="Informe a largura" required autocomplete="off" />
-                                            <div class="invalid-feedback">Informe a largura.</div>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="largura" name="largura"
+                                                    placeholder="Informe a largura" required autocomplete="off" />
+                                            </div>
+                                            <br>
+                                            <label for="id_fornecedor_produto" class="form-label">Fornecedor</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                                <input type="hidden" id="id_fornecedor_hidden_verificar" name="id_fornecedor" value="" />
+                                                <input type="text" class="form-control" id="id_fornecedor_produto_verificar"
+                                                    placeholder="Digite o fornecedor" autocomplete="off" />
+                                                <div id="resultado_busca_fornecedor_verificar"
+                                                    class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"
+                                                    style="max-height:200px; overflow-y:auto; z-index:1050;"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </fieldset>
@@ -123,7 +137,7 @@
             </div>
             <!-- Modal de Consulta de Produto -->
             <div class="modal fade" id="modal_consultar_produto" tabindex="-1" aria-labelledby="modalConsultaProdutoLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title"><i class="bi bi-search"></i> Consulta de Produto</h5>
@@ -131,36 +145,55 @@
                         </div>
                         <div class="modal-body">
                             <form action="index.php" method="POST">
-                                <div class="row g-3">
+                                <div class="row g-3 mt-2">
+                                    <!-- Nome do Produto -->
                                     <div class="col-md-6">
-                                        <label for="nome_produto_consulta" class="form-label">Nome do Produto </label>
+                                        <label for="nome_produto_consulta" class="form-label">Nome do Produto</label>
                                         <input type="text" class="form-control" id="nome_produto_consulta" name="nome_produto"
-                                            placeholder="Digite o nome do produto" autocomplete="off" />
-                                        <div class="invalid-feedback">Informe o nome do produto.</div>
-                                    </div>
-                                    <div class="col-md-6">
+                                            placeholder="Nome do produto" autocomplete="off" />
+
+                                        <!-- Tipo do Produto -->
+                                        <br>
                                         <label for="tipo_produto_consulta" class="form-label">Tipo do Produto</label>
-                                        <input type="text" class="form-control" id="tipo_produto_consulta" name="tipo_produto"
-                                            placeholder="Ex: Tecido, Plástico" autocomplete="off" />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="cor_produto_consulta" class="form-label">Cor</label>
-                                        <input type="text" class="form-control" id="cor_produto_consulta" name="cor"
-                                            placeholder="Ex: Azul, Vermelho" autocomplete="off" />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="produto_custo" class="form-label"> Fornecedor </label>
-                                        <div class="position-relative">
-                                            <div class="input-group">
-                                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                                <input type="hidden" id="id_fornecedor_hidden" name="id_fornecedor" value="" />
-                                                <input type="text" class="form-control" id="id_fornecedor_produto" placeholder="Digite o fornecedor" autocomplete="off" />
-                                            </div>
-                                            <div id="resultado_busca_fornecedor" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;">
+                                        <div class="input-group">
+                                            <input type="hidden" id="id_tipo_hidden_consulta" name="id_tipo_produto" value="" />
+                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                            <input type="text" class="form-control" id="tipo_produto_consulta"
+                                                placeholder="Ex: Tecido, Plástico" autocomplete="off" />
+                                            <div id="resultado_busca_tipo_consulta"
+                                                class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"
+                                                style="max-height:200px; overflow-y:auto; z-index:1050;">
                                             </div>
                                         </div>
                                     </div>
+                                    <!-- Tipo do Produto -->
+                                    <div class="col-md-6">
+                                        <label for="cor_consulta" class="form-label">Cor *</label>
+                                        <div class="input-group">
+                                            <input type="hidden" id="id_cor_hidden_consulta" name="id_cor" value="" />
+                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                            <input type="text" class="form-control" id="cor_consulta" placeholder="Digite a cor" autocomplete="off" />
+                                            <div id="resultado_busca_cor_consulta"
+                                                class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"
+                                                style="max-height:200px; overflow-y:auto; z-index:1050;">
+                                            </div>
+
+                                        </div>
+                                        <!-- fornecedor -->
+                                        <br>
+                                        <label for="id_fornecedor_produto" class="form-label">Fornecedor</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                            <input type="hidden" id="id_fornecedor_hidden" name="id_fornecedor" value="" />
+                                            <input type="text" class="form-control" id="id_fornecedor_produto"
+                                                placeholder="Digite o fornecedor" autocomplete="off" />
+                                            <div id="resultado_busca_fornecedor"
+                                                class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"
+                                                style="max-height:200px; overflow-y:auto; z-index:1050;"></div>
+                                        </div>
+                                    </div>
                                 </div>
+                                <!-- Botão Consultar -->
                                 <div class="text-center mt-4">
                                     <button type="submit" id="consultar_produto" name="consultar_produto" class="btn btn-primary">
                                         <i class="bi bi-search"></i> Consultar
@@ -171,6 +204,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- Modal de cadastro de tipo de produto -->
             <div class="modal fade" id="modal_tipo_produto" tabindex="-1" aria-labelledby="modalTipoProdutoLabel" aria-hidden="true">
                 <div class="modal-dialog modal-default modal-dialog-centered">

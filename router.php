@@ -218,14 +218,29 @@ function limparNumero($valor)
 {
     return (float) str_replace(',', '.', preg_replace('/[^\d,.-]/', '', $valor));
 }
+
+// ================= BUSCA DINÂMICA Da Cor do Produto=================
+if (isset($_POST['cor_produto'])) {
+    // strlower para minusculo e trim para tirar espaco
+    $cor_produto = strtolower(trim($_POST['cor_produto']));
+    $objController->buscarCorProduto($cor_produto);
+    exit;
+}
+
+//================= BUSCA DINÂMICA DO Tipo do Produto =================
+if (isset($_POST['tipo_produto'])) {
+    // strlower para minusculo e trim para tirar espaco
+    $tipo_produto = strtolower(trim($_POST['tipo_produto']));
+    $objController->buscarTipoProduto($tipo_produto);
+    exit;
+}
 // ================= CONSULTAR PRODUTO =================
 if (isset($_POST['consultar_produto'])) {
     $nome_produto  = limparTexto($_POST['nome_produto']);
-    $tipo_produto  = limparTexto($_POST['tipo_produto']);
-    $cor           = limparTexto($_POST['cor']);
-    $id_fornecedor = htmlspecialchars($_POST['id_fornecedor']); // se for inteiro, usar (int)
-
-    $objController->consultar_Produto($nome_produto, $tipo_produto, $cor, $id_fornecedor);
+    $id_tipo_produto  = limparTexto($_POST['id_tipo_produto']);
+    $id_cor           = limparTexto($_POST['id_cor']);
+    $id_fornecedor = htmlspecialchars($_POST['id_fornecedor']);
+    $objController->consultar_Produto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor);
 }
 // ================= CADASTRAR PRODUTO =================
 if (isset($_POST['cadastrar_produto'])) {
@@ -402,9 +417,10 @@ if (isset($_POST['alterar_produto'])) {
 // ================= VERIFICAR PRODUTO =================
 if (isset($_POST['verificar_produto'])) {
     $nome_produto = limparTexto($_POST['nome_produto']);
-    $cor          = limparTexto($_POST['cor']);
+    $id_cor           = limparTexto($_POST['id_cor']);
     $largura      = limparNumero($_POST['largura']);
-    $objController->verificar_Produto($nome_produto, $cor, $largura);
+    $id_fornecedor = $_POST['id_fornecedor'];
+    $objController->verificar_Produto($nome_produto, $id_cor, $largura, $id_fornecedor);
 }
 // ================= EXCLUIR PRODUTO =================
 if (isset($_POST['excluir_produto'])) {
@@ -412,7 +428,6 @@ if (isset($_POST['excluir_produto'])) {
     $nome_produto = limparTexto($_POST['nome_produto']);
     $objController->excluir_Produto($id_produto, $nome_produto);
 }
-
 
 // CLIENTE
 
@@ -530,6 +545,8 @@ if (isset($_POST['excluir_cliente'])) {
     $nome_fantasia = sanitizar($_POST['nome_fantasia']);
     $objController->excluir_Cliente($id_cliente, $nome_fantasia);
 }
+
+
 
 
 //  FORMA DE PAGAMENTO

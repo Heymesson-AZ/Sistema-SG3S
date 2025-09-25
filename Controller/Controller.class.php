@@ -2036,12 +2036,12 @@ class Controller
     // PRODUTO
 
     // verficar produto
-    public function verificar_Produto($nome_produto, $cor, $largura)
+    public function verificar_Produto($nome_produto, $id_cor, $largura, $id_fornecedor)
     {
         // Instancia a classe
         $objproduto = new Produto();
         // Verifica se o produto existe
-        if ($objproduto->verificarProduto($nome_produto, $cor, $largura) == true) {
+        if ($objproduto->verificarProduto($nome_produto, $id_cor, $largura, $id_fornecedor) == true) {
             session_start();
             $menu = $this->menu();
             $this->mostrarMensagemErro("Produto já cadastrado");
@@ -2100,21 +2100,28 @@ class Controller
 
         // Tipo com botão +
         print '<div class="col-md-4">';
-        print '<label for="tipo_produto" class="form-label">Tipo *</label>';
-        print '<div class="input-group">';
-        print '<input type="text" class="form-control" id="tipo_produto" name="tipo_produto" placeholder="Ex: Matéria-prima" required autocomplete="off">';
-        print '<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_tipo_produto" ><i class="bi bi-plus-lg"></i></button>';
-        print '</div>';
+        print '  <label for="tipo_produto" class="form-label">Tipo *</label>';
+        print '  <div class="input-group">';
+        print '      <span class="input-group-text"><i class="bi bi-search"></i></span>';
+        print '      <input type="hidden" id="id_tipo_hidden" name="id_tipo_produto" value="" />';
+        print '      <input type="text" class="form-control" id="tipo_produto" placeholder="Digite o tipo de produto" autocomplete="off" required />';
+        print '      <div id="resultado_busca_tipo" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"  style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
+        print '      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_tipo_produto"><i class="bi bi-plus-lg"></i></button>';
+        print '  </div>';
         print '</div>';
 
         // Cor com botão +
         print '<div class="col-md-4">';
-        print '<label for="cor" class="form-label">Cor *</label>';
-        print '<div class="input-group">';
-        print '<input type="text" class="form-control" id="cor" name="cor" value="' . $_SESSION['produto']['cor'] . '" required autocomplete="off">';
-        print '<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_cor"><i class="bi bi-plus-lg"></i></button>';
+        print '  <label for="cor" class="form-label">Cor *</label>';
+        print '  <div class="input-group">';
+        print '      <span class="input-group-text"><i class="bi bi-search"></i></span>';
+        print '      <input type="hidden" id="id_cor_hidden_cadastro" name="id_cor" value="" />';
+        print '      <input type="text" class="form-control" id="cor_cadastro" placeholder="Digite a cor" autocomplete="off" required />';
+        print '      <div id="resultado_busca_cor_cadastro" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"  style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
+        print '      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_cor"><i class="bi bi-plus-lg"></i></button>';
+        print '  </div>';
         print '</div>';
-        print '</div>';
+
 
         // Quantidade
         print '<div class="col-md-4">';
@@ -2235,7 +2242,6 @@ class Controller
         print '});';
         print '</script>';
     }
-
     // Cadastrar Produto
     public function cadastrar_Produto(
         $nome_produto,
@@ -2288,14 +2294,14 @@ class Controller
         }
     }
     // consultar produto
-    public function consultar_Produto($tipo_produto, $cor, $nome_produto, $id_fornecedor)
+    public function consultar_Produto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor)
     {
         // instancia a classe
         $objproduto = new Produto();
         // Invocar o método da classe produto para consultar o produto
-        if ($objproduto->consultarProduto($tipo_produto, $cor, $nome_produto, $id_fornecedor) == true) {
+        if ($objproduto->consultarProduto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor) == true) {
             session_start();
-            $produto = $objproduto->consultarProduto($tipo_produto, $cor, $nome_produto, $id_fornecedor);
+            $produto = $objproduto->consultarProduto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor);
             // Carregar o menu
             $menu = $this->menu();
             // Incluir a view do usuário
@@ -2647,13 +2653,9 @@ class Controller
         print '<th scope="col">Tipo</th>';
         print '<th scope="col">Cor</th>';
         print '<th scope="col">Largura</th>';
-        print '<th scope="col">Quantidade</th>';
-        print '<th scope="col">Valor de Venda</th>';
-
-        if ($this->temPermissao(['Administrador'])) {
-            print '<th scope="col">Ações</th>';
-        }
-
+        print '<th scope="col">Qtd</th>';
+        print '<th scope="col">Valor Venda</th>';
+        print '<th scope="col">Ações</th>';
         print '</tr>';
         print '</thead>';
         print '<tbody>';
@@ -2661,33 +2663,36 @@ class Controller
         foreach ($produto as $valor) {
             print '<tr>';
 
-            // Imagem do produto
+            // Imagem
             print '<td>';
             if (!empty($valor->img_produto) && file_exists($valor->img_produto)) {
-                print '<img src="' . $valor->img_produto . '" alt="Imagem do Produto" class="img-thumbnail rounded mx-auto d-block" style="max-width: 70px; max-height: 70px;">';
+                print '<img src="' . $valor->img_produto . '" alt="Produto" class="img-thumbnail rounded mx-auto d-block" style="max-width: 70px; max-height: 70px;">';
             } else {
                 print '<span class="text-muted">Sem imagem</span>';
             }
             print '</td>';
 
             // Campos
-            print '<td>' . $valor->nome_produto . '</td>';
-            print '<td>' . $valor->tipo_produto . '</td>';
-            print '<td>' . $valor->cor . '</td>';
+            print '<td>' . htmlspecialchars($valor->nome_produto) . '</td>';
+            print '<td>' . htmlspecialchars($valor->tipo_produto) . '</td>';
+            print '<td>' . htmlspecialchars($valor->cor) . '</td>';
             print '<td>' . $valor->largura . ' m</td>';
             print '<td>' . $valor->quantidade . ' m</td>';
-            print '<td>R$ ' . $valor->valor_venda . '</td>';
+            print '<td>R$ ' . number_format($valor->valor_venda, 2, ',', '.') . '</td>';
 
             // Ações
-            if ($this->temPermissao(['Administrador'])) {
-                print '<td>';
-                print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
+            print '<td>';
+            print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
+            // Detalhes sempre visível
+            print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_produto' . $valor->id_produto . '"><i class="bi bi-eye"></i></button>';
+
+            // Apenas admin pode alterar/excluir
+            if ($this->temPermissao(["Administrador"])) {
                 print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_produto' . $valor->id_produto . '"><i class="bi bi-pencil-square"></i></button>';
                 print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_produto' . $valor->id_produto . '"><i class="bi bi-trash"></i></button>';
-                print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_produto' . $valor->id_produto . '"><i class="bi bi-eye"></i></button>';
-                print '</div>';
-                print '</td>';
             }
+            print '</div>';
+            print '</td>';
 
             print '</tr>';
         }
@@ -2696,7 +2701,7 @@ class Controller
         print '</table>';
         print '</div>';
     }
-    // Modal de detalhes de um único produto
+    // Modal de detalhes de produto
     public function modalDetalhesProduto($produto)
     {
         if (empty($produto)) return;
@@ -2712,29 +2717,47 @@ class Controller
                     </div>
                     <div class="modal-body">
                         <div class="container">
+                            <div class="row mb-3 text-center">';
+            if (!empty($valor->img_produto) && file_exists($valor->img_produto)) {
+                print '<img src="' . $valor->img_produto . '" alt="Imagem do Produto" class="img-fluid rounded" style="max-height:200px;">';
+            } else {
+                print '<span class="text-muted">Sem imagem</span>';
+            }
+            print '          </div>
+
                             <div class="row mb-2">
-                                <div class="col-md-6"><strong>Tipo:</strong> ' . $valor->tipo_produto . '</div>
-                                <div class="col-md-6"><strong>Cor:</strong> ' . $valor->cor . '</div>
+                                <div class="col-md-6"><strong>Produto:</strong> ' . htmlspecialchars($valor->nome_produto) . '</div>
+                                <div class="col-md-6"><strong>Tipo:</strong> ' . htmlspecialchars($valor->tipo_produto) . '</div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-md-6"><strong>Composição:</strong> ' . $valor->composicao . '</div>
-                                <div class="col-md-6"><strong>Quantidade:</strong> ' . $valor->quantidade . ' metros</div>
+                                <div class="col-md-6"><strong>Cor:</strong> ' . htmlspecialchars($valor->cor) . '</div>
+                                <div class="col-md-6"><strong>Largura:</strong> ' . $valor->largura . ' m</div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-md-6"><strong>Quantidade Mínima:</strong> ' . $valor->quantidade_minima . ' metros</div>
+                                <div class="col-md-6"><strong>Quantidade:</strong> ' . $valor->quantidade . ' m</div>
+                                <div class="col-md-6"><strong>Qtd. Mínima:</strong> ' . $valor->quantidade_minima . ' m</div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-md-6"><strong>Largura (m):</strong> ' . $valor->largura . '</div>
-                                <div class="col-md-6"><strong>Valor Venda (R$):</strong> ' . $valor->valor_venda . '</div>
-                            </div>'
-                . ($this->temPermissao(['Administrador']) ? '
-                            <div class="row mb-2">
-                                <div class="col-md-6"><strong>Custo Compra (R$):</strong> ' . $valor->custo_compra . '</div>
-                                <div class="col-md-6"><strong>Data Compra:</strong> ' . date('d/m/Y', strtotime($valor->data_compra)) . '</div>
+                                <div class="col-md-12"><strong>Composição:</strong> ' . htmlspecialchars($valor->composicao) . '</div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-md-6"><strong>NCM:</strong> ' . $valor->ncm_produto . '</div>
-                                <div class="col-md-6"><strong>Fornecedor:</strong> ' . $valor->fornecedor . '</div>' : '') . '
+                                <div class="col-md-6"><strong>Valor Venda:</strong> R$ ' . number_format($valor->valor_venda, 2, ',', '.') . '</div>
+                            </div>';
+
+            // Campos restritos ao administrador
+            if ($this->temPermissao(["Administrador"])) {
+                print '
+                            <div class="row mb-2">
+                                <div class="col-md-6"><strong>Custo Compra:</strong> R$ ' . number_format($valor->custo_compra, 2, ',', '.') . '</div>
+                                <div class="col-md-6"><strong>Data Compra:</strong> ' . date("d/m/Y", strtotime($valor->data_compra)) . '</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-6"><strong>NCM:</strong> ' . htmlspecialchars($valor->ncm_produto) . '</div>
+                                <div class="col-md-6"><strong>Fornecedor:</strong> ' . htmlspecialchars($valor->fornecedor) . '</div>
+                            </div>';
+            }
+
+            print '
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -2745,7 +2768,6 @@ class Controller
         </div>';
         }
     }
-
     // select de produtos
     public function selectProdutos($id_produto = null)
     {
@@ -2764,6 +2786,36 @@ class Controller
             }
         }
         print '</select>';
+    }
+    // Função ajax da cor do produto
+    public function buscarCorProduto($cor_produto)
+    {
+        $objCor = new Cor();
+        $cores = $objCor->consultarCor($cor_produto);
+        if (!empty($cores)) {
+            foreach ($cores as $valor) {
+                $id_cor = $valor->id_cor;
+                $nome_cor = $valor->nome_cor;
+                print "<span class='list-group-item list-group-item-action cor-item'data-id='$id_cor' data-nome='$nome_cor'>$nome_cor</span>";
+            }
+        } else {
+            print "<span class='list-group-item text-danger'>Nenhuma cor encontrada</span>";
+        }
+    }   
+    //  funcao ajax do tipo de tecido
+    public function buscarTipoProduto($tipo_produto)
+    {
+        $objTipo = new TipoProduto();
+        $tipo = $objTipo->consultarTipo($tipo_produto);
+        if (!empty($tipo)) {
+            foreach ($tipo as $valor) {
+                $id_tipo = $valor->id_tipo_produto;
+                $tipo = $valor->nome_tipo;
+                print "<span class='list-group-item list-group-item-action tipo-item' data-id='$id_tipo' data-nome='$tipo'>$tipo</span>";
+            }
+        } else {
+            print "<span class='list-group-item text-danger'>Nenhum tipo encontrado</span>";
+        }
     }
 
     // CLIENTE

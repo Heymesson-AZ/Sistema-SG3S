@@ -42,7 +42,6 @@ class Cor extends Conexao
             return false;
         }
     }
-
     // Método para excluir cor
     public function excluirCor($id_cor)
     {
@@ -59,7 +58,6 @@ class Cor extends Conexao
             return false;
         }
     }
-
     // Método para alterar cor
     public function alterarCor($id_cor, $nome_cor)
     {
@@ -78,12 +76,11 @@ class Cor extends Conexao
             return false;
         }
     }
-
     // Método para consultar cores
     public function consultarCor($nome_cor = null)
     {
         $this->setNomeCor($nome_cor);
-        $sql = "SELECT * FROM cor WHERE 1=1";
+        $sql = "SELECT id_cor, nome_cor FROM cor WHERE 1=1";
         if ($nome_cor !== null) {
             $sql .= " AND nome_cor LIKE :nome_cor";
         }

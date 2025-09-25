@@ -9,15 +9,14 @@ class Produto extends Conexao
     private $nome_produto = null;
     private $composicao = null;
     private $largura = null;
-    private $tipo_produto = null;
     private $data_compra = null;
     private $quantidade = null;
     private $quantidade_minima = null;
-    private $cor = null;
     private $ncm_produto = null;
     private $id_fornecedor = null;
     private $img_produto = null;
-
+    private $id_tipo_produto = null;
+    private $id_cor = null;
     // metodos getters e setters
 
     public function getIdProduto()
@@ -75,13 +74,13 @@ class Produto extends Conexao
     {
         $this->largura = $largura;
     }
-    public function getTipoProduto()
+    public function getIdTipoProduto()
     {
-        return $this->tipo_produto;
+        return $this->id_tipo_produto;
     }
-    public function setTipoProduto($tipo_produto)
+    public function setIdTipoProduto($id_tipo_produto)
     {
-        $this->tipo_produto = $tipo_produto;
+        $this->id_tipo_produto = $id_tipo_produto;
     }
     public function getDataCompra()
     {
@@ -107,13 +106,13 @@ class Produto extends Conexao
     {
         $this->quantidade_minima = $quantidade_minima;
     }
-    public function getCor()
+    public function getIdCor()
     {
-        return $this->cor;
+        return $this->id_cor;
     }
-    public function setCor($cor)
+    public function setIdCor($id_cor)
     {
-        $this->cor = $cor;
+        $this->id_cor = $id_cor;
     }
     public function getIdFornecedor()
     {
@@ -159,8 +158,8 @@ class Produto extends Conexao
     ) {
         // Setando os atributos
         $this->setNomeProduto($nome_produto);
-        $this->setTipoProduto($id_tipo_produto);   // agora é ID
-        $this->setCor($id_cor);                    // agora é ID
+        $this->setIdTipoProduto($id_tipo_produto);   // agora é ID
+        $this->setIdCor($id_cor);                    // agora é ID
         $this->setComposicao($composicao);
         $this->setQuantidade($quantidade);
         $this->setQuantidadeMinima($quantidade_minima);
@@ -188,8 +187,8 @@ class Produto extends Conexao
 
             // Bind dos parâmetros
             $query->bindValue(':nome_produto', $this->getNomeProduto(), PDO::PARAM_STR);
-            $query->bindValue(':id_tipo_produto', $this->getTipoProduto(), PDO::PARAM_INT);
-            $query->bindValue(':id_cor', $this->getCor(), PDO::PARAM_INT);
+            $query->bindValue(':id_tipo_produto', $this->getIdTipoProduto(), PDO::PARAM_INT);
+            $query->bindValue(':id_cor', $this->getIdCor(), PDO::PARAM_INT);
             $query->bindValue(':composicao', $this->getComposicao(), PDO::PARAM_STR);
             $query->bindValue(':quantidade', $this->getQuantidade(), PDO::PARAM_STR);
             $query->bindValue(':largura', $this->getLargura(), PDO::PARAM_STR);
@@ -210,20 +209,19 @@ class Produto extends Conexao
             return false;
         }
     }
-
     // Consultar Produtos
     public function consultarProduto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor)
     {
         // Setando os atributos
         $this->setNomeProduto($nome_produto);
-        $this->setTipoProduto($id_tipo_produto);  // agora é ID
-        $this->setCor($id_cor);                   // agora é ID
+        $this->setIdTipoProduto($id_tipo_produto);
+        $this->setIdCor($id_cor);
         $this->setIdFornecedor($id_fornecedor);
 
         // Base da query com JOINs para trazer nomes de fornecedor, cor e tipo
-        $sql = "SELECT 
-                p.id_produto, 
-                p.nome_produto, 
+        $sql = "SELECT
+                p.id_produto,
+                p.nome_produto,
                 p.id_tipo_produto,
                 t.nome_tipo AS tipo_produto,
                 p.id_cor,
@@ -251,10 +249,10 @@ class Produto extends Conexao
         if (!empty($this->getNomeProduto())) {
             $condicoes[] = "p.nome_produto LIKE :nome_produto";
         }
-        if (!empty($this->getTipoProduto())) {
+        if (!empty($this->getIdTipoProduto())) {
             $condicoes[] = "p.id_tipo_produto = :id_tipo_produto";
         }
-        if (!empty($this->getCor())) {
+        if (!empty($this->getIdCor())) {
             $condicoes[] = "p.id_cor = :id_cor";
         }
         if (!empty($this->getIdFornecedor())) {
@@ -277,11 +275,11 @@ class Produto extends Conexao
             if (!empty($this->getNomeProduto())) {
                 $query->bindValue(':nome_produto', "%" . $this->getNomeProduto() . "%", PDO::PARAM_STR);
             }
-            if (!empty($this->getTipoProduto())) {
-                $query->bindValue(':id_tipo_produto', $this->getTipoProduto(), PDO::PARAM_INT);
+            if (!empty($this->getIdTipoProduto())) {
+                $query->bindValue(':id_tipo_produto', $this->getIdTipoProduto(), PDO::PARAM_INT);
             }
-            if (!empty($this->getCor())) {
-                $query->bindValue(':id_cor', $this->getCor(), PDO::PARAM_INT);
+            if (!empty($this->getIdCor())) {
+                $query->bindValue(':id_cor', $this->getIdCor(), PDO::PARAM_INT);
             }
             if (!empty($this->getIdFornecedor())) {
                 $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
@@ -295,7 +293,6 @@ class Produto extends Conexao
             return false;
         }
     }
-
     // Alterar Produtos
     public function alterarProduto(
         $nome_produto,
@@ -316,8 +313,8 @@ class Produto extends Conexao
         // Setando os atributos
         $this->setIdProduto($id_produto);
         $this->setNomeProduto($nome_produto);
-        $this->setTipoProduto($id_tipo_produto);
-        $this->setCor($id_cor);
+        //$this->setTipoProduto($id_tipo_produto);
+        //$this->setCor($id_cor);
         $this->setComposicao($composicao);
         $this->setQuantidade($quantidade);
         $this->setQuantidadeMinima($quantidade_minima);
@@ -353,8 +350,8 @@ class Produto extends Conexao
             // Bind dos parâmetros
             $query->bindValue(':id_produto', $this->getIdProduto(), PDO::PARAM_INT);
             $query->bindValue(':nome_produto', $this->getNomeProduto(), PDO::PARAM_STR);
-            $query->bindValue(':id_tipo_produto', $this->getTipoProduto(), PDO::PARAM_INT);
-            $query->bindValue(':id_cor', $this->getCor(), PDO::PARAM_INT);
+            //$query->bindValue(':id_tipo_produto', $this->getTipoProduto(), PDO::PARAM_INT);
+            //$query->bindValue(':id_cor', $this->getCor(), PDO::PARAM_INT);
             $query->bindValue(':composicao', $this->getComposicao(), PDO::PARAM_STR);
             $query->bindValue(':quantidade', $this->getQuantidade(), PDO::PARAM_STR);
             $query->bindValue(':quantidade_minima', $this->getQuantidadeMinima(), PDO::PARAM_STR);
@@ -375,7 +372,6 @@ class Produto extends Conexao
             return false;
         }
     }
-
     // verifica se o produto está vinculado a algum pedido
     public function produtoEmAlgumPedido($id_produto)
     {
@@ -485,24 +481,26 @@ class Produto extends Conexao
         }
     }
     // verificar produto
-    public function verificarProduto($nome_produto, $cor, $largura)
+    public function verificarProduto($nome_produto, $id_cor, $largura, $id_fornecedor)
     {
         // setando os atributos
         $this->setNomeProduto($nome_produto);
-        $this->setCor($cor);
+        $this->setIdCor($id_cor);
         $this->setLargura($largura);
-
+        $this->setIdFornecedor($id_fornecedor);
         $sql = "SELECT * FROM produto
                 WHERE nome_produto = :nome_produto
-                AND cor = :cor
+                AND id_cor = :id_cor
                 AND largura = :largura
+                AND id_fornecedor = :id_fornecedor
                 LIMIT 1";
         try {
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);
             $query->bindValue(':nome_produto', $nome_produto, PDO::PARAM_STR);
-            $query->bindValue(':cor', $cor, PDO::PARAM_STR);
+            $query->bindValue(':id_cor', $id_cor, PDO::PARAM_INT);
             $query->bindValue(':largura', $largura, PDO::PARAM_STR);
+            $query->bindValue(':id_fornecedor', $id_fornecedor, PDO::PARAM_INT);
             $query->execute();
             // Retornar resultados
             $produto = $query->fetchAll(PDO::FETCH_ASSOC);
