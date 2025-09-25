@@ -226,7 +226,6 @@ if (isset($_POST['cor_produto'])) {
     $objController->buscarCorProduto($cor_produto);
     exit;
 }
-
 //================= BUSCA DINÂMICA DO Tipo do Produto =================
 if (isset($_POST['tipo_produto'])) {
     // strlower para minusculo e trim para tirar espaco
@@ -420,6 +419,7 @@ if (isset($_POST['verificar_produto'])) {
     $id_cor           = limparTexto($_POST['id_cor']);
     $largura      = limparNumero($_POST['largura']);
     $id_fornecedor = $_POST['id_fornecedor'];
+    
     $objController->verificar_Produto($nome_produto, $id_cor, $largura, $id_fornecedor);
 }
 // ================= EXCLUIR PRODUTO =================

@@ -410,9 +410,9 @@
             </div>
             <div class="container-fluid">
                 <?php
-                if (isset($_SESSION['produto'])) {
-                    $this->modal_CadastroProduto($_SESSION['produto']);
-                    unset($_SESSION['produto']);
+                if (isset($_SESSION['produto_cadastro'])) {
+                    $this->modal_CadastroProduto($_SESSION['produto_cadastro']);
+                    unset($_SESSION['produto_cadastro']);
                 }
                 ?>
             </div>
@@ -428,7 +428,10 @@
                 <div class="row justify-content-center mt-4">
                     <div class="col-md-9">
                         <!-- tabela de produtos -->
-                        <?php $this->tabelaConsultarProduto($produto); ?>
+                        <?php if (isset($produto)) {
+                            $this->tabelaConsultarProduto($produto);
+                        };
+                        ?>
                     </div>
                 </div>
             </div>

@@ -1,4 +1,22 @@
 $(document).ready(function () {
+
+
+  function mostrarAlerta(mensagem, tipo = "danger", duracao = 3000) {
+    const alerta = document.createElement("div");
+    alerta.className = `alert alert-${tipo} alert-dismissible fade show shadow`;
+    alerta.innerHTML = `
+      ${mensagem}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    `;
+    Object.assign(alerta.style, {
+      position: "fixed",
+      top: "20px",
+      right: "20px",
+      zIndex: 1055,
+    });
+    document.body.appendChild(alerta);
+    setTimeout(() => alerta.remove(), duracao);
+  }
   // ===========================
   // MÁSCARAS DE CAMPOS pela classe
   // ===========================
@@ -239,7 +257,6 @@ $(document).ready(function () {
         })
         .catch(() => mostrarAlerta("Erro ao buscar cor."));
     }
-
     inputCor.addEventListener("input", () => {
       hiddenCor.value = "";
       buscarCor(inputCor.value.trim());

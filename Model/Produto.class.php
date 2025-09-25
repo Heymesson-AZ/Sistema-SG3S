@@ -206,6 +206,7 @@ class Produto extends Conexao
             return true;
         } catch (PDOException $e) {
             error_log("Erro ao cadastrar produto: " . $e->getMessage());
+            print_r($e->getMessage());
             return false;
         }
     }
@@ -464,11 +465,13 @@ class Produto extends Conexao
     // consultarProdutoPedido
     public function consultarProdutoDinamico($produto)
     {
-        $sql = "SELECT id_produto, nome_produto, tipo_produto, cor, largura, valor_venda, quantidade
-            FROM produto
+        $sql = "SELECT id_produto, nome_produto, c.nome_cor AS cor , largura, valor_venda, quantidade
+            FROM produto p
+            INNER JOIN tipo_produto tp ON p.id_tipo_produto = tp.id_tipo_produto
+            INNER JOIN cor c ON p.id_cor = c.id_cor
             WHERE nome_produto LIKE :produto
-            OR tipo_produto LIKE :produto
-            OR cor LIKE :produto";
+            OR tp.nome_tipo LIKE :produto
+            OR c.nome_cor LIKE :produto";
         try {
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);
@@ -480,35 +483,60 @@ class Produto extends Conexao
             return false;
         }
     }
-    // verificar produto
     public function verificarProduto($nome_produto, $id_cor, $largura, $id_fornecedor)
     {
-        // setando os atributos
         $this->setNomeProduto($nome_produto);
         $this->setIdCor($id_cor);
         $this->setLargura($largura);
         $this->setIdFornecedor($id_fornecedor);
-        $sql = "SELECT * FROM produto
-                WHERE nome_produto = :nome_produto
-                AND id_cor = :id_cor
-                AND largura = :largura
-                AND id_fornecedor = :id_fornecedor
-                LIMIT 1";
+
+        $sqlProduto = "SELECT id_produto
+                        FROM produto
+                        WHERE nome_produto = :nome_produto
+                        AND id_cor = :id_cor
+                        AND largura = :largura
+                        AND id_fornecedor = :id_fornecedor
+                        LIMIT 1";
+        $sqlFornecedor = "SELECT razao_social FROM fornecedor WHERE id_fornecedor = :id_fornecedor LIMIT 1";
+        $sqlCor        = "SELECT nome_cor FROM cor WHERE id_cor = :id_cor LIMIT 1";
         try {
             $bd = $this->conectarBanco();
-            $query = $bd->prepare($sql);
-            $query->bindValue(':nome_produto', $nome_produto, PDO::PARAM_STR);
-            $query->bindValue(':id_cor', $id_cor, PDO::PARAM_INT);
-            $query->bindValue(':largura', $largura, PDO::PARAM_STR);
-            $query->bindValue(':id_fornecedor', $id_fornecedor, PDO::PARAM_INT);
+
+            // 1) Verificar se o produto existe
+            $query = $bd->prepare($sqlProduto);
+            $query->bindValue(':nome_produto', $this->getNomeProduto(), PDO::PARAM_STR);
+            $query->bindValue(':id_cor', $this->getIdCor(), PDO::PARAM_INT);
+            $query->bindValue(':largura', $this->getLargura(), PDO::PARAM_STR);
+            $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
             $query->execute();
-            // Retornar resultados
-            $produto = $query->fetchAll(PDO::FETCH_ASSOC);
-            return $produto;
+
+            $produto = $query->fetch(PDO::FETCH_ASSOC);
+
+            if ($produto) {
+                return ['existe' => true];
+            }
+
+            // 2) Buscar nome do fornecedor
+            $queryFornecedor = $bd->prepare($sqlFornecedor);
+            $queryFornecedor->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
+            $queryFornecedor->execute();
+            $fornecedor = $queryFornecedor->fetch(PDO::FETCH_ASSOC);
+
+            // 3) Buscar nome da cor
+            $queryCor = $bd->prepare($sqlCor);
+            $queryCor->bindValue(':id_cor', $this->getIdCor(), PDO::PARAM_INT);
+            $queryCor->execute();
+            $cor = $queryCor->fetch(PDO::FETCH_ASSOC);
+            return [
+                'existe'     => false,
+                'nome_cor'   => $cor['nome_cor'] ?? null,
+                'fornecedor' => $fornecedor['razao_social'] ?? null
+            ];
         } catch (PDOException $e) {
-            return false;
+            return ['existe' => false, 'erro' => $e->getMessage()];
         }
     }
+
     // verificar a quantidade de um produto
     public function verificarQuantidadeProduto($id_produto, $quantidade)
     {
@@ -661,12 +689,15 @@ class Produto extends Conexao
         $sql = "SELECT 
                 p.id_produto, 
                 p.nome_produto, 
-                p.tipo_produto, 
-                p.cor, 
+                t.nome_tipo AS tipo_produto, 
+                c.nome_cor AS cor, 
                 p.quantidade,
                 f.razao_social
             FROM produto p
-            INNER JOIN fornecedor f ON p.id_fornecedor = f.id_fornecedor";
+            INNER JOIN fornecedor f ON p.id_fornecedor = f.id_fornecedor
+            INNER JOIN cor c ON p.id_cor = c.id_cor
+            INNER JOIN tipo_produto t ON p.id_tipo_produto = t.id_tipo_produto";
+
 
         // Adiciona cláusula WHERE apenas se ID for válido
         if (!empty($id_fornecedor)) {
