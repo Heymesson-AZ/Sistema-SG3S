@@ -461,6 +461,8 @@
                     $valor->id_produto,
                     $valor->nome_produto,
                     $valor->tipo_produto,
+                    $valor->id_tipo_produto,
+                    $valor->id_cor,
                     $valor->cor,
                     $valor->composicao,
                     $valor->quantidade,
@@ -470,9 +472,10 @@
                     $valor->valor_venda,
                     $valor->data_compra,
                     $valor->ncm_produto,
-                    $valor->razao_social,
+                    $valor->fornecedor,
                     $valor->img_produto,
-                    $valor->id_fornecedor
+                    $valor->id_fornecedor,
+                    
                 );
                 //modal excluir usuario
                 $this->modalExcluirProduto(

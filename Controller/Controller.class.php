@@ -292,7 +292,7 @@ class Controller
             // Monta o menu
             $menu = $this->menu();
             // Carrega a view principal
-            include_once 'View/principal.php';
+            include_once 'view/principal.php';
         } else {
             // Usuário ou senha inválidos: volta para login com mensagem
             // limpando o chache do navegador
@@ -2054,10 +2054,174 @@ class Controller
                 'cor'          => $produto_cad['nome_cor'],
                 'largura'      => $largura,
                 'fornecedor'   => $produto_cad['fornecedor'],
-                'id_fornecedor'=> $id_fornecedor,
+                'id_fornecedor' => $id_fornecedor,
                 'id_cor'       => $id_cor
             ];
             include_once 'view/produto.php';
+        }
+    }
+
+    // Cadastrar Produto
+    public function cadastrar_Produto(
+        $nome_produto,
+        $id_tipo_produto,
+        $id_cor,
+        $composicao,
+        $quantidade,
+        $quantidade_minima,
+        $largura,
+        $custo_compra,
+        $valor_venda,
+        $data_compra,
+        $ncm_produto,
+        $id_fornecedor,
+        $img_produto
+    ) {
+        // instancia a classe
+        $objproduto = new Produto();
+        // Invocar o método da classe Usuario para cadastrar produto
+        if ($objproduto->cadastrarProduto(
+            $nome_produto,
+            $id_tipo_produto,
+            $id_cor,
+            $composicao,
+            $quantidade,
+            $quantidade_minima,
+            $largura,
+            $custo_compra,
+            $valor_venda,
+            $data_compra,
+            $ncm_produto,
+            $id_fornecedor,
+            $img_produto
+        ) == true) {
+            session_start();
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view do usuário
+            include_once 'view/produto.php';
+            // Exibir mensagem de sucesso
+            $this->mostrarMensagemSucesso("Produto cadastrado com sucesso");
+        } else {
+            session_start();
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view do usuário
+            include_once 'view/produto.php';
+            // Exibir mensagem de erro
+            $this->mostrarMensagemErro("Erro ao cadastrar Produto");
+        }
+    }
+    // consultar produto
+    public function consultar_Produto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor)
+    {
+        // instancia a classe
+        $objproduto = new Produto();
+        // Invocar o método da classe produto para consultar o produto
+        if ($objproduto->consultarProduto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor) == true) {
+            session_start();
+            $produto = $objproduto->consultarProduto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor);
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view do usuário
+            include_once 'view/produto.php';
+        } else {
+            session_start();
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view do usuário
+            include_once 'view/produto.php';
+            // Exibir mensagem de erro
+            $this->mostrarMensagemErro("Produto não encontrado");
+        }
+    }
+    // alterar  produdo
+    public function alterar_Produto(
+        $nome_produto,
+        $id_tipo_produto,
+        $id_cor,
+        $composicao,
+        $quantidade,
+        $quantidade_minima,
+        $largura,
+        $custo_compra,
+        $valor_venda,
+        $data_compra,
+        $ncm_produto,
+        $id_fornecedor,
+        $id_produto,
+        $img_produto
+    ) {
+        // instancia a classe
+        $objproduto = new Produto();
+        // Invocar o método da classe Usuario para cadastrar o perfil de usuário
+
+        if ($objproduto->alterarProduto(
+            $nome_produto,
+            $id_tipo_produto,
+            $id_cor,
+            $composicao,
+            $quantidade,
+            $quantidade_minima,
+            $largura,
+            $custo_compra,
+            $valor_venda,
+            $data_compra,
+            $ncm_produto,
+            $id_fornecedor,
+            $id_produto,
+            $img_produto
+        ) == true) {
+            session_start();
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view do usuário
+            include_once 'view/produto.php';
+            // Exibir mensagem de sucesso
+            $this->mostrarMensagemSucesso("Produto alterado com sucesso");
+        } else {
+            session_start();
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view do usuário
+            include_once 'view/produto.php';
+            // Exibir mensagem de erro
+            $this->mostrarMensagemErro("Erro ao alterar Produto");
+        }
+    }
+    // excluir usuario
+    public function excluir_Produto($id_produto)
+    {
+        // instancia a classe
+        $objproduto = new Produto();
+        // invocar o metodo de revisar se o produto esta em algum pedido
+        if ($objproduto->produtoEmAlgumPedido($id_produto) == true) {
+            session_start();
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view do usuário
+            include_once 'view/produto.php';
+            // Exibir mensagem de erro
+            $this->mostrarMensagemErro("Produto não pode ser excluído, pois está vinculado a um pedido");
+        } else {
+            // Invocar o método da classe Usuario para excluir o perfil de usuário
+            if ($objproduto->excluirProduto($id_produto) == true) {
+                session_start();
+                // Carregar o menu
+                $menu = $this->menu();
+                // Incluir a view do usuário
+                include_once 'view/produto.php';
+                // Exibir mensagem de sucesso
+                $this->mostrarMensagemSucesso("Produto excluído com sucesso");
+            } else {
+                session_start();
+                // Carregar o menu
+                $menu = $this->menu();
+                // Incluir a view do usuário
+                include_once 'view/produto.php';
+                // Exibir mensagem de erro
+                $this->mostrarMensagemErro("Erro ao excluir Produto");
+            }
         }
     }
     // Modal de cadastro de produto
@@ -2233,173 +2397,15 @@ class Controller
         print '});';
         print '</script>';
     }
-    // Cadastrar Produto
-    public function cadastrar_Produto(
-        $nome_produto,
-        $id_tipo_produto,
-        $id_cor,
-        $composicao,
-        $quantidade,
-        $quantidade_minima,
-        $largura,
-        $custo_compra,
-        $valor_venda,
-        $data_compra,
-        $ncm_produto,
-        $id_fornecedor,
-        $img_produto
-    ) {
-        // instancia a classe
-        $objproduto = new Produto();
-        // Invocar o método da classe Usuario para cadastrar produto
-        if ($objproduto->cadastrarProduto(
-            $nome_produto,
-            $id_tipo_produto,
-            $id_cor,
-            $composicao,
-            $quantidade,
-            $quantidade_minima,
-            $largura,
-            $custo_compra,
-            $valor_venda,
-            $data_compra,
-            $ncm_produto,
-            $id_fornecedor,
-            $img_produto
-        ) == true) {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/produto.php';
-            // Exibir mensagem de sucesso
-            $this->mostrarMensagemSucesso("Produto cadastrado com sucesso");
-        } else {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/produto.php';
-            // Exibir mensagem de erro
-            $this->mostrarMensagemErro("Erro ao cadastrar Produto");
-        }
-    }
-    // consultar produto
-    public function consultar_Produto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor)
-    {
-        // instancia a classe
-        $objproduto = new Produto();
-        // Invocar o método da classe produto para consultar o produto
-        if ($objproduto->consultarProduto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor) == true) {
-            session_start();
-            $produto = $objproduto->consultarProduto($nome_produto, $id_tipo_produto, $id_cor, $id_fornecedor);
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/produto.php';
-        } else {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/produto.php';
-            // Exibir mensagem de erro
-            $this->mostrarMensagemErro("Produto não encontrado");
-        }
-    }
-    // alterar  produdo
-    public function alterar_Produto(
-        $nome_produto,
-        $id_tipo_produto,
-        $id_cor,
-        $composicao,
-        $quantidade,
-        $quantidade_minima,
-        $largura,
-        $custo_compra,
-        $valor_venda,
-        $data_compra,
-        $ncm_produto,
-        $id_fornecedor,
-        $id_produto,
-        $img_produto
-    ) {
-        // instancia a classe
-        $objproduto = new Produto();
-        // Invocar o método da classe Usuario para cadastrar o perfil de usuário
-
-        if ($objproduto->alterarProduto(
-            $nome_produto,
-            $id_tipo_produto,
-            $id_cor,
-            $composicao,
-            $quantidade,
-            $quantidade_minima,
-            $largura,
-            $custo_compra,
-            $valor_venda,
-            $data_compra,
-            $ncm_produto,
-            $id_fornecedor,
-            $id_produto,
-            $img_produto
-        ) == true) {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/produto.php';
-            // Exibir mensagem de sucesso
-            $this->mostrarMensagemSucesso("Produto alterado com sucesso");
-        } else {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/produto.php';
-            // Exibir mensagem de erro
-            $this->mostrarMensagemErro("Erro ao alterar Produto");
-        }
-    }
-    // excluir usuario
-    public function excluir_Produto($id_produto)
-    {
-        // instancia a classe
-        $objproduto = new Produto();
-        // invocar o metodo de revisar se o produto esta em algum pedido
-        if ($objproduto->produtoEmAlgumPedido($id_produto) == true) {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/produto.php';
-            // Exibir mensagem de erro
-            $this->mostrarMensagemErro("Produto não pode ser excluído, pois está vinculado a um pedido");
-        } else {
-            // Invocar o método da classe Usuario para excluir o perfil de usuário
-            if ($objproduto->excluirProduto($id_produto) == true) {
-                session_start();
-                // Carregar o menu
-                $menu = $this->menu();
-                // Incluir a view do usuário
-                include_once 'view/produto.php';
-                // Exibir mensagem de sucesso
-                $this->mostrarMensagemSucesso("Produto excluído com sucesso");
-            } else {
-                session_start();
-                // Carregar o menu
-                $menu = $this->menu();
-                // Incluir a view do usuário
-                include_once 'view/produto.php';
-                // Exibir mensagem de erro
-                $this->mostrarMensagemErro("Erro ao excluir Produto");
-            }
-        }
-    }
+    // ========================
+    // Modal de Alteração Produto
+    // ========================
     public function modalAlterarProduto(
         $id_produto,
         $nome_produto,
         $tipo_produto,
+        $id_tipo_produto,
+        $id_cor,
         $cor,
         $composicao,
         $quantidade,
@@ -2409,202 +2415,184 @@ class Controller
         $valor_venda,
         $data_compra,
         $ncm_produto,
-        $razao_social,
+        $fornecedor,
         $img_produto,
-        $id_fornecedor
+        $id_fornecedor,
     ) {
-        print '<div class="modal fade" id="alterar_produto' . $id_produto . '" tabindex="-1" aria-labelledby="alterarProdutoLabel" aria-hidden="true">';
-        print '<div class="modal-dialog modal-xl modal-dialog-centered">';
-        print '<div class="modal-content">';
+        print '<div class="modal fade" id="alterar_produto' . $id_produto . '" tabindex="-1" aria-labelledby="alterarProdutoLabel' . $id_produto . '" aria-hidden="true">';
+        print '  <div class="modal-dialog modal-dialog-centered modal-xl">';
+        print '    <div class="modal-content">';
 
         // Cabeçalho
-        print '<div class="modal-header">';
-        print '<h6 class="modal-title" id="alterarProdutoLabel">Alterar Produto</h6>';
-        print '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
-        print '</div>';
+        print '      <div class="modal-header">';
+        print '        <h6 class="modal-title" id="alterarProdutoLabel' . $id_produto . '">Alterar Produto</h6>';
+        print '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '      </div>';
 
         // Corpo
-        print '<div class="modal-body" style="max-height: 75vh; overflow-y: auto;">';
-        print '<form action="index.php" method="POST" enctype="multipart/form-data" id="formulario_alterar_produto">';
-        print '<input type="hidden" name="id_produto" value="' . $id_produto . '">';
-        print '<div class="row g-3">';
+        print '      <div class="modal-body" style="max-height: 90vh; overflow-y: auto;">';
+        print '        <form action="index.php" method="POST" enctype="multipart/form-data" id="formulario_alterar_produto' . $id_produto . '">';
+        print '          <input type="hidden" name="origem" value="produto">';
+        print '          <input type="hidden" name="id_produto" value="' . $id_produto . '">';
+        print '          <input type="hidden" name="imagem_antiga" value="' . $img_produto . '">';
 
-        // Fieldset Imagem
-        print '<div class="col-md-12">';
-        print '<fieldset class="border border-black p-2 mb-4">';
-        print '<legend class="float-none w-auto px-2">Imagem do Produto</legend>';
-        print '<div class="row g-3 align-items-center">';
+        print '          <div class="row g-3">';
+        print '            <div class="col-12">';
+        print '              <fieldset class="border border-black p-3 mb-4">';
+        print '                <legend class="float-none w-auto px-2">Dados do Produto</legend>';
+        print '                <div class="row g-3">';
 
-        // Imagem atual
-        print '<div class="col-md-6">';
+        // Imagem
+        print '                  <div class="col-md-6">';
+        print '                    <label for="img_produto' . $id_produto . '" class="form-label">Imagem</label>';
         if (!empty($img_produto) && file_exists($img_produto)) {
-            print '<label class="form-label d-block">Imagem Atual:</label>';
-            print '<img src="' . $img_produto . '" class="img-thumbnail" style="max-width: 80px; height: auto;">';
+            print '                    <div class="mb-2"><img src="' . $img_produto . '" class="img-thumbnail" style="max-width: 80px; height: auto;"></div>';
         }
-        print '</div>';
+        print '                    <input type="file" class="form-control" id="img_produto' . $id_produto . '" name="img_produto" accept="image/*">';
+        print '                    <label id="legenda_imagem' . $id_produto . '" class="form-label d-block legenda"></label>';
+        print '                    <div id="preview_imagem' . $id_produto . '"></div>';
+        print '                  </div>';
 
-        // Preview nova imagem
-        print '<div class="col-md-6">';
-        print '<label id="legenda_imagem' . $id_produto . '" class="form-label d-block legenda"></label>';
-        print '<div id="preview_imagem' . $id_produto . '"></div>';
-        print '</div>';
+        // Nome
+        print '                  <div class="col-md-6">';
+        print '                    <label for="nome_produto' . $id_produto . '" class="form-label">Nome *</label>';
+        print '                    <input type="text" class="form-control" id="nome_produto' . $id_produto . '" name="nome_produto" value="' . $nome_produto . '" required placeholder="Digite o nome do produto">';
+        print '                  </div>';
 
-        // Input de nova imagem
-        print '<div class="col-md-6">';
-        print '<input type="file" class="form-control" id="img_produto' . $id_produto . '" name="img_produto" accept="image/*">';
-        print '<input type="hidden" name="imagem_antiga" value="' . $img_produto . '">';
-        print '</div>';
+        // Tipo com busca
+        print '                  <div class="col-md-4">';
+        print '                    <label for="tipo_produto' . $id_produto . '" class="form-label">Tipo *</label>';
+        print '                    <div class="input-group">';
+        print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
+        print '                      <input type="hidden" id="id_tipo_hidden' . $id_produto . '" name="id_tipo_produto" value="' . $id_tipo_produto . '"/>';
+        print '                      <input type="text" class="form-control" id="tipo_produto' . $id_produto . '" placeholder="Digite o tipo de produto" autocomplete="off" required value="' . $tipo_produto . '" disabled/> ';
+        print '                      <div id="resultado_busca_tipo' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
+        print '                      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_tipo_produto"><i class="bi bi-plus-lg"></i></button>';
+        print '                    </div>';
+        print '                  </div>';
 
-        print '</div>'; // row imagem
-        print '</fieldset>';
-        print '</div>'; // col imagem
+        // Cor com busca
+        print '                  <div class="col-md-4">';
+        print '                    <label for="cor' . $id_produto . '" class="form-label">Cor *</label>';
+        print '                    <div class="input-group">';
+        print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
+        print '                      <input type="hidden" id="id_cor_hidden' . $id_produto . '" name="id_cor" value="' . $id_cor . '"/>';
+        print '                      <input type="text" class="form-control" id="cor' . $id_produto . '" placeholder="Digite a cor" autocomplete="off" required value="' . $cor . '" disabled/>';
+        print '                      <div id="resultado_busca_cor' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
+        print '                      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_cor"><i class="bi bi-plus-lg"></i></button>';
+        print '                    </div>';
+        print '                  </div>';
 
-        // Fieldset Dados Principais
-        print '<div class="col-md-12">';
-        print '<fieldset class="border border-black p-2 mb-4">';
-        print '<legend class="float-none w-auto px-2">Dados do Produto</legend>';
-        print '<div class="row g-3">';
+        // Quantidade
+        print '                  <div class="col-md-4">';
+        print '                    <label for="quantidade' . $id_produto . '" class="form-label">Qtd. (m) *</label>';
+        print '                    <input type="text" class="form-control quantidade" id="quantidade' . $id_produto . '" name="quantidade" required placeholder="0,00" autocomplete="off" value="' . $quantidade . '">';
+        print '                  </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="nome_produto" class="form-label">Nome *</label>';
-        print '<input type="text" class="form-control" name="nome_produto" value="' . $nome_produto . '" required autocomplete="off">';
-        print '</div>';
+        // Quantidade mínima, Largura, Composição
+        print '                  <div class="col-md-4">';
+        print '                    <label for="quantidade_minima' . $id_produto . '" class="form-label">Qtd. Mínima *</label>';
+        print '                    <input type="text" class="form-control quantidade_minima" id="quantidade_minima' . $id_produto . '" name="quantidade_minima" required placeholder="0,00" autocomplete="off" value="' . $quantidade_minima . '">';
+        print '                  </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="tipo_produto" class="form-label">Tipo *</label>';
-        print '<input type="text" class="form-control" name="tipo_produto" value="' . $tipo_produto . '" required>';
-        print '</div>';
+        print '                  <div class="col-md-4">';
+        print '                    <label for="largura' . $id_produto . '" class="form-label">Largura (m) *</label>';
+        print '                    <input type="text" class="form-control" id="largura' . $id_produto . '" name="largura" value="' . $largura . '" required placeholder="Digite a largura" autocomplete="off">';
+        print '                  </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="cor" class="form-label">Cor *</label>';
-        print '<input type="text" class="form-control" name="cor" value="' . $cor . '" required>';
-        print '</div>';
+        print '                  <div class="col-md-4">';
+        print '                    <label for="composicao' . $id_produto . '" class="form-label">Composição *</label>';
+        print '                    <input type="text" class="form-control" id="composicao' . $id_produto . '" name="composicao" required placeholder="Digite a composição" value="' . $composicao . '">';
+        print '                  </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="composicao" class="form-label">Composição *</label>';
-        print '<input type="text" class="form-control" name="composicao" value="' . $composicao . '" required>';
-        print '</div>';
+        // Custo, Valor, Data
+        print '                  <div class="col-md-4">';
+        print '                    <label for="custo_compra' . $id_produto . '" class="form-label">Custo de Compra *</label>';
+        print '                    <div class="input-group">';
+        print '                      <span class="input-group-text">R$</span>';
+        print '                      <input type="text" class="form-control dinheiro" id="custo_compra' . $id_produto . '" name="custo_compra" required placeholder="0,00" autocomplete="off" value="' . $custo_compra . '">';
+        print '                    </div>';
+        print '                  </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="largura" class="form-label">Largura (m) *</label>';
-        print '<input type="text" class="form-control" name="largura" value="' . $largura . '" required autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-4">';
+        print '                    <label for="valor_venda' . $id_produto . '" class="form-label">Valor de Venda *</label>';
+        print '                    <div class="input-group">';
+        print '                      <span class="input-group-text">R$</span>';
+        print '                      <input type="text" class="form-control dinheiro" id="valor_venda' . $id_produto . '" name="valor_venda" required placeholder="0,00" autocomplete="off" value="' . $valor_venda . '">';
+        print '                    </div>';
+        print '                  </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="quantidade" class="form-label">Quantidade (m) *</label>';
-        print '<input type="text" class="form-control" name="quantidade" value="' . $quantidade . '" required autocomplete="off">';
-        print '</div>';
+        print '                  <div class="col-md-4">';
+        print '                    <label for="data_compra' . $id_produto . '" class="form-label">Data Compra *</label>';
+        print '                    <input type="date" class="form-control" id="data_compra' . $id_produto . '" name="data_compra" required autocomplete="off" value="' . date("Y-m-d", strtotime($data_compra)) . '">';
+        print '                  </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="quantidade_minima" class="form-label">Qtd. Mínima *</label>';
-        print '<input type="text" class="form-control" name="quantidade_minima" value="' . $quantidade_minima . '" required autocomplete="off">';
-        print '</div>';
+        // NCM e Fornecedor
+        print '                  <div class="col-md-6">';
+        print '                    <label for="ncm_produto' . $id_produto . '" class="form-label">NCM *</label>';
+        print '                    <input type="text" class="form-control" id="ncm_produto' . $id_produto . '" name="ncm_produto" required placeholder="Digite o código NCM" autocomplete="off" maxlength="8" pattern="[0-9]{1,8}" title="O NCM deve conter até 8 dígitos numéricos" value="' . $ncm_produto . '">';
+        print '                  </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="custo_compra" class="form-label">Custo Compra (R$) *</label>';
-        print '<div class="input-group">';
-        print '<span class="input-group-text">R$</span>';
-        print '<input type="text" class="form-control dinheiro" name="custo_compra" value="' . $custo_compra . '" required autocomplete="off"> ';
-        print '</div>';
-        print '</div>';
+        print '                  <div class="col-md-6">';
+        print '                    <label for="fornecedor' . $id_produto . '" class="form-label">Fornecedor *</label>';
+        print '                    <div class="position-relative">';
+        print '                      <div class="input-group">';
+        print '                        <span class="input-group-text"><i class="bi bi-search"></i></span>';
+        print '                        <input type="hidden" id="id_fornecedor_hidden' . $id_produto . '" name="id_fornecedor" value="' . $id_fornecedor . '"/>';
+        print '                        <input type="text" class="form-control" id="id_fornecedor_produto' . $id_produto . '" placeholder="Digite o nome do fornecedor" autocomplete="off" value="' . $fornecedor . '"/>';
+        print '                      </div>';
+        print '                      <div id="resultado_busca_fornecedor' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>';
+        print '                    </div>';
+        print '                  </div>';
 
+        print '                </div>'; // row g-3
+        print '              </fieldset>';
+        print '            </div>'; // col-12
+        print '          </div>'; // row g-3
+        print '        </form>';
+        print '      </div>'; // modal-body
 
-        print '<div class="col-md-4">';
-        print '<label for="valor_venda" class="form-label">Valor Venda (R$) *</label>';
-        print '<div class="input-group">';
-        print '<span class="input-group-text">R$</span>';
-        print '<input type="text" class="form-control dinheiro" name="valor_venda" value="' . $valor_venda . '" required autocomplete="off" > ';
-        print '</div>';
-        print '</div>';
+        // Rodapé
+        print '      <div class="modal-footer d-flex justify-content-end gap-2">';
+        print '        <button type="button" form="formulario_alterar_produto' . $id_produto . '" class="btn btn-outline-secondary" data-bs-dismiss="modal">';
+        print '          <i class="bi bi-x-octagon"></i> Cancelar';
+        print '        </button>';
+        print '        <button type="submit" form="formulario_alterar_produto' . $id_produto . '" class="btn btn-primary" name="alterar_produto">';
+        print '          <i class="bi bi-check-circle"></i> Alterar';
+        print '        </button>';
+        print '      </div>';
 
-        print '<div class="col-md-4">';
-        print '<label for="data_compra" class="form-label">Data da Compra *</label>';
-        print '<input type="date" class="form-control" name="data_compra" value="' . $data_compra . '" required autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-4">';
-        print '<label for="ncm_produto" class="form-label">NCM *</label>';
-        print '<input type="text" class="form-control" name="ncm_produto" value="' . $ncm_produto . '" required autocomplete="off">';
-        print '</div>';
-
-        print '<div class="col-md-4">';
-        print '<label for="produto_custo" class="form-label">Fornecedor *</label>';
-        print '<div class="position-relative">';
-        print '<div class="input-group"> ';
-        print '<span class="input-group-text"><i class="bi bi-search"></i></span>';
-        print '<input type="hidden" id="id_fornecedor_hidden' . $id_produto . '" name="id_fornecedor" value="' . $id_fornecedor . '" />';
-        print '<input type="text" class="form-control fornecedor-input"
-        id="id_fornecedor_produto' . $id_produto . '"
-        placeholder="Digite o nome do fornecedor"
-        value="' . $razao_social . '"
-        autocomplete="off" />';
-        print '</div>';
-        print '<div id="resultado_busca_fornecedor' . $id_produto . '"
-        class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"
-        style="max-height: 200px; overflow-y: auto;">';
-        print '</div>';
-
-        print '</div>'; // row internos
-        print '</fieldset>';
-        print '</div>'; // col dados
-
-        print '</div>'; // row g-3
-        print '</div>'; // modal-body
-
-        // Rodapé com botões
-        print '<div class="modal-footer">';
-        print '<div class="container-fluid">';
-        print '<div class="row g-2">';
-        print '<div class="col-md-4">';
-        print '<button type="reset" class="btn btn-outline-secondary w-100 py-2">';
-        print '<i class="bi bi-arrow-counterclockwise"></i> Limpar';
-        print '</button>';
-        print '</div>';
-        print '<div class="col-md-4">';
-        print '<button type="submit" name="alterar_produto" class="btn btn-primary w-100 py-2">';
-        print '<i class="bi bi-check-circle"></i> Alterar';
-        print '</button>';
-        print '</div>';
-        print '<div class="col-md-4">';
-        print '<button type="button" class="btn btn-danger w-100 py-2" data-bs-dismiss="modal">';
-        print '<i class="bi bi-x-octagon"></i> Cancelar';
-        print '</button>';
-        print '</div>';
-        print '</div>';
-        print '</div>';
-        print '</div>'; // modal-footer
-
-        print '</form>';
-        print '</div>'; // modal-content
-        print '</div>'; // modal-dialog
+        print '    </div>'; // modal-content
+        print '  </div>'; // modal-dialog
         print '</div>'; // modal
 
-        // Script JS para preview da nova imagem
+        // Script preview imagem
         print '<script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const inputImagem = document.querySelector("#img_produto' . $id_produto . '");
-            const previewDiv = document.querySelector("#preview_imagem' . $id_produto . '");
-            const legendaLabel = document.querySelector("#legenda_imagem' . $id_produto . '");
+    document.addEventListener("DOMContentLoaded", function () {
+        const inputImagem = document.querySelector("#img_produto' . $id_produto . '");
+        const previewDiv = document.querySelector("#preview_imagem' . $id_produto . '");
+        const legendaLabel = document.querySelector("#legenda_imagem' . $id_produto . '");
 
-            if (inputImagem && previewDiv && legendaLabel) {
-                inputImagem.addEventListener("change", function () {
-                    const file = this.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            previewDiv.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" width="80" height="auto">`;
-                            legendaLabel.textContent = "Nova Imagem: ";
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        previewDiv.innerHTML = "";
-                        legendaLabel.textContent = "";
-                    }
-                });
-            }
-        });
-        </script>';
+        if (inputImagem && previewDiv && legendaLabel) {
+            inputImagem.addEventListener("change", function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewDiv.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" width="80" height="auto">`;
+                        legendaLabel.textContent = "Nova Imagem:";
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewDiv.innerHTML = "";
+                    legendaLabel.textContent = "";
+                }
+            });
+        }
+    });
+    </script>';
     }
+
     // modal de excluir produto
     public function modalExcluirProduto($id_produto, $nome_produto)
     {
