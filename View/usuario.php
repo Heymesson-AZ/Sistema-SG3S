@@ -45,7 +45,7 @@
             </div>
             <!-- Modal de verificar o CPF do Usuário -->
             <div class="modal fade" id="modal_cpf" tabindex="-1" aria-labelledby="modalCpfLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-dialog modal-default modal-dialog-centered">
                     <div class="modal-content">
 
                         <!-- Cabeçalho -->

@@ -444,7 +444,7 @@ $(document).ready(function () {
   // ===========================
   document.getElementById("salvar_pedido").addEventListener("click", function (e) {
     e.preventDefault();
-    if (this.disabled) return; // segurança extra
+    if (this.disabled) return;
     const idCliente = document.getElementById("id_cliente_hidden")?.value;
     const status = "Pendente";
     const idPagamento = document.querySelector("select[name='id_forma_pagamento']").value;
@@ -453,20 +453,8 @@ $(document).ready(function () {
     }
 
     const origem = document.getElementById("origem").value;
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoje.getDate()).padStart(2, '0');
-    const hora = String(hoje.getHours()).padStart(2, '0');
-    const minuto = String(hoje.getMinutes()).padStart(2, '0');
-    const segundo = String(hoje.getSeconds()).padStart(2, '0');
-    const data = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
-    const frete = valorFrete.toFixed(2);
-    // id tipo de produto
-    const idTipoProduto = document.getElementById("id_tipo_produto").value;
-    // id da cor do produto
-    const idCorProduto = document.getElementById("id_cor_produto").value;
 
+    const frete = valorFrete.toFixed(2);
     const total = Number((valorTotal + valorFrete).toFixed(2));
 
     const itens = [];
@@ -487,26 +475,21 @@ $(document).ready(function () {
     form.innerHTML = `
       <input type="hidden" name="salvar_pedido" value="1">
       <input type="hidden" name="id_cliente" value="${idCliente}">
-      <input type="hidden" name="data_pedido" value="${data}">
       <input type="hidden" name="status_pedido" value="${status}">
       <input type="hidden" name="valor_total" value="${total}">
       <input type="hidden" name="id_forma_pagamento" value="${idPagamento}">
-      <input type="hidden" name="valor_frete" value="${frete}">
-      <input type="hidden" name="origem" value="${origem}">
-      <input type="hidden" name="id_tipo_produto" value="${idTipoProduto}">
-      <input type="hidden" name="id_cor_produto" value="${idCorProduto}">
-    `;
+      <input type="hidden" name="valor_frete" value="${frete}">`;
     itens.forEach((item, i) => {
       form.innerHTML += `
-          <input type="hidden" name="itens[${i}][id_produto]" value="${item.id_produto}">
-          <input type="hidden" name="itens[${i}][quantidade]" value="${item.quantidade}">
-          <input type="hidden" name="itens[${i}][valor_unitario]" value="${item.valor_unitario}">
-          <input type="hidden" name="itens[${i}][totalValor_produto]" value="${item.totalValor_produto}">
-        `;
+            <input type="hidden" name="itens[${i}][id_produto]" value="${item.id_produto}">
+            <input type="hidden" name="itens[${i}][quantidade]" value="${item.quantidade}">
+            <input type="hidden" name="itens[${i}][valor_unitario]" value="${item.valor_unitario}">
+            <input type="hidden" name="itens[${i}][totalValor_produto]" value="${item.totalValor_produto}">`;
     });
+
     document.body.appendChild(form);
     form.submit();
-    form.remove();
     limparCamposPedido();
+    form.remove();
   });
 });

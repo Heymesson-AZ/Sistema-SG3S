@@ -107,7 +107,6 @@ class Usuario extends Conexao
             return ['validado' => false];
         }
     }
-
     // metodo para cadastrar usuario
     public function cadastrarUsuario($nome_usuario, $email_usuario, $senhaHash, $id_perfil, $telefone, $cpf)
     {
@@ -252,7 +251,7 @@ class Usuario extends Conexao
             $totalAdmin = (int)$bd->query($sqlCount)->fetch(PDO::FETCH_ASSOC)['total'];
 
             // Se só existir 1, bloqueia exclusão
-            if ($totalAdmin <= 1) {
+            if ($totalAdmin === 1) {
                 return "Não é permitido excluir o único administrador do sistema.";
             }
 

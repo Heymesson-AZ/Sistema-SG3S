@@ -98,172 +98,146 @@ class Controller
         // Agrupar itens por pedido
         $pedidosAgrupados = [];
         foreach ($pedidos as $pedido) {
-            $id = $pedido->id_pedido;
-            // Agrupar pedidos pelo ID
+            $id = $pedido->numero_pedido; // agrupar pelo número do pedido
             if (!isset($pedidosAgrupados[$id])) {
                 $pedidosAgrupados[$id] = [
                     'dados' => $pedido,
                     'itens' => [],
                 ];
             }
-            // Agrupar itens pelo ID do pedido
             if (!empty($pedido->id_item_pedido)) {
                 $pedidosAgrupados[$id]['itens'][] = [
-                    'nome_produto'    => $pedido->nome_produto ?? '',
-                    'unidade_medida'  => $pedido->unidade_medida ?? 'un',
-                    'valor_unitario'  => $pedido->valor_unitario ?? 0,
-                    'quantidade'      => $pedido->quantidade ?? 0,
-                    'status_pedido' => $pedido->status_pedido ?? '',
+                    'nome_produto'   => $pedido->nome_produto ?? '',
+                    'quantidade'     => $pedido->quantidade ?? 0,
+                    'valor_unitario' => $pedido->valor_unitario ?? 0,
+                    'total_produto'  => $pedido->totalValor_produto ?? 0,
+                    'largura'        => $pedido->largura ?? '',
+                    'cor'            => $pedido->cor ?? '',
                 ];
             }
         }
+
         // HTML estilizado
         $html = '<!DOCTYPE html>
         <html lang="pt-BR">
         <head>
             <meta charset="UTF-8">
             <style>
-                body {
-                    font-family: DejaVu Sans, Arial, sans-serif;
-                    font-size: 12px;
-                    color: #333;
-                    margin: 20px;
-                }
-                .topo {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 10px;
-                }
-                .topo .legenda {
-                    font-size: 16px;
-                    font-weight: bold;
-                    color: #2E86C1;
-                }
-                .topo .data-hora {
-                    font-size: 11px;
-                    color: #666;
-                }
-                .pedido-info {
-                    margin-bottom: 10px;
-                }
-                .pedido-info div {
-                    margin-bottom: 4px;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-top: 10px;
-                }
-                th, td {
-                    border: 1px solid #bbb;
-                    padding: 8px;
-                    text-align: left;
-                    vertical-align: top;
-                }
-                th {
-                    background-color: #f2f2f2;
-                    font-weight: bold;
-                    text-transform: uppercase;
-                    font-size: 11px;
-                }
-                tr:nth-child(even) {
-                    background-color: #f9f9f9;
-                }
-                .valor-total {
-                    text-align: right;
-                    font-weight: bold;
-                    font-size: 13px;
-                    margin-top: 15px;
-                    color: #1E8449;
-                }
-                hr {
-                    margin: 30px 0;
-                    border: none;
-                    border-top: 1px solid #ccc;
-                }
+                body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #333; margin: 20px; }
+                .topo { display: flex; justify-content: space-between; margin-bottom: 10px; }
+                .topo .legenda { font-size: 16px; font-weight: bold; color: #2E86C1; }
+                .topo .data-hora { font-size: 11px; color: #666; }
+                .pedido-info { margin-bottom: 12px; }
+                .pedido-info div { margin-bottom: 4px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                th, td { border: 1px solid #bbb; padding: 6px; text-align: left; vertical-align: top; }
+                th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; font-size: 11px; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+                .valor-total { text-align: right; font-weight: bold; font-size: 13px; margin-top: 12px; color: #1E8449; }
+                hr { margin: 30px 0; border: none; border-top: 1px solid #ccc; }
             </style>
-        </head>
-        <body>';
-        $html .= '<div class="topo">
-            <div class="legenda">Pedido</div>
-            <div class="data-hora">Gerado em: ' . $dataHoraGeracao . '</div>
-        </div>';
+            </head>
+            <body>';
 
-        foreach ($pedidosAgrupados as $pedidoAgrupado) {
-            $pedido = $pedidoAgrupado['dados'];
-            $itens = $pedidoAgrupado['itens'];
-            // mascara do cnpj
-            $pedido->cnpj_cliente = $this->aplicarMascaraCNPJ($pedido->cnpj_cliente);
-            $html .= '<div class="pedido-info">
-                <div><strong>Número do Pedido:</strong> ' . htmlspecialchars($pedido->numero_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
-                <div><strong>Status do Pedido:</strong> ' . htmlspecialchars($pedido->status_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
-                <div><strong>Cliente:</strong> ' . htmlspecialchars($pedido->nome_fantasia ?? '', ENT_QUOTES, 'UTF-8') . '</div>
-                <div><strong>CNPJ do Cliente:</strong> ' . htmlspecialchars($pedido->cnpj_cliente ?? '', ENT_QUOTES, 'UTF-8') . '</div>
+            $html .= '<div class="topo">
+            <div class="legenda">Pedido de Venda</div>
+            <div class="data-hora">Gerado em: ' . $dataHoraGeracao . '</div>
             </div>';
 
-            $html .= '<table>
+            foreach ($pedidosAgrupados as $pedidoAgrupado) {
+                $pedido = $pedidoAgrupado['dados'];
+                $itens  = $pedidoAgrupado['itens'];
+
+                // aplicar máscara no CNPJ
+                $pedido->cnpj_cliente = $this->aplicarMascaraCNPJ($pedido->cnpj_cliente);
+                // nome do Vendedor
+                $nomeUsuario = explode(" ", $pedido->nome_usuario)[0];
+
+                // data e hora formatada 
+                $pedido->data_pedido = date('d/m/Y H:i:s', strtotime($pedido->data_pedido));
+                // Cabeçalho do pedido
+                $html .= '<div class="pedido-info">
+                <div><strong>Número do Pedido:</strong> ' . htmlspecialchars($pedido->numero_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
+                <div><strong>Data do Pedido:</strong> ' . htmlspecialchars($pedido->data_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
+                <div><strong>Status do Pedido:</strong> ' . htmlspecialchars($pedido->status_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
+                <div><strong>Cliente:</strong> ' . htmlspecialchars($pedido->nome_fantasia ?? '', ENT_QUOTES, 'UTF-8') . '</div>
+                <div><strong>CNPJ:</strong> ' . htmlspecialchars($pedido->cnpj_cliente ?? '', ENT_QUOTES, 'UTF-8') . '</div>
+                <div><strong>Forma de Pagamento:</strong> ' . htmlspecialchars($pedido->descricao ?? '', ENT_QUOTES, 'UTF-8') . '</div>
+                <div><strong>Vendedor:</strong> ' . htmlspecialchars($nomeUsuario ?? '', ENT_QUOTES, 'UTF-8') . '</div>
+                </div>';
+
+                // Tabela de itens
+                $html .= '<table>
                 <thead>
                     <tr>
-                        <th>Itens</th>
-                        <th>Unidade</th>
+                        <th>Produto</th>
+                        <th>Cor</th>
+                        <th>Largura</th>
                         <th>Quantidade</th>
                         <th>Valor Unitário</th>
-                        <th>Total por Produto</th>
+                        <th>Total Produto</th>
                     </tr>
                 </thead>
                 <tbody>';
 
-            foreach ($itens as $item) {
-                $valorUnitario = (float)$item['valor_unitario'];
-                $quantidade = (float)$item['quantidade'];
-                $totalProduto = $valorUnitario * $quantidade;
-                $html .= '<tr>
-                    <td>' . htmlspecialchars($item['nome_produto'], ENT_QUOTES, 'UTF-8') . '</td>;
-                    <td>m</td>;
-                    <td>' . $quantidade . '</td>;
-                    <td>R$ ' . number_format($valorUnitario, 2, ',', '.') . '</td>;
-                    <td>R$ ' . number_format($totalProduto, 2, ',', '.') . '</td>
+                foreach ($itens as $item) {
+                    $html .= '<tr>
+                    <td>' . htmlspecialchars($item['nome_produto'], ENT_QUOTES, 'UTF-8') . '</td>
+                    <td>' . htmlspecialchars($item['cor'], ENT_QUOTES, 'UTF-8') . '</td>
+                    <td>' . htmlspecialchars($item['largura'], ENT_QUOTES, 'UTF-8') . '</td>
+                    <td>' . (float)$item['quantidade'] . '</td>
+                    <td>R$ ' . number_format((float)$item['valor_unitario'], 2, ',', '.') . '</td>
+                    <td>R$ ' . number_format((float)$item['total_produto'], 2, ',', '.') . '</td>
                 </tr>';
+                }
+
+                $html .= '</tbody></table>';
+
+                // Rodapé com totais
+                $html .= '<div class="valor-total">Valor Total: R$ ' .
+                    number_format((float)($pedido->valor_total ?? 0), 2, ',', '.') . '</div>';
+
+                if (!empty($pedido->valor_frete)) {
+                    $html .= '<div class="valor-total">Frete: R$ ' .
+                        number_format((float)($pedido->valor_frete ?? 0), 2, ',', '.') . '</div>';
+                }
+
+                $html .= '<hr>';
             }
-            $html .= '</tbody></table>';
 
-            $html .= '<div class="valor-total">Valor Total do Pedido: R$ ' .
-                number_format((float)($pedido->valor_total ?? 0), 2, ',', '.') . '</div><hr>';
-        }
+            $html .= '</body></html>';
 
-        $html .= '</body></html>';
+            // Configurações do Dompdf
+            $options = new \Dompdf\Options();
+            $options->set('defaultFont', 'DejaVu Sans');
+            $options->set('isRemoteEnabled', true);
+            $options->set('isHtml5ParserEnabled', true);
 
-        // Configurações do Dompdf
-        $options = new \Dompdf\Options();
-        $options->set('defaultFont', 'DejaVu Sans');
-        $options->set('isRemoteEnabled', true);
-        $options->set('isHtml5ParserEnabled', true);
+            $dompdf = new \Dompdf\Dompdf($options);
+            $dompdf->loadHtml($html, 'UTF-8');
+            $dompdf->setPaper('A4', 'portrait');
 
-        $dompdf = new \Dompdf\Dompdf($options);
-        $dompdf->loadHtml($html, 'UTF-8');
-        $dompdf->setPaper('A4', 'portrait');
+            if (ob_get_length()) {
+                ob_end_clean();
+            }
 
-        if (ob_get_length()) {
-            ob_end_clean();
-        }
-        // Gera o PDF
-        header('Content-Type: application/pdf');
-        // essa parte e o nome
-        header('Content-Disposition: inline; filename="pedidos_venda.' . $pedido->numero_pedido . '.pdf"');
-        header('Cache-Control: private, max-age=0, must-revalidate');
-        header('Pragma: public');
+            // Gera o PDF
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: inline; filename="pedido_' . $pedido->numero_pedido . '.pdf"');
+            header('Cache-Control: private, max-age=0, must-revalidate');
+            header('Pragma: public');
 
-        $dompdf->render();
-        echo $dompdf->output();
-        exit;
+            $dompdf->render();
+            print $dompdf->output();
+            exit;
     }
-    // medoto de gerar pdf
+
+    // método de gerar pdf
     public function imprimirPedido($numero_pedido)
     {
         $objPedido = new Pedido();
         if ($objPedido->buscarPedidosPorNumero($numero_pedido) == true) {
             $pedidos = $objPedido->buscarPedidosPorNumero($numero_pedido);
-
             $this->gerarPdfPedidos($pedidos);
         } else {
             // Inicia a sessão
@@ -2465,7 +2439,7 @@ class Controller
         print '                    <div class="input-group">';
         print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
         print '                      <input type="hidden" id="id_tipo_hidden' . $id_produto . '" name="id_tipo_produto" value="' . $id_tipo_produto . '"/>';
-        print '                      <input type="text" class="form-control" id="tipo_produto' . $id_produto . '" placeholder="Digite o tipo de produto" autocomplete="off" required value="' . $tipo_produto . '" disabled/> ';
+        print '                      <input type="text" class="form-control" id="tipo_produto' . $id_produto . '" placeholder="Digite o tipo de produto" autocomplete="off" required value="' . $tipo_produto . '"/> ';
         print '                      <div id="resultado_busca_tipo' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
         print '                      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_tipo_produto"><i class="bi bi-plus-lg"></i></button>';
         print '                    </div>';
@@ -2568,29 +2542,29 @@ class Controller
 
         // Script preview imagem
         print '<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const inputImagem = document.querySelector("#img_produto' . $id_produto . '");
-        const previewDiv = document.querySelector("#preview_imagem' . $id_produto . '");
-        const legendaLabel = document.querySelector("#legenda_imagem' . $id_produto . '");
+            document.addEventListener("DOMContentLoaded", function () {
+            const inputImagem = document.querySelector("#img_produto' . $id_produto . '");
+            const previewDiv = document.querySelector("#preview_imagem' . $id_produto . '");
+            const legendaLabel = document.querySelector("#legenda_imagem' . $id_produto . '");
 
-        if (inputImagem && previewDiv && legendaLabel) {
-            inputImagem.addEventListener("change", function () {
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        previewDiv.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" width="80" height="auto">`;
-                        legendaLabel.textContent = "Nova Imagem:";
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    previewDiv.innerHTML = "";
-                    legendaLabel.textContent = "";
-                }
-            });
-        }
-    });
-    </script>';
+            if (inputImagem && previewDiv && legendaLabel) {
+                inputImagem.addEventListener("change", function () {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            previewDiv.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" width="80" height="auto">`;
+                            legendaLabel.textContent = "Nova Imagem:";
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        previewDiv.innerHTML = "";
+                        legendaLabel.textContent = "";
+                    }
+                });
+            }
+        });
+        </script>';
     }
 
     // modal de excluir produto
@@ -2687,66 +2661,80 @@ class Controller
 
         foreach ($produto as $valor) {
             print '
-        <div class="modal fade" id="detalhes_produto' . $valor->id_produto . '" tabindex="-1" aria-labelledby="detalhesProdutoLabel' . $valor->id_produto . '" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header bg-info text-white">
-                        <h5 class="modal-title" id="detalhesProdutoLabel' . $valor->id_produto . '">Detalhes do Produto</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="container">
-                            <div class="row mb-3 text-center">';
-            if (!empty($valor->img_produto) && file_exists($valor->img_produto)) {
-                print '<img src="' . $valor->img_produto . '" alt="Imagem do Produto" class="img-fluid rounded" style="max-height:200px;">';
-            } else {
-                print '<span class="text-muted">Sem imagem</span>';
-            }
-            print '          </div>
+            <div class="modal fade" id="detalhes_produto' . $valor->id_produto . '" tabindex="-1" aria-labelledby="detalhesProdutoLabel' . $valor->id_produto . '" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <!-- Cabeçalho -->
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title" id="detalhesProdutoLabel' . $valor->id_produto . '">Detalhes do Produto</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
 
-                            <div class="row mb-2">
-                                <div class="col-md-6"><strong>Produto:</strong> ' . htmlspecialchars($valor->nome_produto) . '</div>
-                                <div class="col-md-6"><strong>Tipo:</strong> ' . htmlspecialchars($valor->tipo_produto) . '</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-md-6"><strong>Cor:</strong> ' . htmlspecialchars($valor->cor) . '</div>
-                                <div class="col-md-6"><strong>Largura:</strong> ' . $valor->largura . ' m</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-md-6"><strong>Quantidade:</strong> ' . $valor->quantidade . ' m</div>
-                                <div class="col-md-6"><strong>Qtd. Mínima:</strong> ' . $valor->quantidade_minima . ' m</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-md-12"><strong>Composição:</strong> ' . htmlspecialchars($valor->composicao) . '</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-md-6"><strong>Valor Venda:</strong> R$ ' . number_format($valor->valor_venda, 2, ',', '.') . '</div>
-                            </div>';
+                        <!-- Corpo -->
+                        <div class="modal-body">
+                            <div class="container">
+
+                                <!-- Imagem -->
+                                <div class="row mb-3">
+                                    <div class="col-12 d-flex justify-content-center">';
+            if (!empty($valor->img_produto) && file_exists($valor->img_produto)) {
+                print '
+                                <img src="' . $valor->img_produto . '"
+                                alt="Imagem do Produto"
+                                class="img-fluid rounded shadow-sm border"
+                                style="max-height:300px; object-fit:contain;">';
+            } else {
+                print '
+                                <span class="text-muted fst-italic">Sem imagem disponível</span>';
+            }
+            print '
+                                    </div>
+                                    </div>
+                                    <!-- Dados principais -->
+                                    <div class="row mb-2">
+                                        <div class="col-md-6"><strong>Produto:</strong> ' . htmlspecialchars($valor->nome_produto) . '</div>
+                                        <div class="col-md-6"><strong>Tipo:</strong> ' . htmlspecialchars($valor->tipo_produto) . '</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-6"><strong>Cor:</strong> ' . htmlspecialchars($valor->cor) . '</div>
+                                        <div class="col-md-6"><strong>Largura:</strong> ' . $valor->largura . ' m</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-6"><strong>Quantidade:</strong> ' . $valor->quantidade . ' m</div>
+                                        <div class="col-md-6"><strong>Qtd. Mínima:</strong> ' . $valor->quantidade_minima . ' m</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-12"><strong>Composição:</strong> ' . htmlspecialchars($valor->composicao) . '</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-6"><strong>Valor Venda:</strong> R$ ' . number_format($valor->valor_venda, 2, ',', '.') . '</div>
+                                    </div> ';
 
             // Campos restritos ao administrador
             if ($this->temPermissao(["Administrador"])) {
                 print '
-                            <div class="row mb-2">
-                                <div class="col-md-6"><strong>Custo Compra:</strong> R$ ' . number_format($valor->custo_compra, 2, ',', '.') . '</div>
-                                <div class="col-md-6"><strong>Data Compra:</strong> ' . date("d/m/Y", strtotime($valor->data_compra)) . '</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-md-6"><strong>NCM:</strong> ' . htmlspecialchars($valor->ncm_produto) . '</div>
-                                <div class="col-md-6"><strong>Fornecedor:</strong> ' . htmlspecialchars($valor->fornecedor) . '</div>
-                            </div>';
+                                    <div class="row mb-2">
+                                        <div class="col-md-6"><strong>Custo Compra:</strong> R$ ' . number_format($valor->custo_compra, 2, ',', '.') . '</div>
+                                        <div class="col-md-6"><strong>Data Compra:</strong> ' . date("d/m/Y", strtotime($valor->data_compra)) . '</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-6"><strong>NCM:</strong> ' . htmlspecialchars($valor->ncm_produto) . '</div>
+                                        <div class="col-md-6"><strong>Fornecedor:</strong> ' . htmlspecialchars($valor->fornecedor) . '</div>
+                                    </div>';
             }
-
             print '
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                        <!-- Rodapé -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>';
+            </div>';
         }
     }
+
     // select de produtos
     public function selectProdutos($id_produto = null)
     {
@@ -3905,7 +3893,6 @@ class Controller
     // cadastrar pedido
     public function cadastrar_Pedido(
         $id_cliente,
-        $data_pedido,
         $status_pedido,
         $valor_total,
         $id_forma_pagamento,
@@ -3918,7 +3905,6 @@ class Controller
         // Invocar o método da classe Pedido para cadastrar o pedido
         if ($objPedido->cadastrarPedido(
             $id_cliente,
-            $data_pedido,
             $status_pedido,
             $valor_total,
             $id_forma_pagamento,
@@ -5567,7 +5553,7 @@ class Controller
             $menu = $this->menu();
             // view
             include_once 'View/relatorios.php';
-            $this->mostrarMensagemErro("Erro ao buscar produtos e seus custos!");
+            $this->mostrarMensagemErro("Erro ao lista produtos por fornecedor!");
         }
     }
     public function tabelaProdutosPorFornecedor($produtos)

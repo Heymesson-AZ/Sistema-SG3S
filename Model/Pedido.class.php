@@ -7,6 +7,7 @@ class Pedido extends Conexao
     // atributos da classe pedido
     private $id_pedido =  null;
     private $id_cliente = null;
+    private $id_usuario = null;
     private $numero_pedido = null;
     private $data_pedido = null;
     private $status_pedido = null;
@@ -31,6 +32,15 @@ class Pedido extends Conexao
     {
         $this->id_cliente = $id_cliente;
     }
+    public function getIdUsuario()
+    {
+        return $this->id_usuario;
+    }
+    public function setIdUsuario($id_usuario)
+    {
+        $this->id_usuario = $id_usuario;
+    }
+
     public function getNumeroPedido()
     {
         return $this->numero_pedido;
@@ -124,9 +134,11 @@ class Pedido extends Conexao
                 ip.id_item_pedido,
                 ip.id_produto,
                 pr.nome_produto,
+
                 ip.quantidade,
                 ip.valor_unitario,
                 ip.totalValor_produto
+
             FROM pedido p
             INNER JOIN cliente c ON p.id_cliente = c.id_cliente
             INNER JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
@@ -154,7 +166,7 @@ class Pedido extends Conexao
         // Sempre por último!
         $sql .= " ORDER BY p.numero_pedido DESC";
 
-         // Executa a query
+        // Executa a query
 
         try {
             $bd = $this->conectarBanco();
@@ -187,7 +199,6 @@ class Pedido extends Conexao
     // método de cadastrar pedido da classe Pedido
     public function cadastrarPedido(
         $id_cliente,
-        $data_pedido,
         $status_pedido,
         $valor_total,
         $id_forma_pagamento,
@@ -196,21 +207,28 @@ class Pedido extends Conexao
     ) {
         // Setters
         $this->setIdCliente($id_cliente);
-        $this->setDataPedido($data_pedido);
         $this->setStatusPedido($status_pedido);
         $this->setValorTotal($valor_total);
         $this->setIdFormaPagamento($id_forma_pagamento);
         $this->setValorFrete($valor_frete);
         $this->setItens($itens);
 
-        //id do usuario a para o pedido
+        // Definir a data no servidor
+        $this->setDataPedido(date("Y-m-d H:i:s"));
 
-        $id_usuario = $_SESSION['id_usuario'];
+        // Validar usuário logado
+        if (!isset($_SESSION['id_usuario']) || empty($_SESSION['id_usuario'])) {
+            throw new Exception("Usuário não logado. Não é possível cadastrar pedido.");
+        }
+        $this->setIdUsuario(intval($_SESSION['id_usuario']));
+
+        // Validar status
         $statusValidos = ['Pendente', 'Aguardando Pagamento', 'Finalizado', 'Cancelado'];
         if (!in_array($status_pedido, $statusValidos)) {
             throw new Exception("Status de pedido inválido.");
         }
 
+        // Validar itens
         if (!is_array($this->itens) || count($this->itens) === 0) {
             throw new Exception("Nenhum item válido para o pedido.");
         }
@@ -219,22 +237,23 @@ class Pedido extends Conexao
             $bd = $this->conectarBanco();
             $bd->beginTransaction();
 
-            // 🔹 Obter o próximo ID que o AUTO_INCREMENT vai gerar
+            // 🔹 Obter o próximo ID do AUTO_INCREMENT
             $proximoId = $bd->query("SELECT AUTO_INCREMENT
-                                FROM information_schema.tables
-                                WHERE table_name = 'pedido'
-                                AND table_schema = DATABASE()")->fetchColumn();
+                                    FROM information_schema.tables
+                                    WHERE table_name = 'pedido'
+                                    AND table_schema = DATABASE()")->fetchColumn();
 
-            // 🔹 Gerar número do pedido já baseado no próximo ID
+            // 🔹 Gerar número do pedido
             $numero_pedido_gerado = str_pad($proximoId, 6, "0", STR_PAD_LEFT);
             $this->setNumeroPedido($numero_pedido_gerado);
-            
-            // 🔹 Inserir pedido já com numero_pedido
+
+            // 🔹 Inserir pedido
             $sql = "INSERT INTO pedido
-        (id_cliente, data_pedido, status_pedido, valor_total, id_forma_pagamento, valor_frete, numero_pedido)
-        VALUES (:id_cliente, :data_pedido, :status_pedido, :valor_total, :id_forma_pagamento, :valor_frete, :numero_pedido)";
+            (id_cliente, id_usuario, data_pedido, status_pedido, valor_total, id_forma_pagamento, valor_frete, numero_pedido)
+            VALUES (:id_cliente, :id_usuario, :data_pedido, :status_pedido, :valor_total, :id_forma_pagamento, :valor_frete, :numero_pedido)";
             $query = $bd->prepare($sql);
             $query->bindValue(':id_cliente', $this->getIdCliente(), PDO::PARAM_INT);
+            $query->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
             $query->bindValue(':data_pedido', $this->getDataPedido());
             $query->bindValue(':status_pedido', $this->getStatusPedido(), PDO::PARAM_STR);
             $query->bindValue(':valor_total', (float)$this->getValorTotal());
@@ -253,14 +272,16 @@ class Pedido extends Conexao
                 $valor_unitario = (float)$item['valor_unitario'];
                 $totalValor_produto = (float)$item['totalValor_produto'];
 
-                $custo_compra = (float)$bd->query("SELECT custo_compra 
-                                               FROM produto 
-                                               WHERE id_produto = $id_produto 
-                                               LIMIT 1")->fetchColumn();
+                // Buscar custo de compra
+                $custo_compra = $bd->query(" SELECT custo_compra
+                    FROM produto
+                    WHERE id_produto = $id_produto
+                    LIMIT 1")->fetchColumn();
+                    $custo_compra = $custo_compra !== false ? (float)$custo_compra : 0.0;
 
                 $sql_item = "INSERT INTO item_pedido
-            (id_pedido, id_produto, quantidade, valor_unitario, totalValor_produto, custo_compra)
-            VALUES (:id_pedido, :id_produto, :quantidade, :valor_unitario, :totalValor_produto, :custo_compra)";
+                (id_pedido, id_produto, quantidade, valor_unitario, totalValor_produto, custo_compra)
+                VALUES (:id_pedido, :id_produto, :quantidade, :valor_unitario, :totalValor_produto, :custo_compra)";
                 $query_item = $bd->prepare($sql_item);
                 $query_item->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
                 $query_item->bindValue(':id_produto', $id_produto, PDO::PARAM_INT);
@@ -268,9 +289,7 @@ class Pedido extends Conexao
                 $query_item->bindValue(':valor_unitario', $valor_unitario);
                 $query_item->bindValue(':totalValor_produto', $totalValor_produto);
                 $query_item->bindValue(':custo_compra', $custo_compra);
-                $query_item->execute();
-            }
-
+                $query_item->execute();}
             $bd->commit();
             return true;
         } catch (PDOException | Exception $e) {
@@ -391,7 +410,6 @@ class Pedido extends Conexao
                     $queryInsert->execute();
                 }
             }
-
             $bd->commit();
             return true;
         } catch (PDOException | Exception $e) {
@@ -456,9 +474,9 @@ class Pedido extends Conexao
         $this->setIdPedido($id_pedido);
 
         $sql = "SELECT ip.id_produto, ip.quantidade
-            FROM pedido p
-            INNER JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
-            WHERE p.id_pedido = :id_pedido";
+                FROM pedido p
+                INNER JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
+                WHERE p.id_pedido = :id_pedido";
 
         try {
             $bd = $this->conectarBanco();
@@ -614,6 +632,7 @@ class Pedido extends Conexao
         $this->setIdPedido($id_pedido);
         $this->setStatusPedido($status_pedido);
 
+        $data_finalizacao = date("Y-m-d H:i:s");
         $sql = "UPDATE pedido
             SET status_pedido = :status_pedido";
 
@@ -630,14 +649,14 @@ class Pedido extends Conexao
             $query->bindValue(':status_pedido', $this->getStatusPedido(), PDO::PARAM_STR);
             if (in_array($this->getStatusPedido(), ['Finalizado'])) {
                 // data e hora atual `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
-                $query->bindValue(':data_finalizacao', date('Y-m-d H:i:s'));
+                $query->bindValue(':data_finalizacao', $data_finalizacao);
             }
 
             $query->execute();
             return true;
         } catch (PDOException $e) {
             error_log("Erro ao finalizar o pedido: " . $e->getMessage());
-            print "Erro ao finalizar o pedido: " . $e->getMessage();    
+            print "Erro ao finalizar o pedido: " . $e->getMessage();
             return false;
         }
     }
@@ -1130,6 +1149,7 @@ class Pedido extends Conexao
     public function buscarPedidosPorNumero($numero_pedido)
     {
         $this->setNumeroPedido($numero_pedido);
+
         $sql = "SELECT
             p.numero_pedido,
             p.data_pedido,
@@ -1152,13 +1172,21 @@ class Pedido extends Conexao
             pr.nome_produto,
             ip.quantidade,
             ip.valor_unitario,
-            ip.totalValor_produto
-        FROM pedido p
-        INNER JOIN cliente c ON p.id_cliente = c.id_cliente
-        INNER JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
-        LEFT JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
-        LEFT JOIN produto pr ON ip.id_produto = pr.id_produto
-        WHERE p.numero_pedido = :numero_pedido";
+            ip.totalValor_produto,
+            pr.largura,
+            cr.nome_cor as cor,
+
+            -- usuario que fez o pedido
+            u.nome_usuario
+
+            FROM pedido p
+            INNER JOIN cliente c ON p.id_cliente = c.id_cliente
+            INNER JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
+            LEFT JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
+            LEFT JOIN produto pr ON ip.id_produto = pr.id_produto
+            LEFT JOIN cor cr ON pr.id_cor = cr.id_cor
+            LEFT JOIN usuario u ON p.id_usuario = u.id_usuario
+            WHERE p.numero_pedido = :numero_pedido";
 
         try {
             $bd = $this->conectarBanco();

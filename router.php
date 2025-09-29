@@ -255,7 +255,6 @@ if (isset($_POST['cadastrar_produto'])) {
     $data_compra       = limparTexto($_POST['data_compra']);
     $ncm_produto       = limparTexto($_POST['ncm_produto']);
     $id_fornecedor     = $_POST['id_fornecedor'];
-
     $img_produto = '';
 
     // Upload de imagem
@@ -328,8 +327,8 @@ if (isset($_POST['cadastrar_produto'])) {
 if (isset($_POST['alterar_produto'])) {
     $id_produto         = $_POST['id_produto'];
     $nome_produto       = limparTexto($_POST['nome_produto']);
-    $id_tipo_produto       = limparTexto($_POST['tipo_produto']);
-    $id_cor                = limparTexto($_POST['cor']);
+    $id_tipo_produto       = limparTexto($_POST['id_tipo_produto']);
+    $id_cor                = limparTexto($_POST['id_cor']);
     $composicao         = limparTexto($_POST['composicao']);
     $quantidade         = limparNumero($_POST['quantidade']);
     $quantidade_minima  = limparNumero($_POST['quantidade_minima']);
@@ -603,7 +602,6 @@ if (isset($_POST['verificar_limite'], $_POST['id_cliente'], $_POST['valor_total'
     exit;
 }
 
-
 // =====================
 // BUSCA DINÂMICA DE PRODUTO PARA PEDIDO
 // =====================
@@ -650,15 +648,13 @@ if (isset($_POST['verificar_quantidade'])) {
 // =====================
 if (isset($_POST['salvar_pedido'])) {
     $objController = new Controller();
-
     $id_cliente = $_POST['id_cliente'];
-    $data_pedido = htmlspecialchars(trim($_POST['data_pedido']));
     $status_pedido = htmlspecialchars(trim($_POST['status_pedido']));
     $valor_total = floatval(str_replace(',', '.', $_POST['valor_total']));
     $id_forma_pagamento = $_POST['id_forma_pagamento'];
     $valor_frete = floatval(str_replace(',', '.', $_POST['valor_frete']));
     $origem = $_POST['origem'];
-    $itensForm = $_POST['itens'] ?? [];
+    $itensForm = $_POST['itens'];
 
     $itens = [];
     foreach ($itensForm as $item) {
@@ -679,7 +675,6 @@ if (isset($_POST['salvar_pedido'])) {
 
     $objController->cadastrar_Pedido(
         $id_cliente,
-        $data_pedido,
         $status_pedido,
         $valor_total,
         $id_forma_pagamento,
@@ -687,6 +682,7 @@ if (isset($_POST['salvar_pedido'])) {
         $itens,
         $origem
     );
+    exit;
 }
 // =====================
 // CONSULTAR PEDIDOS

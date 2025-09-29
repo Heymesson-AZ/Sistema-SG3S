@@ -314,8 +314,8 @@ class Produto extends Conexao
         // Setando os atributos
         $this->setIdProduto($id_produto);
         $this->setNomeProduto($nome_produto);
-        //$this->setTipoProduto($id_tipo_produto);
-        //$this->setCor($id_cor);
+        $this->setIdTipoProduto($id_tipo_produto);
+        $this->setIdCor($id_cor);
         $this->setComposicao($composicao);
         $this->setQuantidade($quantidade);
         $this->setQuantidadeMinima($quantidade_minima);
@@ -328,7 +328,7 @@ class Produto extends Conexao
         $this->setImgProduto($img_produto);
 
         // Query para alterar produto
-        $sql = "UPDATE produto SET 
+        $sql = "UPDATE produto SET
                 nome_produto = :nome_produto,
                 id_tipo_produto = :id_tipo_produto,
                 id_cor = :id_cor,
@@ -342,7 +342,7 @@ class Produto extends Conexao
                 ncm_produto = :ncm_produto,
                 id_fornecedor = :id_fornecedor,
                 img_produto = :img_produto
-            WHERE id_produto = :id_produto";
+                WHERE id_produto = :id_produto";
 
         try {
             $bd = $this->conectarBanco();
@@ -351,8 +351,8 @@ class Produto extends Conexao
             // Bind dos parâmetros
             $query->bindValue(':id_produto', $this->getIdProduto(), PDO::PARAM_INT);
             $query->bindValue(':nome_produto', $this->getNomeProduto(), PDO::PARAM_STR);
-            //$query->bindValue(':id_tipo_produto', $this->getTipoProduto(), PDO::PARAM_INT);
-            //$query->bindValue(':id_cor', $this->getCor(), PDO::PARAM_INT);
+            $query->bindValue(':id_tipo_produto', $this->getIdTipoProduto(), PDO::PARAM_INT);
+            $query->bindValue(':id_cor', $this->getIdCor(), PDO::PARAM_INT);
             $query->bindValue(':composicao', $this->getComposicao(), PDO::PARAM_STR);
             $query->bindValue(':quantidade', $this->getQuantidade(), PDO::PARAM_STR);
             $query->bindValue(':quantidade_minima', $this->getQuantidadeMinima(), PDO::PARAM_STR);
@@ -363,13 +363,12 @@ class Produto extends Conexao
             $query->bindValue(':ncm_produto', $this->getNcmProduto(), PDO::PARAM_STR);
             $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
             $query->bindValue(':img_produto', $this->getImgProduto(), PDO::PARAM_STR);
-
             // Executar a query
             $query->execute();
-
             return true;
         } catch (PDOException $e) {
             error_log("Erro ao alterar produto: " . $e->getMessage());
+            print_r($e->getMessage());
             return false;
         }
     }
@@ -630,7 +629,6 @@ class Produto extends Conexao
             return false;
         }
     }
-
     // Valor do custo de compra por produto baseado nos pedidos realizados
     public function custoTotalPorProduto($id_produto = null)
     {
@@ -640,7 +638,8 @@ class Produto extends Conexao
             $sql = "SELECT
                     p.id_produto,
                     p.nome_produto,
-                    p.tipo_produto,
+                    p.id_tipo_produto,
+                    tp.nome_tipo AS tipo_produto,
                     p.largura,
                     p.composicao,
                     SUM(ip.quantidade) AS quantidade_total,
@@ -652,11 +651,11 @@ class Produto extends Conexao
                     ROUND(SUM(ip.quantidade * ip.valor_unitario), 2) AS valor_total_pedidos,
                     -- lucro bruto (valor histórico de venda - custo histórico)
                     ROUND(SUM(ip.quantidade * ip.valor_unitario) - SUM(ip.quantidade * ip.custo_compra), 2) AS lucro_bruto
-                FROM item_pedido ip
-                INNER JOIN produto p ON p.id_produto = ip.id_produto
-                INNER JOIN pedido pe ON pe.id_pedido = ip.id_pedido
-                WHERE pe.status_pedido = 'Finalizado'";
-
+                    FROM item_pedido ip
+                    LEFT JOIN produto p ON p.id_produto = ip.id_produto
+                    LEFT JOIN pedido pe ON pe.id_pedido = ip.id_pedido
+                    LEFT JOIN tipo_produto tp ON p.id_tipo_produto = tp.id_tipo_produto
+                    WHERE pe.status_pedido = 'Finalizado'";
             if (!empty($id_produto)) {
                 $sql .= " AND ip.id_produto = :id_produto";
             }
@@ -664,10 +663,10 @@ class Produto extends Conexao
             $sql .= " GROUP BY
                     p.id_produto,
                     p.nome_produto,
-                    p.tipo_produto,
+                    tp.id_tipo_produto,
                     p.largura,
                     p.composicao
-                ORDER BY lucro_bruto DESC";
+                    ORDER BY lucro_bruto DESC";
 
             $query = $bd->prepare($sql);
 
@@ -687,17 +686,16 @@ class Produto extends Conexao
     public function listarProdutosPorFornecedor($id_fornecedor = null)
     {
         $sql = "SELECT 
-                p.id_produto, 
-                p.nome_produto, 
-                t.nome_tipo AS tipo_produto, 
-                c.nome_cor AS cor, 
+                p.id_produto,
+                p.nome_produto,
+                t.nome_tipo AS tipo_produto,
+                c.nome_cor AS cor,
                 p.quantidade,
                 f.razao_social
             FROM produto p
             INNER JOIN fornecedor f ON p.id_fornecedor = f.id_fornecedor
             INNER JOIN cor c ON p.id_cor = c.id_cor
             INNER JOIN tipo_produto t ON p.id_tipo_produto = t.id_tipo_produto";
-
 
         // Adiciona cláusula WHERE apenas se ID for válido
         if (!empty($id_fornecedor)) {
