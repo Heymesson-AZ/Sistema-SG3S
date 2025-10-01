@@ -8,19 +8,29 @@ class Conexao
     private $password;
     private $link = null;
 
-    // Construtor detecta automaticamente o ambiente
-    public function __construct()
+    // Detecta automaticamente o ambiente (local ou online)
+    private function detectarAmbiente()
     {
-        $server = $_SERVER['SERVER_NAME'] ?? 'localhost';
+        // Exemplo simples: se for localhost, considera ambiente de teste
+        if (in_array($_SERVER['SERVER_NAME'], ['localhost', '127.0.0.1'])) {
+            return 'local';
+        } else {
+            return 'online';
+        }
+    }
 
-        // Se estiver rodando localmente
-        if (in_array($server, ['localhost', '127.0.0.1'])) {
+    // Configuração de Conexao com base no Servidor detectado
+    private function configurarBanco()
+    {
+        $ambiente = $this->detectarAmbiente();
+        // local {Ambiente de Teste}
+        if ($ambiente === 'local') {
             $this->host = 'localhost';
-            $this->dbname = 'sg3s';
+            $this->dbname = 'td187899_sg3s';
             $this->user = 'root';
             $this->password = '';
         } else {
-            // Configuração do servidor online
+            // Online {Ambiente de Podução}
             $this->host = 'localhost';
             $this->dbname = 'td187899_sg3s';
             $this->user = 'td187899_sg3s';
@@ -28,15 +38,20 @@ class Conexao
         }
     }
 
-    // Método para conectar ao banco
+    // Método principal de conexão
     public function conectarBanco()
     {
         try {
+            // Configura banco conforme ambiente
+            $this->configurarBanco();
+
+            // Inicia sessão se ainda não estiver iniciada
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
 
-            $pdo = new PDO(
+            // Cria conexão PDO
+            $this->link = new PDO(
                 "mysql:host={$this->host};dbname={$this->dbname};charset=utf8mb4",
                 $this->user,
                 $this->password,
@@ -45,8 +60,6 @@ class Conexao
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 ]
             );
-
-            $this->link = $pdo;
 
             // Se houver usuário logado na sessão, seta para triggers
             if (!empty($_SESSION['id_usuario'])) {
@@ -57,15 +70,9 @@ class Conexao
 
             return $this->link;
         } catch (PDOException $e) {
-            error_log("Erro ao conectar ao banco de dados: " . $e->getMessage());
-            echo "Erro ao conectar ao banco de dados.";
+            error_log("Erro ao conectar ao banco de dados ({$this->dbname}): " . $e->getMessage());
+            echo "Erro ao conectar ao banco de dados. Verifique os logs.";
             return false;
         }
     }
 }
-
-// ================== USO ==================
-
-// Basta instanciar sem parâmetros
-$conexao = new Conexao();
-$pdo = $conexao->conectarBanco();
