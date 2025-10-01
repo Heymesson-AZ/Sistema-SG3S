@@ -453,7 +453,6 @@ $(document).ready(function () {
     }
 
     const origem = document.getElementById("origem").value;
-
     const frete = valorFrete.toFixed(2);
     const total = Number((valorTotal + valorFrete).toFixed(2));
 
@@ -478,6 +477,7 @@ $(document).ready(function () {
       <input type="hidden" name="status_pedido" value="${status}">
       <input type="hidden" name="valor_total" value="${total}">
       <input type="hidden" name="id_forma_pagamento" value="${idPagamento}">
+      <input type="hidden" name="origem" value="${origem}">
       <input type="hidden" name="valor_frete" value="${frete}">`;
     itens.forEach((item, i) => {
       form.innerHTML += `
@@ -486,7 +486,6 @@ $(document).ready(function () {
             <input type="hidden" name="itens[${i}][valor_unitario]" value="${item.valor_unitario}">
             <input type="hidden" name="itens[${i}][totalValor_produto]" value="${item.totalValor_produto}">`;
     });
-
     document.body.appendChild(form);
     form.submit();
     limparCamposPedido();

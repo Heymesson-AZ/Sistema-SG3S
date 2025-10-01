@@ -110,7 +110,7 @@ class Controller
                     'nome_produto'   => $pedido->nome_produto ?? '',
                     'quantidade'     => $pedido->quantidade ?? 0,
                     'valor_unitario' => $pedido->valor_unitario ?? 0,
-                    'total_produto'  => $pedido->totalValor_produto ?? 0,
+                    'totalValor_produto'  => $pedido->totalValor_produto ?? 0,
                     'largura'        => $pedido->largura ?? '',
                     'cor'            => $pedido->cor ?? '',
                 ];
@@ -173,7 +173,7 @@ class Controller
                         <th>Produto</th>
                         <th>Cor</th>
                         <th>Largura</th>
-                        <th>Quantidade</th>
+                        <th>Quantidade (m)</th>
                         <th>Valor Unitário</th>
                         <th>Total Produto</th>
                     </tr>
@@ -184,10 +184,10 @@ class Controller
                     $html .= '<tr>
                     <td>' . htmlspecialchars($item['nome_produto'], ENT_QUOTES, 'UTF-8') . '</td>
                     <td>' . htmlspecialchars($item['cor'], ENT_QUOTES, 'UTF-8') . '</td>
-                    <td>' . htmlspecialchars($item['largura'], ENT_QUOTES, 'UTF-8') . '</td>
-                    <td>' . (float)$item['quantidade'] . '</td>
+                    <td>' . htmlspecialchars($item['largura'], ENT_QUOTES, 'UTF-8') . ' m</td>
+                    <td>' . (float)$item['quantidade'] . ' m</td>
                     <td>R$ ' . number_format((float)$item['valor_unitario'], 2, ',', '.') . '</td>
-                    <td>R$ ' . number_format((float)$item['total_produto'], 2, ',', '.') . '</td>
+                    <td>R$ ' . number_format((float)$item['totalValor_produto'], 2, ',', '.') . '</td>
                 </tr>';
                 }
 

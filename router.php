@@ -647,7 +647,6 @@ if (isset($_POST['verificar_quantidade'])) {
 // CADASTRAR PEDIDO
 // =====================
 if (isset($_POST['salvar_pedido'])) {
-    $objController = new Controller();
     $id_cliente = $_POST['id_cliente'];
     $status_pedido = htmlspecialchars(trim($_POST['status_pedido']));
     $valor_total = floatval(str_replace(',', '.', $_POST['valor_total']));
@@ -688,7 +687,6 @@ if (isset($_POST['salvar_pedido'])) {
 // CONSULTAR PEDIDOS
 // =====================
 if (isset($_POST['buscar_pedidos'])) {
-    $objController = new Controller();
     $numero_pedido = htmlspecialchars(trim($_POST['numero_pedido']));
     $id_cliente = $_POST['id_cliente'];
     $data_pedido = htmlspecialchars(trim($_POST['data_pedido']));
@@ -709,7 +707,6 @@ if (isset($_POST['buscar_pedidos'])) {
 // ALTERAR PEDIDO
 // =====================
 if (isset($_POST['alterar_pedido'])) {
-    $objController = new Controller();
     $id_pedido = $_POST['id_pedido'];
     $id_cliente = $_POST['id_cliente'];
     $valor_total = floatval($_POST['valor_total']);
@@ -782,38 +779,32 @@ if (isset($_POST['finalizar_pedido'])) {
 
 //faturamento por mes
 if (isset($_POST['consulta_Ano_Faturamento'])) {
-    $objController = new Controller();
     $ano_faturamento = $_POST['ano_faturamento'];
     $mes_faturamento = $_POST['mes_faturamento'];
     $objController->faturamento_Mensal($ano_faturamento, $mes_faturamento);
 };
 // produtos mais vendidos
 if (isset($_POST['produtos_mais_vendidos'])) {
-    $objController = new Controller();
     $limite = $_POST['limite'];
     $objController->produtos_MaisVendidos($limite);
 };
 // quantidade de pedidos por mes
 if (isset($_POST['consulta_qtd_mes'])) {
-    $objController = new Controller();
     $ano_referencia = $_POST['ano_referencia'];
     $mes_referencia = $_POST['mes_referencia'];
     $objController->pedidos_Mes($ano_referencia, $mes_referencia);
 };
-// qunatidade de pedidos por form ade pagamento
+// quantidade de pedidos por forma de pagamento
 if (isset($_POST['qtd_pedido_formaPagamento'])) {
-    $objController = new Controller();
     $objController->qtd_PedidoFormaPagamento();
 };
 // pedidos por cliente
 if (isset($_POST['pedidos_por_cliente'])) {
-    $objController = new Controller();
     $id_cliente = $_POST['id_cliente'];
     $objController->pedidos_Cliente($id_cliente);
 };
 // Pedidos por Status
 if (isset($_POST['pedidos_por_status'])) {
-    $objController = new Controller();
     $status = $_POST['status'];
     $data_inicio = $_POST['data_inicio'];
     $data_fim = $_POST['data_fim'];
@@ -850,20 +841,17 @@ if (isset($_POST['relatorio_lucro'])) {
 
 // baixo estoque de produtos
 if (isset($_POST['buscar_baixo_estoque'])) {
-    $objController = new Controller();
     $limite = $_POST['estoque_limite'];
     $objController->produtosBaixo_estoque($limite);
 };
 // custos totais por produtos
 if (isset($_POST['buscar_custo_produto'])) {
     $id_produto = $_POST['id_produto'];
-    $objController = new Controller();
     $objController->custoTotal_PorProduto($id_produto);
 };
 // Mostra os produtos por fornecedor
 if (isset($_POST['produtos_fornecedor_buscar'])) {
     $id_fornecedor = $_POST['id_fornecedor'];
-    $objController = new Controller();
     $objController->produto_Fornecedor($id_fornecedor);
 };
 // Margem de lucro dos produtos
@@ -880,16 +868,13 @@ if (isset($_POST['buscar_margem_produto'])) {
     if ($id_produto !== null && $limitePercentual !== null) {
         $limitePercentual = null;
     }
-    $objController = new Controller();
     $objController->produto_Margem($limitePercentual, $id_produto);
 }
 // clientes que mais compraram
 if (isset($_POST['cliente_mais_compraram'])) {
-    $objController = new Controller();
     $limite = $_POST['limite_mais_compraram'];
     $ano_referencia = $_POST['ano_referencia'];
     $mes_referencia = $_POST['mes_referencia'];
-
     $objController->clientes_MaisCompraram($ano_referencia, $mes_referencia, $limite);
 }
 
