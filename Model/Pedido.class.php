@@ -15,6 +15,10 @@ class Pedido extends Conexao
     private $id_forma_pagamento = null;
     private $valor_frete = null;
     private $itens = null;
+
+    private $data_finalizacao;
+
+
     // metodos gettes e setters
     public function getIdPedido()
     {
@@ -96,6 +100,18 @@ class Pedido extends Conexao
     public function setItens($itens)
     {
         $this->itens = $itens;
+    }
+
+    public function getDataFinalizacao()
+    {
+        return $this->data_finalizacao;
+    }
+
+    public function setDataFinalizacao($data_finalizacao): self
+    {
+        $this->data_finalizacao = $data_finalizacao;
+
+        return $this;
     }
 
     // Metodo de consultar pedido
@@ -213,8 +229,17 @@ class Pedido extends Conexao
         $this->setValorFrete($valor_frete);
         $this->setItens($itens);
 
-        // Definir a data no servidor
-        $this->setDataPedido(date("Y-m-d H:i:s"));
+        // Define o fuso horário para 'America/Sao_Paulo', que é o Fuso Horário de Brasília
+        $fusoHorarioBrasil = new DateTimeZone('America/Sao_Paulo');
+
+        // Cria um objeto DateTime para a data e hora atual, aplicando o fuso horário de Brasília
+        $dataHoraBrasil = new DateTime('now', $fusoHorarioBrasil);
+
+        // Formata a data no formato desejado ("Y-m-d H:i:s")
+        $dataFormatada = $dataHoraBrasil->format("Y-m-d H:i:s");
+
+        // Define a data no seu servidor
+        $this->setDataPedido($dataFormatada);
 
         // Validar usuário logado
         if (!isset($_SESSION['id_usuario']) || empty($_SESSION['id_usuario'])) {
@@ -277,7 +302,7 @@ class Pedido extends Conexao
                     FROM produto
                     WHERE id_produto = $id_produto
                     LIMIT 1")->fetchColumn();
-                    $custo_compra = $custo_compra !== false ? (float)$custo_compra : 0.0;
+                $custo_compra = $custo_compra !== false ? (float)$custo_compra : 0.0;
 
                 $sql_item = "INSERT INTO item_pedido
                 (id_pedido, id_produto, quantidade, valor_unitario, totalValor_produto, custo_compra)
@@ -289,7 +314,8 @@ class Pedido extends Conexao
                 $query_item->bindValue(':valor_unitario', $valor_unitario);
                 $query_item->bindValue(':totalValor_produto', $totalValor_produto);
                 $query_item->bindValue(':custo_compra', $custo_compra);
-                $query_item->execute();}
+                $query_item->execute();
+            }
             $bd->commit();
             return true;
         } catch (PDOException | Exception $e) {
@@ -632,7 +658,19 @@ class Pedido extends Conexao
         $this->setIdPedido($id_pedido);
         $this->setStatusPedido($status_pedido);
 
-        $data_finalizacao = date("Y-m-d H:i:s");
+
+        // Define o fuso horário para 'America/Sao_Paulo', que é o Fuso Horário de Brasília
+        $fusoHorarioBrasil = new DateTimeZone('America/Sao_Paulo');
+
+        // Cria um objeto DateTime para a data e hora atual, aplicando o fuso horário de Brasília
+        $dataHoraBrasil = new DateTime('now', $fusoHorarioBrasil);
+
+        // Formata a data no formato desejado ("Y-m-d H:i:s")
+        $dataFormatada = $dataHoraBrasil->format("Y-m-d H:i:s");
+
+        $this->setdataFinalizacao($dataFormatada);
+
+
         $sql = "UPDATE pedido
             SET status_pedido = :status_pedido";
 
@@ -649,7 +687,7 @@ class Pedido extends Conexao
             $query->bindValue(':status_pedido', $this->getStatusPedido(), PDO::PARAM_STR);
             if (in_array($this->getStatusPedido(), ['Finalizado'])) {
                 // data e hora atual `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
-                $query->bindValue(':data_finalizacao', $data_finalizacao);
+                $query->bindValue(':data_finalizacao',  $this->getdataFinalizacao());
             }
 
             $query->execute();

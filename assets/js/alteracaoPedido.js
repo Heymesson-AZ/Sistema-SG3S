@@ -1,413 +1,664 @@
-$(document).ready(function () {
-  // ===========================
-  // VARIÁVEIS GLOBAIS
-  // ===========================
-  let valorTotalAlterar = 0;
-  let valorFreteAlterar = 0;
-  let produtoSelecionadoAlterar = null;
+document.addEventListener("DOMContentLoaded", function () {
+  // Inicializa a lógica para cada modal que tiver a classe 'modal-alterar-pedido'.
+  document.querySelectorAll(".modal-alterar-pedido").forEach(function (modal) {
+    const parts = modal.id.split("_");
+    // Extrai o número do pedido do ID da modal (e.g., modal_alterar_pedido_123 -> 123)
+    const numeroPedido = parts[parts.length - 1];
+    inicializarAlterarPedido(numeroPedido);
+  });
 
-  // ===========================
-  // FUNÇÕES UTILITÁRIAS
-  // ===========================
-  function mostrarAlerta(mensagem, tipo = "danger", duracao = 3000) {
-    const alerta = document.createElement("div");
-    alerta.className = `alert alert-${tipo} alert-dismissible fade show shadow`;
-    alerta.innerHTML = `
-      ${mensagem}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-    `;
-    Object.assign(alerta.style, {
-      position: "fixed",
-      top: "20px",
-      right: "20px",
-      zIndex: 1055,
-    });
-    document.body.appendChild(alerta);
-    setTimeout(() => alerta.remove(), duracao);
-  }
+  /**
+   * Inicializa a lógica específica para um pedido.
+   * @param {string} numeroPedido O número/ID do pedido.
+   */
+  function inicializarAlterarPedido(numeroPedido) {
+    // ===========================
+    // VARIÁVEIS LOCAIS (por modal)
+    // ===========================
+    let valorTotal = 0; // Soma dos subtotais dos produtos
+    let valorFrete = 0;
+    let produtoSelecionado = null; // Armazena dados do produto selecionado na busca
 
-  function formatarMoeda(valor) {
-    return "R$ " + valor.toFixed(2).replace(".", ",");
-  }
+    // ===========================
+    // SELETORES DO DOM
+    // ===========================
+    const formEl = document.getElementById(`form_${numeroPedido}`);
+    const tbody = document.getElementById(`tbody_lista_pedido_${numeroPedido}`);
+    const clienteInput = document.getElementById(`cliente_pedido_${numeroPedido}`);
+    const produtoInput = document.getElementById(`produto_pedido_${numeroPedido}`);
+    const qtdInput = document.getElementById(`quantidade_${numeroPedido}`);
+    const btnAdicionar = document.getElementById(`adicionar_produto_${numeroPedido}`);
+    const btnSalvar = document.getElementById(`alterar_pedido_${numeroPedido}`);
+    const freteEl = document.getElementById(`frete_${numeroPedido}`);
+    const selectPagamento = formEl?.querySelector(`select[name='id_forma_pagamento']`);
 
-  function ativarSpinner(botao) {
-    botao.disabled = true;
-    botao.dataset.originalText = botao.innerHTML;
-    botao.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Buscando...`;
-  }
-
-  function desativarSpinner(botao) {
-    botao.disabled = false;
-    botao.innerHTML = botao.dataset.originalText;
-  }
-
-  // ===========================
-  // ATUALIZA BOTOES DE REMOVER
-  // ===========================
-  function atualizarBotoesRemover(numeroPedido) {
-    const linhas = $(`#tbody_lista_pedido_${numeroPedido} tr`).length;
-    if (linhas <= 1) {
-      $(`#tbody_lista_pedido_${numeroPedido} .btn-remover-item`).prop("disabled", true);
-    } else {
-      $(`#tbody_lista_pedido_${numeroPedido} .btn-remover-item`).prop("disabled", false);
+    // Funções de Alerta, Formatação de Moeda e Spinner (mantidas/simplificadas)
+    function mostrarAlerta(mensagem, tipo = "danger", duracao = 3000) {
+      const alerta = document.createElement("div");
+      alerta.className = `alert alert-${tipo} alert-dismissible fade show shadow`;
+      alerta.innerHTML = `${mensagem} <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
+      Object.assign(alerta.style, { position: "fixed", top: "20px", right: "20px", zIndex: 1055, });
+      document.body.appendChild(alerta);
+      setTimeout(() => alerta.remove(), duracao);
     }
-    verificarBotaoSalvar(numeroPedido);
-  }
 
-  function prepararBotoesRemover(numeroPedido) {
-    $(`#tbody_lista_pedido_${numeroPedido} tr`).each(function () {
-      const tr = $(this);
+    function formatarMoeda(valor) {
+      return "R$ " + Number(valor).toFixed(2).replace(".", ",");
+    }
 
-      if (tr.find(".btn-remover-item").length === 0) {
-        const cellBtn = tr.find("td").last();
-        const btnRemover = document.createElement("button");
-        btnRemover.type = "button";
-        btnRemover.className = "btn btn-outline-danger btn-sm btn-remover-item";
-        btnRemover.innerHTML = '<i class="bi bi-trash"></i>';
-
-        btnRemover.addEventListener("click", () => {
-          tr.remove();
-          calcularTotalInicial(numeroPedido);
-          atualizarBotoesRemover(numeroPedido);
-        });
-
-        cellBtn.append(btnRemover);
-      }
-    });
-
-    atualizarBotoesRemover(numeroPedido);
-  }
-
-  // ===========================
-  // CALCULO DE TOTAL
-  // ===========================
-  function calcularTotalInicial(numeroPedido) {
-    valorTotalAlterar = 0;
-    $(`#tbody_lista_pedido_${numeroPedido} tr`).each(function () {
-      let subtotal = parseFloat($(this).find('td:eq(3)').text().replace("R$", "").replace(".", "").replace(",", ".").trim()) || 0;
-      valorTotalAlterar += subtotal;
-    });
-    atualizarValorTotalComFreteAlterar(numeroPedido);
-  }
-
-  function atualizarValorTotalComFreteAlterar(numeroPedido) {
-    const total = valorTotalAlterar + valorFreteAlterar;
-    document.getElementById(`valor_total_${numeroPedido}`).value = formatarMoeda(total);
-    verificarLimiteCreditoAlterar(numeroPedido);
-    verificarBotaoSalvar(numeroPedido);
-  }
-
-  // ===========================
-  // VERIFICAÇÃO DO BOTÃO SALVAR
-  // ===========================
-  function verificarBotaoSalvar(numeroPedido) {
-    const btnSalvar = document.getElementById(`alterar_pedido_${numeroPedido}`);
-    const idCliente = $(`#id_cliente_hidden_${numeroPedido}`).val();
-    const idPagamento = $(`#form_${numeroPedido} select[name='id_forma_pagamento']`).val();
-    const possuiProdutos = $(`#tbody_lista_pedido_${numeroPedido} tr`).length > 0;
-
-    btnSalvar.disabled = !(idCliente && idPagamento && possuiProdutos);
-  }
-
-  // ===========================
-  // AJAX BUSCAS
-  // ===========================
-  function buscarClienteAlterar(termo, numeroPedido) {
-    const input = document.getElementById(`cliente_pedido_${numeroPedido}`);
-    const resultado = document.getElementById(`resultado_busca_cliente_${numeroPedido}`);
-    if (!termo) { resultado.innerHTML = ""; return; }
-    ativarSpinner(input);
-    fetch("index.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `cliente_pedido=${encodeURIComponent(termo)}`,
-    })
-      .then(res => res.text())
-      .then(data => { resultado.innerHTML = data; desativarSpinner(input); })
-      .catch(() => { mostrarAlerta("Erro ao buscar cliente."); desativarSpinner(input); });
-  }
-
-  function buscarProdutoAlterar(termo, numeroPedido) {
-    const input = document.getElementById(`produto_pedido_${numeroPedido}`);
-    const resultado = document.getElementById(`resultado_busca_produto_${numeroPedido}`);
-    if (!termo) { resultado.innerHTML = ""; return; }
-    ativarSpinner(input);
-    fetch("index.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `produto_pedido=${encodeURIComponent(termo)}`,
-    })
-      .then(res => res.text())
-      .then(data => { resultado.innerHTML = data; desativarSpinner(input); })
-      .catch(() => { mostrarAlerta("Erro ao buscar produto."); desativarSpinner(input); });
-  }
-
-  // ===========================
-  // LIMITE DE CRÉDITO
-  // ===========================
-  function verificarLimiteCreditoAlterar(numeroPedido) {
-    const idCliente = document.getElementById(`id_cliente_hidden_${numeroPedido}`)?.value;
-    const total = Number(valorTotalAlterar.toFixed(2));
-    const btnSalvar = document.getElementById(`alterar_pedido_${numeroPedido}`);
-    if (!idCliente || total <= 0) { btnSalvar.disabled = true; return; }
-
-    fetch("index.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `verificar_limite=1&id_cliente=${idCliente}&valor_total=${total}`,
-    })
-      .then(res => res.text())
-      .then(resdata => {
-        if (!resdata.trim()) { btnSalvar.disabled = false; return; }
-        const json = JSON.parse(resdata);
-        if (json.status === false) {
-          btnSalvar.disabled = true;
-          mostrarAlerta(
-            `⚠️ Limite de crédito excedido!<br>
-          <strong>Limite:</strong> R$ ${parseFloat(json.limite_credito).toFixed(2).replace(".", ",")}<br>
-          <strong>Pedido:</strong> R$ ${total.toFixed(2).replace(".", ",")}<br>
-          <strong>Excedente:</strong> <span style="color:#dc3545; font-weight:bold;">
-            R$ ${(total - parseFloat(json.limite_credito)).toFixed(2).replace(".", ",")}
-          </span>`,
-            "danger",
-            6000
-          );
+    function ativarSpinner(botaoOuInput) {
+      try {
+        botaoOuInput.disabled = true;
+        botaoOuInput.dataset.originalText = botaoOuInput.innerHTML ?? botaoOuInput.value ?? "";
+        if (botaoOuInput.tagName === "BUTTON") {
+          botaoOuInput.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Buscando...`;
+        } else {
+          botaoOuInput.value = "";
         }
+      } catch (e) { /* silent */ }
+    }
+
+    function desativarSpinner(botaoOuInput) {
+      try {
+        botaoOuInput.disabled = false;
+        if (botaoOuInput.tagName === "BUTTON") {
+          botaoOuInput.innerHTML = botaoOuInput.dataset.originalText || botaoOuInput.innerHTML;
+        } else {
+          botaoOuInput.value = botaoOuInput.dataset.originalText || botaoOuInput.value;
+        }
+      } catch (e) { /* silent */ }
+    }
+
+    // ===========================
+    // ATUALIZAÇÔES DE TOTAIS E BOTÕES
+    // ===========================
+
+    /** Retorna o ID do cliente. (Ajustado para buscar pelo nome 'id_cliente' dentro do form) */
+    function getIdCliente() {
+      return formEl?.querySelector('input[name="id_cliente"]')?.value;
+    }
+
+    /** Retorna o ID da forma de pagamento. */
+    function getIdPagamento() {
+      return selectPagamento?.value;
+    }
+
+    function atualizarValorTotalComFrete() {
+      const total = Number((valorTotal + valorFrete).toFixed(2));
+      const el = document.getElementById(`valor_total_${numeroPedido}`);
+      if (el) el.value = formatarMoeda(total);
+      verificarLimiteCredito();
+      verificarBotaoSalvar();
+    }
+
+    /** Recalcula valorTotal (soma dos produtos) lendo a tabela e atualiza o total final. */
+    function recalcularTotaisAPartirDaTabela() {
+      valorTotal = 0;
+      if (!tbody) return;
+
+      Array.from(tbody.querySelectorAll("tr")).forEach(tr => {
+        // CORREÇÃO: Lê o valor do hidden input 'valor_total' que é sempre atualizado.
+        const hiddenTotal = tr.querySelector("input[name$='[valor_total]']") || tr.querySelector("input[name='valor_total']");
+        let subtotal = 0;
+
+        if (hiddenTotal) {
+          subtotal = parseFloat(hiddenTotal.value) || 0;
+        } else {
+          // Fallback para o texto da célula (usado para dados pre-carregados se hidden falhar)
+          const text = tr.querySelector("td:nth-child(4)")?.textContent || "R$ 0,00";
+          subtotal = parseFloat(text.replace("R$", "").replace(/\./g, "").replace(",", ".")) || 0;
+        }
+        valorTotal += subtotal;
+      });
+      atualizarValorTotalComFrete();
+    }
+
+    /** Habilita/desabilita o botão salvar. */
+    function verificarBotaoSalvar() {
+      if (!btnSalvar) return;
+      const idCliente = getIdCliente();
+      const idPagamento = getIdPagamento();
+      const possuiProdutos = (tbody?.querySelectorAll("tr").length || 0) > 0;
+
+      // Requisitos: Cliente selecionado, Pagamento selecionado, Pelo menos 1 produto.
+      const requisitosAtendidos = (idCliente && idPagamento && possuiProdutos);
+
+      // Só re-habilita se o limite de crédito não tiver desabilitado o botão anteriormente
+      if (requisitosAtendidos) {
+        // Se a verificação de limite não desabilitou (ou for assíncrona), habilita
+        btnSalvar.disabled = false;
+      } else {
+        btnSalvar.disabled = true;
+      }
+    }
+
+    /** Desabilita todos os botões de remover se houver apenas 1 item. */
+    function configurarBotoesRemover() {
+      if (!tbody) return;
+      const linhas = tbody.querySelectorAll("tr");
+      const botoes = tbody.querySelectorAll(".btn-remover-item");
+
+      // Desabilita se houver apenas 1 item
+      if (linhas.length <= 1) {
+        botoes.forEach(btn => btn.disabled = true);
+      } else if (linhas.length > 1) {
+        botoes.forEach(btn => btn.disabled = false);
+      }
+    }
+
+    function verificarLimiteCredito() {
+      const idCliente = getIdCliente();
+      const total = Number((valorTotal).toFixed(2));
+
+      if (!idCliente || total <= 0 || !btnSalvar) {
+        if (btnSalvar) btnSalvar.disabled = true;
+        return;
+      }
+
+      fetch("index.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `verificar_limite=1&id_cliente=${idCliente}&valor_total=${total}`,
       })
-      .catch(() => { btnSalvar.disabled = true; mostrarAlerta("Erro ao verificar limite de crédito!", "danger"); });
-  }
+        .then((res) => res.text())
+        .then((resdata) => {
+          if (!resdata.trim()) {
+            // Resposta vazia ou OK, reativa a verificação normal do botão salvar
+            verificarBotaoSalvar();
+            return;
+          }
+          try {
+            const json = JSON.parse(resdata);
+            if (json.status === false) {
+              btnSalvar.disabled = true;
+              mostrarAlerta(
+                `⚠️ Limite de crédito excedido!<br>
+                                <strong>Limite:</strong> R$ ${parseFloat(json.limite_credito).toFixed(2).replace(".", ",")}<br>
+                                <strong>Pedido:</strong> R$ ${total.toFixed(2).replace(".", ",")}`,
+                "danger",
+                6000
+              );
+            } else {
+              verificarBotaoSalvar();
+            }
+          } catch (e) {
+            verificarBotaoSalvar();
+          }
+        })
+        .catch(() => {
+          btnSalvar.disabled = true;
+          mostrarAlerta("Erro ao verificar limite de crédito!", "danger");
+        });
+    }
 
-  // ===========================
-  // INICIALIZAÇÃO DA MODAL
-  // ===========================
-  function inicializarModalAlterar(numeroPedido) {
-    valorTotalAlterar = 0;
-    valorFreteAlterar = parseFloat(document.getElementById(`frete_${numeroPedido}`).value.replace("R$", "").replace(",", ".")) || 0;
-    produtoSelecionadoAlterar = null;
+    // ===========================
+    // BUSCAS (cliente/produto) e DEBOUNCE
+    // ===========================
+    // ... (Lógica de busca de cliente e produto: mantida)
+    function buscarCliente(termo) {
+      const resultado = document.getElementById(`resultado_busca_cliente_${numeroPedido}`);
+      if (!resultado) return;
+      if (!termo) {
+        resultado.innerHTML = "";
+        verificarBotaoSalvar();
+        return;
+      }
+      try { ativarSpinner(clienteInput); } catch (e) { }
+      fetch("index.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `cliente_pedido=${encodeURIComponent(termo)}`,
+      })
+        .then(res => res.text())
+        .then(data => {
+          resultado.innerHTML = data;
+          try { desativarSpinner(clienteInput); } catch (e) { }
+        })
+        .catch(() => {
+          mostrarAlerta("Erro ao buscar cliente.");
+          try { desativarSpinner(clienteInput); } catch (e) { }
+        });
+    }
 
-    const DEBOUNCE_DELAY = 500;
+    function buscarProduto(termo) {
+      const resultado = document.getElementById(`resultado_busca_produto_${numeroPedido}`);
+      if (!resultado) return;
+      if (!termo) {
+        resultado.innerHTML = "";
+        // Limpa o produto selecionado
+        const idProdHidden = document.getElementById(`id_produto_hidden_${numeroPedido}`);
+        if (idProdHidden) idProdHidden.remove();
+        produtoSelecionado = null;
+        return;
+      }
+      try { ativarSpinner(produtoInput); } catch (e) { }
+      fetch("index.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `produto_pedido=${encodeURIComponent(termo)}`,
+      })
+        .then(res => res.text())
+        .then(data => {
+          resultado.innerHTML = data;
+          try { desativarSpinner(produtoInput); } catch (e) { }
+        })
+        .catch(() => {
+          mostrarAlerta("Erro ao buscar produto.");
+          try { desativarSpinner(produtoInput); } catch (e) { }
+        });
+    }
+
     let timeoutCliente = null;
     let timeoutProduto = null;
+    const DEBOUNCE_DELAY = 500;
 
-    // BUSCAS
-    $(`#cliente_pedido_${numeroPedido}`).off("input").on("input", function () {
-      clearTimeout(timeoutCliente);
-      const termo = $(this).val().trim();
-      timeoutCliente = setTimeout(() => buscarClienteAlterar(termo, numeroPedido), DEBOUNCE_DELAY);
-    });
-
-    $(`#produto_pedido_${numeroPedido}`).off("input").on("input", function () {
-      clearTimeout(timeoutProduto);
-      const termo = $(this).val().trim();
-      timeoutProduto = setTimeout(() => buscarProdutoAlterar(termo, numeroPedido), DEBOUNCE_DELAY);
-    });
-
-    // SELEÇÃO CLIENTE
-    $(`#resultado_busca_cliente_${numeroPedido}`).off("click").on("click", ".cliente-item", function () {
-      const nome = $(this).text();
-      const id = $(this).data("id");
-      const inputCliente = $(`#cliente_pedido_${numeroPedido}`);
-      inputCliente.val(nome);
-
-      let hidden = document.getElementById(`id_cliente_hidden_${numeroPedido}`);
-      if (!hidden) {
-        hidden = document.createElement("input");
-        hidden.type = "hidden";
-        hidden.id = `id_cliente_hidden_${numeroPedido}`;
-        hidden.name = "id_cliente";
-        inputCliente.parent()[0].appendChild(hidden);
-      }
-      hidden.value = id;
-      $(this).parent().html("");
-      verificarLimiteCreditoAlterar(numeroPedido);
-      verificarBotaoSalvar(numeroPedido);
-    });
-
-    // SELEÇÃO PRODUTO
-    $(`#resultado_busca_produto_${numeroPedido}`).off("click").on("click", ".produto-item", function () {
-      const id = $(this).data("id");
-      const nome = $(this).data("nome");
-      const cor = $(this).data("cor");
-      const largura = $(this).data("largura");
-      const valor = parseFloat($(this).data("valorvenda"));
-      const qtdEstoque = parseFloat($(this).data("quantidade"));
-
-      $(`#produto_pedido_${numeroPedido}`).val(`${nome} - Cor: ${cor} - Largura: ${largura}m`);
-
-      let hidden = document.getElementById(`id_produto_hidden_${numeroPedido}`);
-      if (!hidden) {
-        hidden = document.createElement("input");
-        hidden.type = "hidden";
-        hidden.id = `id_produto_hidden_${numeroPedido}`;
-        hidden.name = "id_produto";
-        $(`#produto_pedido_${numeroPedido}`).parent()[0].appendChild(hidden);
-      }
-      hidden.value = id;
-
-      produtoSelecionadoAlterar = { id, nome, cor, largura, valorVenda: valor, quantidade: qtdEstoque };
-      $(this).parent().html("");
-    });
-
-    // ADICIONAR PRODUTO
-    $(`#adicionar_produto_${numeroPedido}`).off("click").on("click", function () {
-      const idProduto = $(`#id_produto_hidden_${numeroPedido}`).val();
-      const nome = $(`#produto_pedido_${numeroPedido}`).val();
-      const qtd = parseFloat($(`#quantidade_${numeroPedido}`).val());
-      const valorUnitario = parseFloat(produtoSelecionadoAlterar?.valorVenda) || 0;
-
-      if (!idProduto || !qtd || qtd <= 0) return mostrarAlerta("Selecione um produto!", "warning");
-
-      const tbody = document.getElementById(`tbody_lista_pedido_${numeroPedido}`);
-      for (let tr of tbody.getElementsByTagName("tr")) {
-        if (tr.dataset.idProduto === idProduto) return mostrarAlerta("Produto já adicionado!", "warning");
-      }
-
-      let valorLinha = valorUnitario * qtd;
-      const tr = tbody.insertRow();
-      tr.dataset.idProduto = idProduto;
-      tr.insertCell(0).textContent = nome;
-
-      const cellQtd = tr.insertCell(1);
-      const inputQtd = document.createElement("input");
-      inputQtd.type = "text";
-      inputQtd.value = qtd;
-      inputQtd.min = 1;
-      inputQtd.className = "form-control form-control-sm text-center";
-      cellQtd.appendChild(inputQtd);
-
-      tr.insertCell(2).textContent = formatarMoeda(valorUnitario);
-      const cellTotal = tr.insertCell(3);
-      cellTotal.textContent = formatarMoeda(valorLinha);
-
-      const cellBtn = tr.insertCell(4);
-      const btnRemover = document.createElement("button");
-      btnRemover.type = "button";
-      btnRemover.className = "btn btn-outline-danger btn-sm btn-remover-item";
-      btnRemover.innerHTML = '<i class="bi bi-trash"></i>';
-      btnRemover.addEventListener("click", () => {
-        tr.remove();
-        valorTotalAlterar -= valorLinha;
-        atualizarValorTotalComFreteAlterar(numeroPedido);
-        atualizarBotoesRemover(numeroPedido);
+    if (clienteInput) {
+      clienteInput.addEventListener("input", (e) => {
+        clearTimeout(timeoutCliente);
+        const termo = e.target.value.trim();
+        timeoutCliente = setTimeout(() => buscarCliente(termo), DEBOUNCE_DELAY);
       });
-      cellBtn.appendChild(btnRemover);
+    }
 
-      const hiddenUnit = document.createElement("input");
-      hiddenUnit.type = "hidden"; hiddenUnit.name = "valor_unitario"; hiddenUnit.value = valorUnitario.toFixed(2);
-      tr.appendChild(hiddenUnit);
+    if (produtoInput) {
+      produtoInput.addEventListener("input", (e) => {
+        clearTimeout(timeoutProduto);
+        const termo = e.target.value.trim();
+        timeoutProduto = setTimeout(() => buscarProduto(termo), DEBOUNCE_DELAY);
+      });
+    }
 
-      const hiddenTotal = document.createElement("input");
-      hiddenTotal.type = "hidden"; hiddenTotal.name = "valor_total"; hiddenTotal.value = valorLinha.toFixed(2);
-      tr.appendChild(hiddenTotal);
+    // ===========================
+    // DELEGAÇÃO: seleção de cliente/produto
+    // ===========================
+    const resultadoClienteContainer = document.getElementById(`resultado_busca_cliente_${numeroPedido}`);
+    if (resultadoClienteContainer) {
+      resultadoClienteContainer.addEventListener("click", function (e) {
+        const clienteItem = e.target.closest(".cliente-item");
+        if (!clienteItem) return;
+        const nome = clienteItem.textContent.trim();
+        const id = clienteItem.dataset.id;
 
-      inputQtd.addEventListener("focus", function () { this.dataset.valorAnterior = this.value; });
-      inputQtd.addEventListener("input", function () {
-        const valorAnterior = parseFloat(this.dataset.valorAnterior) || 1;
-        const novaQtd = parseFloat(this.value);
-        if (!novaQtd || novaQtd <= 0) { mostrarAlerta("Quantidade inválida!", "warning"); this.value = valorAnterior; return; }
+        if (clienteInput) clienteInput.value = nome;
+
+        // CORREÇÃO: Usa o input hidden existente no form (que tem name="id_cliente")
+        const hidden = formEl.querySelector('input[name="id_cliente"]');
+        if (hidden) hidden.value = id;
+
+        this.innerHTML = "";
+        verificarLimiteCredito();
+        verificarBotaoSalvar();
+      });
+    }
+
+    const resultadoProdutoContainer = document.getElementById(`resultado_busca_produto_${numeroPedido}`);
+    if (resultadoProdutoContainer) {
+      resultadoProdutoContainer.addEventListener("click", function (e) {
+        const produtoItem = e.target.closest(".produto-item");
+        if (!produtoItem) return;
+        const id = produtoItem.dataset.id;
+        const nome = produtoItem.dataset.nome;
+        const cor = produtoItem.dataset.cor;
+        const largura = produtoItem.dataset.largura;
+        const valor = produtoItem.dataset.valorvenda;
+        const qtdEstoque = produtoItem.dataset.quantidade;
+
+        if (produtoInput) produtoInput.value = `${nome} - Cor: ${cor} - Largura: ${largura}m`;
+
+        // Cria um input hidden temporário para o ID do produto, usado apenas no clique de Adicionar
+        let hidden = document.getElementById(`id_produto_hidden_${numeroPedido}`);
+        if (!hidden) {
+          hidden = document.createElement("input");
+          hidden.type = "hidden";
+          hidden.id = `id_produto_hidden_${numeroPedido}`;
+          produtoInput?.parentElement.appendChild(hidden);
+        }
+        hidden.value = id;
+
+        produtoSelecionado = {
+          id,
+          nome,
+          cor,
+          largura,
+          valorVenda: parseFloat(valor) || 0,
+          quantidade: parseFloat(qtdEstoque) || 0
+        };
+
+        this.innerHTML = "";
+      });
+    }
+
+    // Listener para o select de forma de pagamento
+    if (selectPagamento) {
+      selectPagamento.addEventListener("change", verificarBotaoSalvar);
+    }
+
+    // ===========================
+    // FRETE
+    // ===========================
+    if (freteEl) {
+      // Inicializa valorFrete lendo o campo formatado
+      const raw = freteEl.value || "";
+      if (raw.trim()) {
+        const somenteNumeros = raw.replace(/\D/g, "");
+        valorFrete = parseFloat(somenteNumeros) / 100 || 0;
+      }
+
+      freteEl.addEventListener("input", (e) => {
+        let somenteNumeros = e.target.value.replace(/\D/g, "");
+        let valor = parseFloat(somenteNumeros) / 100;
+        valorFrete = isNaN(valor) ? 0 : valor;
+        e.target.value = formatarMoeda(valorFrete);
+        atualizarValorTotalComFrete();
+      });
+    }
+
+    // ===========================
+    // ADICIONAR PRODUTO
+    // ===========================
+    if (btnAdicionar) {
+      btnAdicionar.addEventListener("click", function () {
+        const idProduto = document.getElementById(`id_produto_hidden_${numeroPedido}`)?.value;
+        const nomeProduto = produtoInput?.value || "";
+        const qtd = parseFloat(qtdInput?.value);
+        const valorUnitario = produtoSelecionado?.valorVenda || 0;
+
+        if (!idProduto || !qtd || qtd <= 0 || valorUnitario === 0) {
+          return mostrarAlerta("Selecione um produto e uma quantidade válida!", "warning");
+        }
+
+        if (!tbody) return;
+
+        // Verifica se já existe (usando data-id-produto)
+        for (let tr of tbody.getElementsByTagName("tr")) {
+          if (String(tr.dataset.idProduto) === String(idProduto)) {
+            return mostrarAlerta("Produto já adicionado! Altere a quantidade na tabela.", "warning");
+          }
+        }
+
+        // 1. Verificar estoque via ajax
         fetch("index.php", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: `verificar_quantidade=1&id_produto=${idProduto}&quantidade=${novaQtd}`
-        }).then(res => res.text()).then(data => {
-          if (data.includes("erro_quantidade")) { mostrarAlerta("Estoque insuficiente!", "warning"); this.value = valorAnterior; return; }
-          valorTotalAlterar -= valorLinha;
-          valorLinha = valorUnitario * novaQtd;
-          cellTotal.textContent = formatarMoeda(valorLinha);
-          hiddenTotal.value = valorLinha.toFixed(2);
-          valorTotalAlterar += valorLinha;
-          atualizarValorTotalComFreteAlterar(numeroPedido);
-          this.dataset.valorAnterior = novaQtd;
-        });
+          body: `verificar_quantidade=1&id_produto=${idProduto}&quantidade=${qtd}`,
+        })
+          .then((res) => res.text())
+          .then((data) => {
+            if (data.includes("erro_quantidade")) {
+              return mostrarAlerta("Estoque insuficiente!", "warning");
+            }
+
+            // Estoque OK, pode adicionar
+            let valorLinha = valorUnitario * qtd;
+            const tr = tbody.insertRow();
+            tr.dataset.idProduto = idProduto;
+
+            // 0: Nome
+            tr.insertCell(0).textContent = nomeProduto;
+
+            // 1: Quantidade (Input)
+            const cellQtd = tr.insertCell(1);
+            const inputQtd = document.createElement("input");
+            inputQtd.type = "number";
+            inputQtd.step = "any";
+            inputQtd.value = qtd;
+            inputQtd.min = 1;
+            // CORREÇÃO: Usando a classe correta conforme o PHP: quantidade-item
+            inputQtd.className = "form-control form-control-sm text-center quantidade-item";
+            inputQtd.dataset.valorAnterior = qtd;
+            cellQtd.appendChild(inputQtd);
+
+            // 2: Valor Unitário (Visível)
+            tr.insertCell(2).textContent = formatarMoeda(valorUnitario);
+
+            // 3: Subtotal (Visível)
+            const cellTotal = tr.insertCell(3);
+            cellTotal.textContent = formatarMoeda(valorLinha);
+
+            // 4: Ação (Botão) - Adiciona o botão na célula de ação
+            const cellBtn = tr.insertCell(4);
+            cellBtn.className = 'acao-item'; // Mantém a classe
+
+            const btnRemover = document.createElement("button");
+            btnRemover.type = "button";
+            btnRemover.className = "btn btn-outline-danger btn-sm btn-remover-item";
+            btnRemover.innerHTML = '<i class="bi bi-trash"></i>';
+            // O listener de delegação cuidará da remoção, mas adicionamos um listener direto por segurança
+            btnRemover.addEventListener("click", () => {
+              tr.remove();
+              recalcularTotaisAPartirDaTabela();
+              configurarBotoesRemover();
+              verificarBotaoSalvar();
+            });
+            cellBtn.appendChild(btnRemover);
+
+            // Hidden inputs para submissão (usando a estrutura de array do PHP para itens adicionados dinamicamente)
+            // NOTA: O PHP usa `name="itens[ID][campo]"` na modal, vamos replicar o name aqui para a submissão.
+            tr.innerHTML += `
+                            <input type="hidden" name="itens[${idProduto}][id_produto]" value="${idProduto}">
+                            <input type="hidden" name="itens[${idProduto}][valor_unitario]" value="${valorUnitario.toFixed(2)}">
+                            <input type="hidden" name="itens[${idProduto}][valor_total]" value="${valorLinha.toFixed(2)}">
+                        `;
+
+            // O listener do inputQtd é coberto pelo listener de delegação do tbody
+
+            // 2. Atualizar totais após adicionar
+            recalcularTotaisAPartirDaTabela();
+            configurarBotoesRemover();
+
+            // 3. Limpar inputs de busca
+            if (produtoInput) produtoInput.value = "";
+            if (qtdInput) qtdInput.value = "";
+            // Remove o hidden ID do produto (temporário)
+            const idProdHiddenEl = document.getElementById(`id_produto_hidden_${numeroPedido}`);
+            if (idProdHiddenEl) idProdHiddenEl.remove();
+            const resultadoProd = document.getElementById(`resultado_busca_produto_${numeroPedido}`);
+            if (resultadoProd) resultadoProd.innerHTML = "";
+            produtoSelecionado = null;
+            verificarBotaoSalvar();
+          })
+          .catch(() => mostrarAlerta("Erro ao verificar estoque!", "danger"));
+      });
+    }
+
+    // ===========================
+    // DELEGAÇÃO: Alteração de Quantidade e Remoção em Linhas Existentes
+    // ===========================
+    if (tbody) {
+
+      // Delegação para FOCUSIN (para guardar valor anterior - necessário para validação)
+      tbody.addEventListener("focusin", function (e) {
+        const input = e.target.closest(".quantidade-item");
+        if (input) {
+          input.dataset.valorAnterior = input.value;
+        }
       });
 
-      valorTotalAlterar += valorLinha;
-      atualizarValorTotalComFreteAlterar(numeroPedido);
-      calcularTotalInicial(numeroPedido);
-      atualizarBotoesRemover(numeroPedido);
-      prepararBotoesRemover(numeroPedido);
+      // Delegação para INPUT (alteração de quantidade)
+      tbody.addEventListener("input", function (e) {
+        // CORREÇÃO: Usando a classe correta
+        const input = e.target.closest(".quantidade-item");
+        if (!input) return;
 
-      $(`#produto_pedido_${numeroPedido}`).val("");
-      $(`#quantidade_${numeroPedido}`).val("");
-      $(`#id_produto_hidden_${numeroPedido}`).remove();
-      $(`#resultado_busca_produto_${numeroPedido}`).html("");
-      produtoSelecionadoAlterar = null;
-    });
+        const tr = input.closest("tr");
+        const idProduto = tr?.dataset?.idProduto;
+        const novaQtd = parseFloat(input.value);
 
-    // FRETE
-    $(`#frete_${numeroPedido}`).off("input").on("input", function () {
-      let somenteNumeros = this.value.replace(/\D/g, "");
-      let valor = parseFloat(somenteNumeros) / 100;
-      valorFreteAlterar = isNaN(valor) ? 0 : valor;
-      this.value = formatarMoeda(valorFreteAlterar);
-      atualizarValorTotalComFreteAlterar(numeroPedido);
-    });
+        // CORREÇÃO: Busca o hidden input de valor unitário pelo name
+        const hiddenUnit = tr.querySelector("input[name$='[valor_unitario]']");
+        const valorUnitario = parseFloat(hiddenUnit?.value) || 0;
 
-    // ALTERAÇÃO FORMA DE PAGAMENTO
-    $(`#form_${numeroPedido} select[name='id_forma_pagamento']`).off("change").on("change", function () {
-      verificarBotaoSalvar(numeroPedido);
-    });
+        // CORREÇÃO: Busca o hidden input de valor total pelo name
+        const hiddenTotal = tr.querySelector("input[name$='[valor_total]']");
+        const cellTotal = tr.querySelector("td:nth-child(4)"); // Célula de subtotal visível
+        const valorAnterior = parseFloat(input.dataset.valorAnterior) || 1;
 
+        if (!idProduto || !novaQtd || novaQtd <= 0) {
+          mostrarAlerta("Quantidade inválida!", "warning");
+          input.value = valorAnterior;
+          return;
+        }
+
+        // Validação de estoque via ajax
+        fetch("index.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `verificar_quantidade=1&id_produto=${idProduto}&quantidade=${novaQtd}`,
+        })
+          .then(res => res.text())
+          .then(data => {
+            if (data.includes("erro_quantidade")) {
+              mostrarAlerta("Estoque insuficiente!", "warning");
+              input.value = valorAnterior;
+              return;
+            }
+
+            // Recalcular subtotal da linha e atualizar hidden + célula visível
+            const novoSubtotal = valorUnitario * novaQtd;
+            cellTotal.textContent = formatarMoeda(novoSubtotal);
+            if (hiddenTotal) hiddenTotal.value = novoSubtotal.toFixed(2);
+
+            // Recalcula todos os totais (mais seguro)
+            recalcularTotaisAPartirDaTabela();
+
+            input.dataset.valorAnterior = novaQtd; // Atualiza o valor anterior
+          })
+          .catch(() => {
+            mostrarAlerta("Erro ao verificar estoque!", "danger");
+            input.value = valorAnterior;
+          });
+      });
+
+      // Delegação para CLICK (remover item)
+      tbody.addEventListener("click", function (e) {
+        const btn = e.target.closest(".btn-remover-item");
+        if (!btn) return;
+        const tr = btn.closest("tr");
+        if (!tr) return;
+
+        tr.remove();
+        recalcularTotaisAPartirDaTabela();
+        verificarBotaoSalvar();
+        configurarBotoesRemover();
+      });
+    }
+
+    // ===========================
     // SALVAR ALTERAÇÃO
-    $(`#alterar_pedido_${numeroPedido}`).off("click").on("click", function (e) {
-      e.preventDefault(); if (this.disabled) return;
+    // ===========================
+    if (btnSalvar) {
+      btnSalvar.addEventListener("click", function (e) {
+        e.preventDefault();
 
-      const idCliente = $(`#id_cliente_hidden_${numeroPedido}`).val();
-      const status = $(`#status_${numeroPedido}`).val();
-      const idPagamento = $(`#form_${numeroPedido} select[name='id_forma_pagamento']`).val();
-      if (!idCliente || !status || !idPagamento) return mostrarAlerta("Preencha todos os campos obrigatórios!", "warning");
+        const idCliente = getIdCliente();
+        const status = document.getElementById(`status_${numeroPedido}`)?.value || "Pendente"; // Status não existe na modal fornecida, assumindo "Pendente"
+        const idPagamento = getIdPagamento();
 
-      const frete = valorFreteAlterar.toFixed(2);
-      const total = Number((valorTotalAlterar + valorFreteAlterar).toFixed(2));
+        if (this.disabled || !idCliente || !idPagamento || (tbody?.querySelectorAll("tr").length || 0) === 0) {
+          return mostrarAlerta("Preencha todos os campos obrigatórios e verifique os produtos e o limite de crédito!", "warning", 4000);
+        }
 
-      const itens = [];
-      $(`#tbody_lista_pedido_${numeroPedido} tr`).each(function () {
-        itens.push({
-          id_produto: this.dataset.idProduto,
-          quantidade: $(this).find("input[type='text']").val(),
-          valor_unitario: $(this).find("input[name='valor_unitario']").val(),
-          totalValor_produto: $(this).find("input[name='valor_total']").val()
+        const origem = formEl?.querySelector('input[name="origem"]')?.value || "";
+        const frete = Number(valorFrete).toFixed(2);
+        const total = Number((valorTotal + valorFrete).toFixed(2));
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "index.php";
+
+        // Campos principais (re-criados no form dinâmico)
+        form.innerHTML = `
+                    <input type="hidden" name="alterar_pedido" value="1">
+                    <input type="hidden" name="id_pedido" value="${numeroPedido}">
+                    <input type="hidden" name="id_cliente" value="${idCliente}">
+                    <input type="hidden" name="status_pedido" value="${status}">
+                    <input type="hidden" name="valor_total" value="${total}">
+                    <input type="hidden" name="id_forma_pagamento" value="${idPagamento}">
+                    <input type="hidden" name="origem" value="${origem}">
+                    <input type="hidden" name="valor_frete" value="${frete}">
+                `;
+
+        // ITENS - Coletando valores mais atuais da tabela
+        Array.from(tbody.querySelectorAll("tr")).forEach((tr, i) => {
+          const idProduto = tr.dataset.idProduto;
+          // CORREÇÃO: Buscando valores ATUAIS dos inputs e hiddens
+          const quantidade = tr.querySelector("input.quantidade-item")?.value || 0;
+          const valorUnitario = tr.querySelector("input[name$='[valor_unitario]']")?.value || 0;
+          const totalValorProduto = tr.querySelector("input[name$='[valor_total]']")?.value || 0;
+
+          // NOTA: Usando índices numéricos no form dinâmico para garantir o envio correto
+          form.innerHTML += `
+                        <input type="hidden" name="itens[${i}][id_produto]" value="${idProduto}">
+                        <input type="hidden" name="itens[${i}][quantidade]" value="${quantidade}">
+                        <input type="hidden" name="itens[${i}][valor_unitario]" value="${valorUnitario}">
+                        <input type="hidden" name="itens[${i}][totalValor_produto]" value="${totalValorProduto}">
+                    `;
         });
+
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
       });
-      const origem = document.getElementById("origem").value;
+    }
 
-      if (itens.length === 0) return mostrarAlerta("Adicione pelo menos um produto!", "warning");
+    // ===========================
+    // CONFIGURAÇÃO INICIAL (Ao carregar ou abrir a modal)
+    // ===========================
 
-      const form = document.createElement("form");
-      form.method = "POST"; form.action = "index.php";
-      form.innerHTML = `
-        <input type="hidden" name="alterar_pedido" value="1">
-        <input type="hidden" name="id_cliente" value="${idCliente}">
-        <input type="hidden" name="status_pedido" value="${status}">
-        <input type="hidden" name="valor_total" value="${total}">
-        <input type="hidden" name="origem" value="${origem}">
-        <input type="hidden" name="id_forma_pagamento" value="${idPagamento}">
-        <input type="hidden" name="valor_frete" value="${frete}">`;
-      itens.forEach((item, i) => {
-        form.innerHTML += `
-          <input type="hidden" name="itens[${i}][id_produto]" value="${item.id_produto}">
-          <input type="hidden" name="itens[${i}][quantidade]" value="${item.quantidade}">
-          <input type="hidden" name="itens[${i}][valor_unitario]" value="${item.valor_unitario}">
-          <input type="hidden" name="itens[${i}][totalValor_produto]" value="${item.totalValor_produto}">`;
+    /** Garante que as linhas pre-existentes tenham o botão remover e a classe de input correta. */
+    function configurarLinhasPreExistentes() {
+      if (!tbody) return;
+
+      tbody.querySelectorAll("tr").forEach(tr => {
+        // 1. Garantir o botão remover na célula 'acao-item' (índice 4)
+        let cellBtn = tr.querySelector(".acao-item");
+        if (!cellBtn) {
+          // Se a célula de ação não existir (bug na renderização do PHP), cria uma
+          cellBtn = tr.insertCell(4);
+          cellBtn.className = 'acao-item';
+        }
+
+        let btn = cellBtn.querySelector(".btn-remover-item");
+        if (!btn) {
+          btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "btn btn-outline-danger btn-sm btn-remover-item";
+          btn.innerHTML = '<i class="bi bi-trash"></i>';
+          // Listener direto para linhas pre-existentes
+          btn.addEventListener("click", () => {
+            tr.remove();
+            recalcularTotaisAPartirDaTabela();
+            verificarBotaoSalvar();
+            configurarBotoesRemover();
+          });
+          cellBtn.appendChild(btn);
+        }
+
+        // 2. Garantir que o input de quantidade tenha a classe correta
+        // CORREÇÃO: Usando a classe correta 'quantidade-item'
+        const inputQtd = tr.querySelector("input[type='text'], input[type='number']");
+        if (inputQtd && !inputQtd.classList.contains("quantidade-item")) {
+          inputQtd.classList.add("quantidade-item");
+          inputQtd.dataset.valorAnterior = inputQtd.value;
+        }
       });
+    }
 
-      document.body.appendChild(form);
-      form.submit();
-      form.remove();
-    });
+    // Executa a configuração inicial
+    configurarLinhasPreExistentes();
+    configurarBotoesRemover();
+    recalcularTotaisAPartirDaTabela();
+    verificarBotaoSalvar();
 
-    // Garantir botões de remover na inicialização
-    prepararBotoesRemover(numeroPedido);
-    verificarBotaoSalvar(numeroPedido);
+    // Garante que o recálculo e o estado dos botões ocorram na abertura (se for modal)
+    const modalEl = document.getElementById(`modal_alterar_pedido_${numeroPedido}`);
+    if (modalEl) {
+      modalEl.addEventListener("shown.bs.modal", function () {
+        configurarLinhasPreExistentes();
+        configurarBotoesRemover();
+        recalcularTotaisAPartirDaTabela();
+        verificarBotaoSalvar();
+      });
+    }
   }
-
-  // ===========================
-  // INICIALIZAÇÃO DE TODAS MODAIS
-  // ===========================
-  $(".modal-alterar-pedido").each(function () {
-    const numeroPedido = this.id.split("_").pop();
-    $(this).on("shown.bs.modal", function () {
-      inicializarModalAlterar(numeroPedido);
-    });
-  });
 });

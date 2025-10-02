@@ -93,8 +93,6 @@ class Controller
         mb_internal_encoding('UTF-8');
         mb_http_output('UTF-8');
 
-        $dataHoraGeracao = date('d/m/Y H:i:s');
-
         // Agrupar itens por pedido
         $pedidosAgrupados = [];
         foreach ($pedidos as $pedido) {
@@ -139,24 +137,23 @@ class Controller
             </head>
             <body>';
 
-            $html .= '<div class="topo">
+        $html .= '<div class="topo">
             <div class="legenda">Pedido de Venda</div>
-            <div class="data-hora">Gerado em: ' . $dataHoraGeracao . '</div>
             </div>';
 
-            foreach ($pedidosAgrupados as $pedidoAgrupado) {
-                $pedido = $pedidoAgrupado['dados'];
-                $itens  = $pedidoAgrupado['itens'];
+        foreach ($pedidosAgrupados as $pedidoAgrupado) {
+            $pedido = $pedidoAgrupado['dados'];
+            $itens  = $pedidoAgrupado['itens'];
 
-                // aplicar máscara no CNPJ
-                $pedido->cnpj_cliente = $this->aplicarMascaraCNPJ($pedido->cnpj_cliente);
-                // nome do Vendedor
-                $nomeUsuario = explode(" ", $pedido->nome_usuario)[0];
+            // aplicar máscara no CNPJ
+            $pedido->cnpj_cliente = $this->aplicarMascaraCNPJ($pedido->cnpj_cliente);
+            // nome do Vendedor
+            $nomeUsuario = explode(" ", $pedido->nome_usuario)[0];
 
-                // data e hora formatada 
-                $pedido->data_pedido = date('d/m/Y H:i:s', strtotime($pedido->data_pedido));
-                // Cabeçalho do pedido
-                $html .= '<div class="pedido-info">
+            // data e hora formatada 
+            $pedido->data_pedido = date('d/m/Y H:i:s', strtotime($pedido->data_pedido));
+            // Cabeçalho do pedido
+            $html .= '<div class="pedido-info">
                 <div><strong>Número do Pedido:</strong> ' . htmlspecialchars($pedido->numero_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
                 <div><strong>Data do Pedido:</strong> ' . htmlspecialchars($pedido->data_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
                 <div><strong>Status do Pedido:</strong> ' . htmlspecialchars($pedido->status_pedido ?? '', ENT_QUOTES, 'UTF-8') . '</div>
@@ -166,8 +163,8 @@ class Controller
                 <div><strong>Vendedor:</strong> ' . htmlspecialchars($nomeUsuario ?? '', ENT_QUOTES, 'UTF-8') . '</div>
                 </div>';
 
-                // Tabela de itens
-                $html .= '<table>
+            // Tabela de itens
+            $html .= '<table>
                 <thead>
                     <tr>
                         <th>Produto</th>
@@ -180,8 +177,8 @@ class Controller
                 </thead>
                 <tbody>';
 
-                foreach ($itens as $item) {
-                    $html .= '<tr>
+            foreach ($itens as $item) {
+                $html .= '<tr>
                     <td>' . htmlspecialchars($item['nome_produto'], ENT_QUOTES, 'UTF-8') . '</td>
                     <td>' . htmlspecialchars($item['cor'], ENT_QUOTES, 'UTF-8') . '</td>
                     <td>' . htmlspecialchars($item['largura'], ENT_QUOTES, 'UTF-8') . ' m</td>
@@ -189,47 +186,56 @@ class Controller
                     <td>R$ ' . number_format((float)$item['valor_unitario'], 2, ',', '.') . '</td>
                     <td>R$ ' . number_format((float)$item['totalValor_produto'], 2, ',', '.') . '</td>
                 </tr>';
-                }
-
-                $html .= '</tbody></table>';
-
-                // Rodapé com totais
-                $html .= '<div class="valor-total">Valor Total: R$ ' .
-                    number_format((float)($pedido->valor_total ?? 0), 2, ',', '.') . '</div>';
-
-                if (!empty($pedido->valor_frete)) {
-                    $html .= '<div class="valor-total">Frete: R$ ' .
-                        number_format((float)($pedido->valor_frete ?? 0), 2, ',', '.') . '</div>';
-                }
-
-                $html .= '<hr>';
             }
 
-            $html .= '</body></html>';
+            $html .= '</tbody></table>';
+            // Rodapé com totais
 
-            // Configurações do Dompdf
-            $options = new \Dompdf\Options();
-            $options->set('defaultFont', 'DejaVu Sans');
-            $options->set('isRemoteEnabled', true);
-            $options->set('isHtml5ParserEnabled', true);
+            $valorFrete = isset($pedido->valor_frete) && is_numeric($pedido->valor_frete) ? (float)$pedido->valor_frete : 0;
 
-            $dompdf = new \Dompdf\Dompdf($options);
-            $dompdf->loadHtml($html, 'UTF-8');
-            $dompdf->setPaper('A4', 'portrait');
 
-            if (ob_get_length()) {
-                ob_end_clean();
+            // Mostrar frete somente se existir
+            if ($valorFrete > 0) {
+
+                // Valor total dos produtos (sem frete)
+                $html .= '<div class="valor-total">Valor Total dos Produtos: R$ ' .
+                    number_format((float)($pedido->valor_total - $valorFrete), 2, ',', '.') . '</div>';
+
+                $html .= '<div class="valor-total">Frete: R$ ' .
+                    number_format($valorFrete, 2, ',', '.') . '</div>';
             }
 
-            // Gera o PDF
-            header('Content-Type: application/pdf');
-            header('Content-Disposition: inline; filename="pedido_' . $pedido->numero_pedido . '.pdf"');
-            header('Cache-Control: private, max-age=0, must-revalidate');
-            header('Pragma: public');
+            // Valor total do pedido (já incluindo frete)
+            $html .= '<div class="valor-total">Valor Total do Pedido: R$ ' .
+                number_format((float)$pedido->valor_total, 2, ',', '.') . '</div>';
 
-            $dompdf->render();
-            print $dompdf->output();
-            exit;
+            $html .= '<hr>';
+        }
+        $html .= '</body></html>';
+
+        // Configurações do Dompdf
+        $options = new \Dompdf\Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+
+        // Gera o PDF
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="pedido_' . $pedido->numero_pedido . '.pdf"');
+        header('Cache-Control: private, max-age=0, must-revalidate');
+        header('Pragma: public');
+
+        $dompdf->render();
+        print $dompdf->output();
+        exit;
     }
 
     // método de gerar pdf
@@ -4273,7 +4279,6 @@ class Controller
             $idModal = 'modal_alterar_pedido_' . $pedido['dados']->numero_pedido;
             $dados   = $pedido['dados'];
             $itens   = $pedido['itens'];
-
             $valorFrete = isset($dados->valor_frete) ? $dados->valor_frete : 0;
 
             print '<div class="modal fade modal-alterar-pedido" id="' . $idModal . '" tabindex="-1" aria-labelledby="' . $idModal . '_label" aria-hidden="true">';
@@ -4287,15 +4292,19 @@ class Controller
             print '        </h5>';
             print '        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
             print '      </div>';
+
             // Corpo
             print '      <div class="modal-body">';
             print '        <form action="index.php" method="POST" class="form-alterar-pedido" id="form_' . $dados->numero_pedido . '">';
             print '          <input type="hidden" name="origem" value="pedido">';
             print '          <input type="hidden" name="id_pedido" value="' . $dados->id_pedido . '">';
             print '          <input type="hidden" name="alterar_pedido" value="1">';
+
             print '          <div class="row g-4">';
+
             /** LADO ESQUERDO **/
             print '            <div class="col-md-4">';
+
             // Cliente
             print '              <fieldset class="border rounded p-3 mb-4">';
             print '                <legend class="float-none w-auto px-3 fw-semibold text-primary">Cliente</legend>';
@@ -4303,10 +4312,10 @@ class Controller
             print '                  <label for="cliente_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Cliente</label>';
             print '                  <div class="input-group">';
             print '                    <span class="input-group-text"><i class="bi bi-search"></i></span>';
-            print '                    <input type="text" class="form-control" id="cliente_pedido_' . $dados->numero_pedido . '" name="cliente_pedido" value="' . htmlspecialchars($dados->nome_fantasia) . '" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">';
+            print '                    <input type="text" class="form-control cliente-input" id="cliente_pedido_' . $dados->numero_pedido . '" name="cliente_pedido" value="' . htmlspecialchars($dados->nome_fantasia) . '" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">';
             print '                  </div>';
-            print '                  <div id="resultado_busca_cliente_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>';
-            print '                  <input type="hidden" name="id_cliente" value="' . $dados->id_cliente . '">';
+            print '                  <div id="resultado_busca_cliente_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
+            print '                  <input type="hidden" class="id-cliente" name="id_cliente" value="' . $dados->id_cliente . '">';
             print '                </div>';
             print '              </fieldset>';
 
@@ -4320,13 +4329,14 @@ class Controller
             print '                  </div>';
             print '                  <div class="col-md-6">';
             print '                    <label for="valor_total_' . $dados->numero_pedido . '" class="form-label">Valor Total</label>';
-            print '                    <input type="text" class="form-control" id="valor_total_' . $dados->numero_pedido . '" name="valor_total" readonly value="R$ ' . number_format($dados->valor_total, 2, ',', '.') . '">';
+            print '                    <input type="text" class="form-control valor-total" id="valor_total_' . $dados->numero_pedido . '" name="valor_total" readonly value="R$ ' . number_format($dados->valor_total, 2, ',', '.') . '">';
             print '                  </div>';
             print '                  <div class="col-12">';
             $this->selectConsultaForma_Pagamento($dados->id_forma_pagamento);
             print '                  </div>';
             print '                </div>';
             print '              </fieldset>';
+
             print '            </div>';
 
             /** LADO DIREITO **/
@@ -4340,20 +4350,21 @@ class Controller
             print '                    <label for="produto_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Produto</label>';
             print '                    <div class="input-group">';
             print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
-            print '                      <input type="text" class="form-control" id="produto_pedido_' . $dados->numero_pedido . '" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off">';
+            print '                      <input type="text" class="form-control produto-input" id="produto_pedido_' . $dados->numero_pedido . '" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off">';
             print '                    </div>';
-            print '                    <div id="resultado_busca_produto_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>';
+            print '                    <div id="resultado_busca_produto_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
             print '                  </div>';
             print '                  <div class="col-md-4">';
             print '                    <label for="quantidade_' . $dados->numero_pedido . '" class="form-label">Quantidade</label>';
             print '                    <div class="input-group">';
-            print '                      <input type="text" class="form-control" id="quantidade_' . $dados->numero_pedido . '" name="quantidade" min="1" autocomplete="off">';
-            print '                      <button type="button" class="btn btn-outline-primary" id="adicionar_produto_' . $dados->numero_pedido . '">';
+            print '                      <input type="text" class="form-control quantidade-input" id="quantidade_' . $dados->numero_pedido . '" name="quantidade" min="1" autocomplete="off">';
+            print '                      <button type="button" class="btn btn-outline-primary adicionar-produto" id="adicionar_produto_' . $dados->numero_pedido . '">';
             print '                        <i class="bi bi-plus"></i>';
             print '                      </button>';
             print '                    </div>';
             print '                  </div>';
             print '                </div>';
+
             // Tabela produtos
             print '                <div class="table-responsive">';
             print '                  <label class="form-label fw-semibold">Produtos do Pedido</label>';
@@ -4373,19 +4384,20 @@ class Controller
                 $valorTotalLinha = $item['quantidade'] * $item['valor_unitario'];
                 print '                      <tr data-id-produto="' . $item['id_produto'] . '">';
                 print '                        <td>' . htmlspecialchars($item['nome_produto']) . '</td>';
-                print '                        <td><input type="text" class="form-control form-control-sm text-center" name="itens[' . $item['id_produto'] . '][quantidade]" value="' . $item['quantidade'] . '" min="1"></td>';
+                print '                        <td><input type="text" class="form-control form-control-sm text-center quantidade-item" name="itens[' . $item['id_produto'] . '][quantidade]" value="' . $item['quantidade'] . '" min="1"></td>';
                 print '                        <td>R$ ' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>';
                 print '                        <td>R$ ' . number_format($valorTotalLinha, 2, ',', '.') . '</td>';
-                // A célula da ação vai ficar vazia — o JS insere o botão
-                print '                        <td></td>';
+                print '                        <td class="acao-item"></td>';
                 print '                        <input type="hidden" name="itens[' . $item['id_produto'] . '][id_produto]" value="' . $item['id_produto'] . '">';
                 print '                        <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_unitario]" value="' . $item['valor_unitario'] . '">';
                 print '                        <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_total]" value="' . $valorTotalLinha . '">';
                 print '                      </tr>';
             }
+
             print '                    </tbody>';
             print '                  </table>';
             print '                </div>';
+
             print '              </fieldset>';
             print '            </div>';
 
@@ -4393,20 +4405,23 @@ class Controller
 
             // Rodapé
             print '          <div class="modal-footer">';
-            print '            <button type="submit" class="btn btn-success" id="alterar_pedido_' . $dados->numero_pedido . '">';
+            print '            <button type="submit" class="btn btn-success salvar-pedido" id="alterar_pedido_' . $dados->numero_pedido . '" disabled>';
             print '              <i class="bi bi-check-circle me-1"></i> Salvar Alterações';
             print '            </button>';
             print '            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">';
             print '              <i class="bi bi-x-lg me-1"></i> Fechar';
             print '            </button>';
             print '          </div>';
+
             print '        </form>';
             print '      </div>';
+
             print '    </div>';
             print '  </div>';
             print '</div>';
         }
     }
+
     // metodo para alterar o pedido
     public function alterar_Pedido(
         $id_pedido,

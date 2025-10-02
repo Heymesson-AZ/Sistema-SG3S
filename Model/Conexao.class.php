@@ -9,9 +9,9 @@ class Conexao
     private $link = null;
 
     // Detecta automaticamente o ambiente (local ou online)
-    private function detectarAmbiente()
+    private function ambiente()
     {
-        // Exemplo simples: se for localhost, considera ambiente de teste
+        // detecção de conexão de teste ( servidoor e porta)
         if (in_array($_SERVER['SERVER_NAME'], ['localhost', '127.0.0.1'])) {
             return 'local';
         } else {
@@ -22,7 +22,7 @@ class Conexao
     // Configuração de Conexao com base no Servidor detectado
     private function configurarBanco()
     {
-        $ambiente = $this->detectarAmbiente();
+        $ambiente = $this->ambiente();
         // local {Ambiente de Teste}
         if ($ambiente === 'local') {
             $this->host = 'localhost';
@@ -71,7 +71,7 @@ class Conexao
             return $this->link;
         } catch (PDOException $e) {
             error_log("Erro ao conectar ao banco de dados ({$this->dbname}): " . $e->getMessage());
-            echo "Erro ao conectar ao banco de dados. Verifique os logs.";
+            print "Erro ao conectar ao banco de dados. Verifique os logs.";
             return false;
         }
     }
