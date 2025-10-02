@@ -479,22 +479,45 @@ class Controller
     //menu dinamico
     public function menu()
     {
+        // 1. Capturar e preparar as variáveis de sessão
+        $usuarioNome = htmlspecialchars($_SESSION['usuario'], ENT_QUOTES, 'UTF-8');
+        // Adiciona o perfil (com um fallback seguro)
+        $perfilUsuario = htmlspecialchars($_SESSION['perfil'], ENT_QUOTES, 'UTF-8');
+
+        $avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($usuarioNome) . '&background=ffffff&color=0d6efd&rounded=true&size=32';
+
         print '<header class="bg-primary shadow-sm">';
-        print '    <nav class="container navbar navbar-expand-lg navbar-dark py-2">';
+        print ' <nav class="container navbar navbar-expand-lg navbar-dark py-2">';
+
         // Logo
-        print '        <a class="navbar-brand fw-bold text-white d-flex align-items-center" href="index.php?principal">';
-        print '            <i class="fas fa-chart-line me-2"></i> Sistema SG3S';
-        print '        </a>';
+        print ' <a class="navbar-brand fw-bold text-white d-flex align-items-center" href="index.php?principal">';
+        print ' <i class="fas fa-chart-line me-2"></i> Sistema SG3S';
+        print ' </a>';
 
         // Botão Mobile (com atributos de acessibilidade)
-        print '        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">';
-        print '            <span class="navbar-toggler-icon"></span>';
-        print '        </button>';
+        print ' <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">';
+        print ' <span class="navbar-toggler-icon"></span>';
+        print ' </button>';
 
-        print '        <div class="collapse navbar-collapse" id="navbarNav">';
-        print '            <ul class="navbar-nav d-flex align-items-center gap-2">';
+        print ' <div class="collapse navbar-collapse" id="navbarNav">';
 
-        // Links principais
+        // --- Seção do Usuário/Perfil (MOBILE ONLY) ---
+        // Adiciona o nome do usuário e o perfil visível APENAS em telas pequenas (d-lg-none)
+        print ' <div class="d-lg-none text-white p-3 border-bottom border-secondary mb-2">';
+        print ' <div class="d-flex align-items-center">';
+        print ' <img src="' . $avatarUrl . '" alt="avatar" class="rounded-circle me-2" />';
+        print ' <div>';
+        print ' <strong class="d-block">' . $usuarioNome . '</strong>';
+        // Perfil do Usuário
+        print ' <p></p><small class="text-secondary fw-semibold">' . $perfilUsuario . '</small>';
+        print ' </div>';
+        print ' </div>';
+        print ' </div>';
+        // ------------------------------------------------
+
+        print ' <ul class="navbar-nav d-flex align-items-center gap-2">';
+
+        // Links principais (o restante do menu de links segue normal)
         $links = [
             ['principal', 'fas fa-home', 'Início'],
             ['cliente', 'fas fa-user', 'Cliente'],
@@ -502,12 +525,14 @@ class Controller
         ];
 
         foreach ($links as $link) {
-            print '                <li class="nav-item">';
-            print '                    <a href="index.php?' . $link[0] . '" class="btn btn-outline-light fw-semibold"><i class="' . $link[1] . ' me-1"></i> ' . $link[2] . '</a>';
-            print '                </li>';
+            print ' <li class="nav-item">';
+            // No mobile, os botões 'btn-outline-light' podem ficar feios/grandes. Podemos trocar para 'nav-link'
+            // para melhor leitura no menu colapsado, mas manterei o btn-outline-light para consistência.
+            print ' <a href="index.php?' . $link[0] . '" class="btn btn-outline-light fw-semibold"><i class="' . $link[1] . ' me-1"></i> ' . $link[2] . '</a>';
+            print ' </li>';
         }
 
-        // Links administrativos (somente se tiver permissão)
+        // Links administrativos
         if ($this->temPermissao(['Administrador'])) {
             $adminLinks = [
                 ['usuario', 'fas fa-users', 'Usuário'],
@@ -516,52 +541,69 @@ class Controller
                 ['auditoria', 'fas fa-search', 'Auditoria']
             ];
             foreach ($adminLinks as $link) {
-                print '                <li class="nav-item">';
-                print '                    <a href="index.php?' . $link[0] . '" class="btn btn-outline-light fw-semibold"><i class="' . $link[1] . ' me-1"></i> ' . $link[2] . '</a>';
-                print '                </li>';
+                print ' <li class="nav-item">';
+                print ' <a href="index.php?' . $link[0] . '" class="btn btn-outline-light fw-semibold"><i class="' . $link[1] . ' me-1"></i> ' . $link[2] . '</a>';
+                print ' </li>';
             }
         }
 
         // Calendário
-        print '                <li class="nav-item">';
-        print '                    <a href="#" class="btn btn-outline-light fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCalendario">';
-        print '                        <i class="fas fa-calendar-alt me-1"></i> Calendário';
-        print '                    </a>';
-        print '                </li>';
+        print ' <li class="nav-item">';
+        print ' <a href="#" class="btn btn-outline-light fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCalendario">';
+        print ' <i class="fas fa-calendar-alt me-1"></i> Calendário';
+        print ' </a>';
+        print ' </li>';
 
-        print '            </ul>';
+        // ------------------------------------------------
+        // Novo item de 'Sair' para o Mobile
+        // O item 'Sair' estava escondido dentro do dropdown, que não é acessível no menu colapsado (mobile).
+        // Adicionei um link direto para 'Sair' apenas para mobile.
+        print ' <li class="nav-item d-lg-none mt-2">';
+        print ' <a class="btn btn-danger fw-semibold" href="index.php?sair">';
+        print ' <i class="fas fa-sign-out-alt me-1"></i> Sair do Sistema';
+        print ' </a>';
+        print ' </li>';
+        // ------------------------------------------------
 
-        // Container final (notificações + usuário)
-        print '            <div class="ms-auto d-flex align-items-center gap-3">';
+        print '</ul>';
+
+        // Container final (notificações + usuário) - Alinhar à direita
+        // d-flex e ms-auto garantem que o restante do conteúdo empurre os links para a direita em telas grandes
+        print ' <div class="ms-auto d-flex align-items-center gap-3">';
 
         // Notificações
-        print '                <div class="nav-item dropdown">';
-        print '                    <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
-        print '                        <i class="fas fa-bell fa-lg text-white"></i>';
-        print '                        <span id="contadorNotificacoes" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm" style="font-size: 0.65rem; display:none;">0</span>';
-        print '                    </a>';
-        print '                    <ul id="listaNotificacoes" class="dropdown-menu dropdown-menu-end shadow-sm p-2" style="width: 420px; max-height: 600px; overflow-y: auto;">';
-        print '                    </ul>';
-        print '                </div>';
+        // Mantido como estava.
+        print ' <div class="nav-item dropdown">';
+        print ' <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
+        print ' <i class="fas fa-bell fa-lg text-white"></i>';
+        print ' <span id="contadorNotificacoes" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm" style="font-size: 0.65rem; display:none;">0</span>';
+        print ' </a>';
+        print ' <ul id="listaNotificacoes" class="dropdown-menu dropdown-menu-end shadow-sm p-2" style="width: 420px; max-height: 600px; overflow-y: auto;">';
+        print ' </ul>';
+        print ' </div>';
 
         // Linha separadora (apenas em telas grandes)
-        print '                <div class="vr d-none d-lg-block"></div>';
+        print ' <div class="vr d-none d-lg-block"></div>';
 
-        // Usuário
-        $usuarioNome = htmlspecialchars($_SESSION['usuario'], ENT_QUOTES, 'UTF-8');
-        print '                <div class="dropdown">';
-        print '                    <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="#" id="usuarioDropdown" data-bs-toggle="dropdown" aria-expanded="false">';
-        print '                        <img src="https://ui-avatars.com/api/?name=' . urlencode($usuarioNome) . '&background=ffffff&color=0d6efd&rounded=true&size=32" alt="avatar" class="rounded-circle me-2" />';
-        print '                        <strong>' . $usuarioNome . '</strong>';
-        print '                    </a>';
-        print '                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="usuarioDropdown">';
-        print '                        <li><a class="dropdown-item" href="index.php?sair"><i class="fas fa-sign-out-alt me-2 text-danger"></i> Sair</a></li>';
-        print '                    </ul>';
-        print '                </div>';
-        print '            </div>'; // fecha container notificações + usuário
-        print '        </div>'; // fecha collapse
-        print '    </nav>';
-        print '</header>';
+        // Usuário (Apenas em telas Grandes - d-none em telas pequenas)
+        print ' <div class="dropdown d-none d-lg-block">'; // d-none d-lg-block: Oculta em mobile, mostra a partir de 'lg'
+        print ' <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="#" id="usuarioDropdown" data-bs-toggle="dropdown" aria-expanded="false">';
+        print ' <img src="' . $avatarUrl . '" alt="avatar" class="rounded-circle me-2" />';
+        print ' <div>';
+        print ' <strong class="d-block">' . $usuarioNome . '</strong>';
+        // Perfil do Usuário no Desktop
+        print ' <small class="text-black fw-semibold">' . $perfilUsuario . '</small>';
+        print ' </div>';
+        print ' </a>';
+        print ' <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="usuarioDropdown">';
+        print ' <li><a class="dropdown-item" href="index.php?sair"><i class="fas fa-sign-out-alt me-2 text-danger"></i> Sair</a></li>';
+        print ' </ul>';
+        print ' </div>';
+
+        print ' </div>'; // fecha container notificações + usuário
+        print ' </div>'; // fecha collapse
+        print ' </nav>';
+        print ' </header>';
     }
 
     // USUARIO
@@ -4098,8 +4140,11 @@ class Controller
             }
 
             if (!empty($pedido->id_item_pedido)) {
+                // MODIFICADO: Adiciona os novos campos ao array de itens
                 $pedidosAgrupados[$id]['itens'][] = [
                     'nome_produto' => $pedido->nome_produto,
+                    'nome_cor' => $pedido->nome_cor, // ADICIONADO
+                    'largura' => $pedido->largura,   // ADICIONADO
                     'quantidade' => $pedido->quantidade,
                     'valor_unitario' => $pedido->valor_unitario,
                     'totalValor_produto' => $pedido->totalValor_produto
@@ -4148,6 +4193,8 @@ class Controller
                                             <thead class="table-light">
                                                 <tr>
                                                     <th>Produto</th>
+                                                    <th>Cor</th>
+                                                    <th class="text-center">Largura (m)</th>
                                                     <th class="text-center">Quantidade (m)</th>
                                                     <th class="text-center">Valor Unitario (R$) </th>
                                                     <th class="text-center">Total Produto (R$) </th>
@@ -4159,16 +4206,17 @@ class Controller
                     print '
                                                 <tr>
                                                     <td>' . htmlspecialchars($item['nome_produto']) . '</td>
+                                                    <td>' . (!empty($item['nome_cor']) ? htmlspecialchars($item['nome_cor']) : '-') . '</td>
+                                                    <td class="text-center">' . (!empty($item['largura']) ? htmlspecialchars($item['largura']) : '-') . '</td>
                                                     <td class="text-center">' . $item['quantidade'] . '</td>
-                                                    <td class="text-center">' . $item['valor_unitario'] . '</td>
-                                                    <td class="text-center">' . $item['totalValor_produto'] . '</td>
+                                                    <td class="text-center">' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>
+                                                    <td class="text-center">' . number_format($item['totalValor_produto'], 2, ',', '.') . '</td>
                                                 </tr>';
                 }
             } else {
                 print '
                                                 <tr>
-                                                    <td colspan="2" class="text-center">Nenhum item encontrado.</td>
-                                                </tr>';
+                                                    <td colspan="6" class="text-center">Nenhum item encontrado.</td> </tr>';
             }
 
             print '
@@ -4266,9 +4314,12 @@ class Controller
             }
 
             if (!empty($pedido->id_item_pedido)) {
+                // MODIFICADO: Adiciona os novos campos ao array de itens
                 $pedidosAgrupados[$id]['itens'][] = [
                     'id_produto'     => $pedido->id_produto,
                     'nome_produto'   => $pedido->nome_produto,
+                    'nome_cor'       => $pedido->nome_cor,     // ADICIONADO
+                    'largura'        => $pedido->largura,      // ADICIONADO
                     'quantidade'     => $pedido->quantidade,
                     'valor_unitario' => $pedido->valor_unitario,
                 ];
@@ -4282,142 +4333,148 @@ class Controller
             $valorFrete = isset($dados->valor_frete) ? $dados->valor_frete : 0;
 
             print '<div class="modal fade modal-alterar-pedido" id="' . $idModal . '" tabindex="-1" aria-labelledby="' . $idModal . '_label" aria-hidden="true">';
-            print '  <div class="modal-dialog modal-xl modal-dialog-centered">';
-            print '    <div class="modal-content">';
+            print '   <div class="modal-dialog modal-xl modal-dialog-centered">';
+            print '     <div class="modal-content">';
 
             // Cabeçalho
-            print '      <div class="modal-header bg-light">';
-            print '        <h5 class="modal-title fw-bold" id="' . $idModal . '_label">';
-            print '          <i class="bi bi-pencil-square me-2"></i> Alterar Pedido #' . $dados->numero_pedido;
-            print '        </h5>';
-            print '        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
-            print '      </div>';
+            print '       <div class="modal-header bg-light">';
+            print '         <h5 class="modal-title fw-bold" id="' . $idModal . '_label">';
+            print '           <i class="bi bi-pencil-square me-2"></i> Alterar Pedido #' . $dados->numero_pedido;
+            print '         </h5>';
+            print '         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
+            print '       </div>';
 
             // Corpo
-            print '      <div class="modal-body">';
-            print '        <form action="index.php" method="POST" class="form-alterar-pedido" id="form_' . $dados->numero_pedido . '">';
-            print '          <input type="hidden" name="origem" value="pedido">';
-            print '          <input type="hidden" name="id_pedido" value="' . $dados->id_pedido . '">';
-            print '          <input type="hidden" name="alterar_pedido" value="1">';
+            print '       <div class="modal-body">';
+            print '         <form action="index.php" method="POST" class="form-alterar-pedido" id="form_' . $dados->numero_pedido . '">';
+            print '           <input type="hidden" name="origem" value="pedido">';
+            print '           <input type="hidden" name="id_pedido" value="' . $dados->id_pedido . '">';
+            print '           <input type="hidden" name="alterar_pedido" value="1">';
 
-            print '          <div class="row g-4">';
+            print '           <div class="row g-4">';
 
             /** LADO ESQUERDO **/
-            print '            <div class="col-md-4">';
+            print '             <div class="col-md-4">';
 
             // Cliente
-            print '              <fieldset class="border rounded p-3 mb-4">';
-            print '                <legend class="float-none w-auto px-3 fw-semibold text-primary">Cliente</legend>';
-            print '                <div class="mb-3 position-relative">';
-            print '                  <label for="cliente_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Cliente</label>';
-            print '                  <div class="input-group">';
-            print '                    <span class="input-group-text"><i class="bi bi-search"></i></span>';
-            print '                    <input type="text" class="form-control cliente-input" id="cliente_pedido_' . $dados->numero_pedido . '" name="cliente_pedido" value="' . htmlspecialchars($dados->nome_fantasia) . '" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">';
-            print '                  </div>';
-            print '                  <div id="resultado_busca_cliente_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
-            print '                  <input type="hidden" class="id-cliente" name="id_cliente" value="' . $dados->id_cliente . '">';
-            print '                </div>';
-            print '              </fieldset>';
+            print '               <fieldset class="border rounded p-3 mb-4">';
+            print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Cliente</legend>';
+            print '                 <div class="mb-3 position-relative">';
+            print '                   <label for="cliente_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Cliente</label>';
+            print '                   <div class="input-group">';
+            print '                     <span class="input-group-text"><i class="bi bi-search"></i></span>';
+            print '                     <input type="text" class="form-control cliente-input" id="cliente_pedido_' . $dados->numero_pedido . '" name="cliente_pedido" value="' . htmlspecialchars($dados->nome_fantasia) . '" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">';
+            print '                   </div>';
+            print '                   <div id="resultado_busca_cliente_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
+            print '                   <input type="hidden" class="id-cliente" name="id_cliente" value="' . $dados->id_cliente . '">';
+            print '                 </div>';
+            print '               </fieldset>';
 
             // Dados do pedido
-            print '              <fieldset class="border rounded p-3 mb-4">';
-            print '                <legend class="float-none w-auto px-3 fw-semibold text-primary">Dados do Pedido</legend>';
-            print '                <div class="row g-3">';
-            print '                  <div class="col-md-6">';
-            print '                    <label for="frete_' . $dados->numero_pedido . '" class="form-label">Frete</label>';
-            print '                    <input type="text" class="form-control frete" id="frete_' . $dados->numero_pedido . '" name="valor_frete" value="R$ ' . number_format($valorFrete, 2, ',', '.') . '">';
-            print '                  </div>';
-            print '                  <div class="col-md-6">';
-            print '                    <label for="valor_total_' . $dados->numero_pedido . '" class="form-label">Valor Total</label>';
-            print '                    <input type="text" class="form-control valor-total" id="valor_total_' . $dados->numero_pedido . '" name="valor_total" readonly value="R$ ' . number_format($dados->valor_total, 2, ',', '.') . '">';
-            print '                  </div>';
-            print '                  <div class="col-12">';
+            print '               <fieldset class="border rounded p-3 mb-4">';
+            print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Dados do Pedido</legend>';
+            print '                 <div class="row g-3">';
+            print '                   <div class="col-md-6">';
+            print '                     <label for="frete_' . $dados->numero_pedido . '" class="form-label">Frete</label>';
+            print '                     <input type="text" class="form-control frete" id="frete_' . $dados->numero_pedido . '" name="valor_frete" value="R$ ' . number_format($valorFrete, 2, ',', '.') . '">';
+            print '                   </div>';
+            print '                   <div class="col-md-6">';
+            print '                     <label for="valor_total_' . $dados->numero_pedido . '" class="form-label">Valor Total</label>';
+            print '                     <input type="text" class="form-control valor-total" id="valor_total_' . $dados->numero_pedido . '" name="valor_total" readonly value="R$ ' . number_format($dados->valor_total, 2, ',', '.') . '">';
+            print '                   </div>';
+            print '                   <div class="col-12">';
             $this->selectConsultaForma_Pagamento($dados->id_forma_pagamento);
-            print '                  </div>';
-            print '                </div>';
-            print '              </fieldset>';
+            print '                   </div>';
+            print '                 </div>';
+            print '               </fieldset>';
 
-            print '            </div>';
+            print '             </div>';
 
             /** LADO DIREITO **/
-            print '            <div class="col-md-8">';
-            print '              <fieldset class="border rounded p-3 h-100">';
-            print '                <legend class="float-none w-auto px-3 fw-semibold text-primary">Produtos</legend>';
+            print '             <div class="col-md-8">';
+            print '               <fieldset class="border rounded p-3 h-100">';
+            print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Produtos</legend>';
 
             // Busca produto
-            print '                <div class="row g-3 align-items-end mb-3">';
-            print '                  <div class="col-md-8 position-relative">';
-            print '                    <label for="produto_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Produto</label>';
-            print '                    <div class="input-group">';
-            print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
-            print '                      <input type="text" class="form-control produto-input" id="produto_pedido_' . $dados->numero_pedido . '" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off">';
-            print '                    </div>';
-            print '                    <div id="resultado_busca_produto_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
-            print '                  </div>';
-            print '                  <div class="col-md-4">';
-            print '                    <label for="quantidade_' . $dados->numero_pedido . '" class="form-label">Quantidade</label>';
-            print '                    <div class="input-group">';
-            print '                      <input type="text" class="form-control quantidade-input" id="quantidade_' . $dados->numero_pedido . '" name="quantidade" min="1" autocomplete="off">';
-            print '                      <button type="button" class="btn btn-outline-primary adicionar-produto" id="adicionar_produto_' . $dados->numero_pedido . '">';
-            print '                        <i class="bi bi-plus"></i>';
-            print '                      </button>';
-            print '                    </div>';
-            print '                  </div>';
-            print '                </div>';
+            print '                 <div class="row g-3 align-items-end mb-3">';
+            print '                   <div class="col-md-8 position-relative">';
+            print '                     <label for="produto_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Produto</label>';
+            print '                     <div class="input-group">';
+            print '                       <span class="input-group-text"><i class="bi bi-search"></i></span>';
+            print '                       <input type="text" class="form-control produto-input" id="produto_pedido_' . $dados->numero_pedido . '" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off">';
+            print '                     </div>';
+            print '                     <div id="resultado_busca_produto_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
+            print '                   </div>';
+            print '                   <div class="col-md-4">';
+            print '                     <label for="quantidade_' . $dados->numero_pedido . '" class="form-label">Quantidade</label>';
+            print '                     <div class="input-group">';
+            print '                       <input type="text" class="form-control quantidade-input" id="quantidade_' . $dados->numero_pedido . '" name="quantidade" min="1" autocomplete="off">';
+            print '                       <button type="button" class="btn btn-outline-primary adicionar-produto" id="adicionar_produto_' . $dados->numero_pedido . '">';
+            print '                         <i class="bi bi-plus"></i>';
+            print '                       </button>';
+            print '                     </div>';
+            print '                   </div>';
+            print '                 </div>';
 
             // Tabela produtos
-            print '                <div class="table-responsive">';
-            print '                  <label class="form-label fw-semibold">Produtos do Pedido</label>';
-            print '                  <table class="table table-bordered table-striped table-sm align-middle text-center">';
-            print '                    <thead class="table-light">';
-            print '                      <tr>';
-            print '                        <th>Produto</th>';
-            print '                        <th>Quantidade</th>';
-            print '                        <th>Valor Unitário</th>';
-            print '                        <th>Valor Total</th>';
-            print '                        <th>Ação</th>';
-            print '                      </tr>';
-            print '                    </thead>';
-            print '                    <tbody id="tbody_lista_pedido_' . $dados->numero_pedido . '">';
+            print '                 <div class="table-responsive">';
+            print '                   <label class="form-label fw-semibold">Produtos do Pedido</label>';
+            print '                   <table class="table table-bordered table-striped table-sm align-middle text-center">';
+            print '                     <thead class="table-light">';
+            print '                       <tr>';
+            // MODIFICADO: Adiciona os cabeçalhos da tabela
+            print '                         <th class="text-start">Produto</th>';
+            print '                         <th>Cor</th>';
+            print '                         <th>Largura (m)</th>';
+            print '                         <th>Quantidade</th>';
+            print '                         <th>Valor Unitário</th>';
+            print '                         <th>Valor Total</th>';
+            print '                         <th>Ação</th>';
+            print '                       </tr>';
+            print '                     </thead>';
+            print '                     <tbody id="tbody_lista_pedido_' . $dados->numero_pedido . '">';
 
             foreach ($itens as $item) {
                 $valorTotalLinha = $item['quantidade'] * $item['valor_unitario'];
-                print '                      <tr data-id-produto="' . $item['id_produto'] . '">';
-                print '                        <td>' . htmlspecialchars($item['nome_produto']) . '</td>';
-                print '                        <td><input type="text" class="form-control form-control-sm text-center quantidade-item" name="itens[' . $item['id_produto'] . '][quantidade]" value="' . $item['quantidade'] . '" min="1"></td>';
-                print '                        <td>R$ ' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>';
-                print '                        <td>R$ ' . number_format($valorTotalLinha, 2, ',', '.') . '</td>';
-                print '                        <td class="acao-item"></td>';
-                print '                        <input type="hidden" name="itens[' . $item['id_produto'] . '][id_produto]" value="' . $item['id_produto'] . '">';
-                print '                        <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_unitario]" value="' . $item['valor_unitario'] . '">';
-                print '                        <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_total]" value="' . $valorTotalLinha . '">';
-                print '                      </tr>';
+                print '                       <tr data-id-produto="' . $item['id_produto'] . '">';
+                // MODIFICADO: Adiciona as células com os novos dados
+                print '                         <td class="text-start">' . htmlspecialchars($item['nome_produto']) . '</td>';
+                print '                         <td>' . (!empty($item['nome_cor']) ? htmlspecialchars($item['nome_cor']) : '-') . '</td>';
+                print '                         <td>' . (!empty($item['largura']) ? htmlspecialchars($item['largura']) : '-') . '</td>';
+                print '                         <td><input type="text" class="form-control form-control-sm text-center quantidade-item" name="itens[' . $item['id_produto'] . '][quantidade]" value="' . $item['quantidade'] . '" min="1"></td>';
+                print '                         <td>R$ ' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>';
+                print '                         <td>R$ ' . number_format($valorTotalLinha, 2, ',', '.') . '</td>';
+                print '                         <td class="acao-item"></td>';
+                print '                         <input type="hidden" name="itens[' . $item['id_produto'] . '][id_produto]" value="' . $item['id_produto'] . '">';
+                print '                         <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_unitario]" value="' . $item['valor_unitario'] . '">';
+                print '                         <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_total]" value="' . $valorTotalLinha . '">';
+                print '                       </tr>';
             }
 
-            print '                    </tbody>';
-            print '                  </table>';
-            print '                </div>';
+            print '                     </tbody>';
+            print '                   </table>';
+            print '                 </div>';
 
-            print '              </fieldset>';
-            print '            </div>';
+            print '               </fieldset>';
+            print '             </div>';
 
-            print '          </div>'; // fim row
+            print '           </div>'; // fim row
 
             // Rodapé
-            print '          <div class="modal-footer">';
-            print '            <button type="submit" class="btn btn-success salvar-pedido" id="alterar_pedido_' . $dados->numero_pedido . '" disabled>';
-            print '              <i class="bi bi-check-circle me-1"></i> Salvar Alterações';
-            print '            </button>';
-            print '            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">';
-            print '              <i class="bi bi-x-lg me-1"></i> Fechar';
-            print '            </button>';
-            print '          </div>';
+            print '           <div class="modal-footer">';
+            print '             <button type="submit" class="btn btn-success salvar-pedido" id="alterar_pedido_' . $dados->numero_pedido . '" disabled>';
+            print '               <i class="bi bi-check-circle me-1"></i> Salvar Alterações';
+            print '             </button>';
+            print '             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">';
+            print '               <i class="bi bi-x-lg me-1"></i> Fechar';
+            print '             </button>';
+            print '           </div>';
 
-            print '        </form>';
-            print '      </div>';
+            print '         </form>';
+            print '       </div>';
 
-            print '    </div>';
-            print '  </div>';
+            print '     </div>';
+            print '   </div>';
             print '</div>';
         }
     }

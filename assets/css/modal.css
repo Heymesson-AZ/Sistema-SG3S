@@ -68,3 +68,24 @@ legend {
     gap: 1rem;
   }
 }
+
+/* Ajustes de largura para a tabela de produtos dentro da modal de alterar pedido 
+*/
+
+/* Alvo: Coluna 'Produto' (a 1ª coluna) */
+.modal-alterar-pedido .table th:nth-child(1),
+.modal-alterar-pedido .table td:nth-child(1) {
+  width: 20%; /* Aumenta a largura, ajuste o valor conforme necessário */
+}
+
+/* Alvo: Coluna 'Quantidade' (a 4ª coluna) */
+.modal-alterar-pedido .table th:nth-child(4),
+.modal-alterar-pedido .table td:nth-child(4) {
+  width: 120px; /* Define uma largura fixa menor, ajuste se precisar */
+  min-width: 100px; /* Garante uma largura mínima */
+}
+
+/* Garante que o input da quantidade não estoure a célula */
+.modal-alterar-pedido .table .quantidade-item {
+  min-width: 80px;
+}

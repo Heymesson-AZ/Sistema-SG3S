@@ -75,12 +75,9 @@
                                             <label for="cliente_pedido" class="form-label">Buscar Cliente</label>
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                                <input type="text" class="form-control" id="cliente_pedido" name="cliente_pedido"
-                                                    placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">
+                                                <input type="text" class="form-control" id="cliente_pedido" name="cliente_pedido" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">
                                             </div>
-                                            <div id="resultado_busca_cliente"
-                                                class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"
-                                                style="max-height: 200px; overflow-y: auto;"></div>
+                                            <div id="resultado_busca_cliente" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>
                                         </div>
                                     </fieldset>
                                     <!-- Dados do Pedido -->
@@ -89,7 +86,7 @@
                                         <div class="row g-3">
                                             <div class="col-md-6">
                                                 <label for="frete" class="form-label">Frete</label>
-                                                <input type="text" class="form-control" id="frete" name="frete" placeholder="R$ 0,00" autocomplete="off">
+                                                <input type="text" class="form-control frete" id="frete" name="frete" placeholder="R$ 0,00" autocomplete="off">
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="valor_total" class="form-label">Valor Total</label>
@@ -111,17 +108,15 @@
                                                 <label for="produto_pedido" class="form-label">Buscar Produto</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                                    <input type="text" class="form-control" id="produto_pedido" name="produto_pedido"
-                                                        placeholder="Digite o nome, cor ou código do produto" autocomplete="off">
+                                                    <input type="text" class="form-control" id="produto_pedido" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off">
                                                 </div>
-                                                <div id="resultado_busca_produto"
-                                                    class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow"
-                                                    style="max-height: 200px; overflow-y: auto;"></div>
+                                                <div id="resultado_busca_produto" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="quantidade" class="form-label">Quantidade</label>
                                                 <div class="input-group">
-                                                    <input type="number" class="form-control" id="quantidade" name="quantidade" min="1" autocomplete="off">
+                                                    <!-- MUDANÇA: type="text" para melhor controle de vírgula -->
+                                                    <input type="text" class="form-control" id="quantidade" name="quantidade" min="1" autocomplete="off">
                                                     <button type="button" class="btn btn-outline-primary" id="adicionar_produto">
                                                         <i class="bi bi-plus"></i>
                                                     </button>
@@ -133,10 +128,13 @@
                                             <label class="form-label fw-semibold">Produtos do Pedido</label>
                                             <table class="table table-bordered table-striped table-sm align-middle text-center">
                                                 <thead class="table-light">
+                                                    <!-- AJUSTE: Cabeçalho da tabela igual ao da modal de alterar -->
                                                     <tr>
-                                                        <th>Produto</th>
+                                                        <th class="text-start">Produto</th>
+                                                        <th>Cor</th>
+                                                        <th>Largura (m)</th>
                                                         <th>Quantidade</th>
-                                                        <th>Valor Unitario</th>
+                                                        <th>Valor Unitário</th>
                                                         <th>Valor Total</th>
                                                         <th>Ação</th>
                                                     </tr>
@@ -152,7 +150,7 @@
                                 <button type="button" id="limpar_pedido" class="btn btn-outline-secondary">
                                     <i class="bi bi-arrow-counterclockwise me-1"></i> Limpar
                                 </button>
-                                <button type="submit" class="btn btn-success" id="salvar_pedido">
+                                <button type="button" class="btn btn-success" id="salvar_pedido" disabled>
                                     <i class="bi bi-check-circle me-1"></i> Finalizar Pedido
                                 </button>
                             </div>

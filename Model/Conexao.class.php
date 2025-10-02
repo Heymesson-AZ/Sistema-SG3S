@@ -61,7 +61,7 @@ class Conexao
                 ]
             );
 
-            // Se houver usuário logado na sessão, seta para triggers
+            // Se houver usuário logado na sessão
             if (!empty($_SESSION['id_usuario'])) {
                 $stmt = $this->link->prepare("SELECT SETAR_USUARIO(:id_usuario)");
                 $stmt->bindValue(':id_usuario', $_SESSION['id_usuario'], PDO::PARAM_INT);
@@ -71,7 +71,7 @@ class Conexao
             return $this->link;
         } catch (PDOException $e) {
             error_log("Erro ao conectar ao banco de dados ({$this->dbname}): " . $e->getMessage());
-            print "Erro ao conectar ao banco de dados. Verifique os logs.";
+            print "Erro ao conectar ao banco de dados". $e->getMessage();
             return false;
         }
     }

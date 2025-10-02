@@ -150,7 +150,9 @@ class Pedido extends Conexao
                 ip.id_item_pedido,
                 ip.id_produto,
                 pr.nome_produto,
-
+                pr.largura,          -- ADICIONADO: Largura do produto
+                co.nome_cor,         -- ADICIONADO: Nome da cor
+                
                 ip.quantidade,
                 ip.valor_unitario,
                 ip.totalValor_produto
@@ -160,6 +162,7 @@ class Pedido extends Conexao
             INNER JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
             LEFT JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
             LEFT JOIN produto pr ON ip.id_produto = pr.id_produto
+            LEFT JOIN cor co ON pr.id_cor = co.id_cor -- ADICIONADO: Join com a tabela de cor
             WHERE 1=1";
 
         // Aplica os filtros dinamicamente
@@ -183,7 +186,6 @@ class Pedido extends Conexao
         $sql .= " ORDER BY p.numero_pedido DESC";
 
         // Executa a query
-
         try {
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);
@@ -703,7 +705,7 @@ class Pedido extends Conexao
     // RELATÓRIOS
 
 
-    // faturamento mensal
+    // faturamento mensal *
     public function faturamentoMensal($ano_faturamento, $mes_faturamento = null)
     {
         $sql = "SELECT
@@ -739,46 +741,63 @@ class Pedido extends Conexao
             return false;
         }
     }
-    // produtos mais vendidos
     public function produtosMaisVendidos($limite)
     {
-        $sql = "SELECT
+        // -- Usando CTE para pré-calcular o valor total de cada pedido (Common Table Expression).
+        //  -- view temporária" só válida durante a execução da query.
+        $sql = " WITH PedidoTotais AS (
+                SELECT
+                    id_pedido,
+                    SUM(quantidade * valor_unitario) AS valor_total_itens
+                FROM item_pedido
+                GROUP BY id_pedido
+            )
+            SELECT
                 pr.id_produto,
                 pr.nome_produto,
                 SUM(ip.quantidade) AS total_vendido,
-                SUM(ip.quantidade * ip.valor_unitario) / SUM(ip.quantidade) AS valor_medio_venda,
                 SUM(ip.quantidade * ip.valor_unitario) AS faturamento_total,
-                SUM(ip.quantidade * ip.custo_compra) AS custo_total,
-                -- Frete proporcional ao faturamento do item
-                SUM((p.valor_frete /
-                    (SELECT SUM(ip2.quantidade * ip2.valor_unitario)
-                    FROM item_pedido ip2
-                    WHERE ip2.id_pedido = p.id_pedido)) *
-                    (ip.quantidade * ip.valor_unitario)) AS frete_proporcional,
-                -- Lucro líquido (considerando preço histórico e frete)
-                SUM(ip.quantidade * ip.valor_unitario)
-                - SUM(ip.quantidade * ip.custo_compra)
-                - SUM((p.valor_frete /
-                (SELECT SUM(ip2.quantidade * ip2.valor_unitario)
-                FROM item_pedido ip2
-                WHERE ip2.id_pedido = p.id_pedido)) *
-                (ip.quantidade * ip.valor_unitario)) AS lucro_liquido,
-                -- Margem de lucro líquida (%)
-                ROUND((SUM(ip.quantidade * ip.valor_unitario)
-                - SUM(ip.quantidade * ip.custo_compra)
-                - SUM((p.valor_frete /
-                (SELECT SUM(ip2.quantidade * ip2.valor_unitario)
-                FROM item_pedido ip2
-                WHERE ip2.id_pedido = p.id_pedido)) *
-                (ip.quantidade * ip.valor_unitario))) /
-                SUM(ip.quantidade * ip.valor_unitario) * 100, 2) AS margem_lucro
-                FROM item_pedido ip
-                LEFT JOIN pedido p ON ip.id_pedido = p.id_pedido
-                LEFT JOIN produto pr ON ip.id_produto = pr.id_produto
-                WHERE p.status_pedido = 'Finalizado'
-                GROUP BY pr.id_produto, pr.nome_produto
-                ORDER BY total_vendido DESC
-                LIMIT :limite";
+                -- Evita divisão por zero se o produto não tiver vendas
+                CASE WHEN SUM(ip.quantidade) > 0 THEN
+                    SUM(ip.quantidade * ip.valor_unitario) / SUM(ip.quantidade)
+                ELSE 0 END AS valor_medio_venda,
+
+                -- Calcula o lucro bruto (Faturamento - Custo)
+                SUM(ip.quantidade * ip.valor_unitario) - SUM(ip.quantidade * ip.custo_compra) AS lucro_bruto,
+                -- Calcula o frete proporcional de forma eficiente
+                SUM(
+                    CASE WHEN pt.valor_total_itens > 0 THEN
+                        (ip.quantidade * ip.valor_unitario / pt.valor_total_itens) * p.valor_frete
+                    ELSE 0 END
+                ) AS frete_proporcional,
+            -- Lucro Líquido (Lucro Bruto - Frete Proporcional)
+            (SUM(ip.quantidade * ip.valor_unitario) - SUM(ip.quantidade * ip.custo_compra)) - SUM(
+                CASE WHEN pt.valor_total_itens > 0 THEN
+                    (ip.quantidade * ip.valor_unitario / pt.valor_total_itens) * p.valor_frete
+                ELSE 0 END
+            ) AS lucro_liquido,
+
+            -- Margem de Lucro
+            CASE WHEN SUM(ip.quantidade * ip.valor_unitario) > 0 THEN
+                ROUND(
+                    ((SUM(ip.quantidade * ip.valor_unitario) - SUM(ip.quantidade * ip.custo_compra)) - SUM(
+                        CASE WHEN pt.valor_total_itens > 0 THEN
+                            (ip.quantidade * ip.valor_unitario / pt.valor_total_itens) * p.valor_frete
+                        ELSE 0 END
+                    )) / SUM(ip.quantidade * ip.valor_unitario) * 100, 2
+                )
+            ELSE 0 END AS margem_lucro
+
+            FROM item_pedido ip
+            INNER JOIN produto pr ON ip.id_produto = pr.id_produto
+            INNER JOIN pedido p ON ip.id_pedido = p.id_pedido
+            -- Juntamos os totais pré-calculados
+            INNER JOIN PedidoTotais pt ON p.id_pedido = pt.id_pedido
+            WHERE p.status_pedido = 'Finalizado'
+            GROUP BY pr.id_produto, pr.nome_produto
+            ORDER BY total_vendido DESC
+            LIMIT :limite";
+
         try {
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);
@@ -790,7 +809,102 @@ class Pedido extends Conexao
             return false;
         }
     }
-    // quantidade de pedidos por mes ou por periodo
+    //  as formas de pagamento mais usadas *
+    public function formasPagamentoMaisUsadas()
+    {
+        $sql = "SELECT
+                fp.descricao,
+                COUNT(*) AS quantidade
+            FROM pedido p
+            INNER JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
+            GROUP BY fp.descricao
+            ORDER BY quantidade DESC";
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+            $query->execute();
+            return $query->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $e) {
+            error_log("Erro ao buscar formas de pagamento mais usadas: " . $e->getMessage());
+            return false;
+        }
+    }
+    //metodo de pedidos recentes *
+    public function pedidosRecentes($dias = 7)
+    {
+        $dias = (int)$dias;
+        if ($dias < 1 || $dias > 30) {
+            $dias = 7;
+        }
+
+        $sql = "SELECT
+            p.id_pedido,
+            p.numero_pedido,
+            p.data_pedido,
+            p.status_pedido,
+            p.valor_total,
+            c.nome_fantasia AS cliente,
+            fp.descricao AS forma_pagamento
+            FROM pedido p
+            INNER JOIN cliente c ON p.id_cliente = c.id_cliente
+            LEFT JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
+            WHERE p.data_pedido >= DATE_SUB(CURDATE(), INTERVAL :dias DAY)
+            ORDER BY p.data_pedido DESC, p.numero_pedido DESC";
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+            $query->bindValue(':dias', $dias, PDO::PARAM_INT);
+            $query->execute();
+            return $query->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $e) {
+            error_log("Erro ao buscar pedidos recentes: " . $e->getMessage());
+            return false;
+        }
+    }
+    // clientes que mais compraram, com filtros por ano, mês e limite *
+    public function clientesQueMaisCompraram($ano_referencia = null, $mes_referencia = null, $limite = 10)
+    {
+        $ano = $ano_referencia ?? date('Y');
+
+        $sql = "SELECT
+            c.nome_fantasia,
+            COUNT(p.id_pedido) AS total_pedidos,
+            SUM(p.valor_total) AS total_comprado
+            FROM pedido AS p
+            LEFT JOIN cliente AS c ON p.id_cliente = c.id_cliente
+            WHERE p.status_pedido = 'Finalizado'
+            AND YEAR(p.data_finalizacao) = :ano";
+
+        if (!empty($mes_referencia)) {
+            $sql .= " AND MONTH(p.data_finalizacao) = :mes";
+        }
+
+        $sql .= "
+                GROUP BY p.id_cliente
+                ORDER BY total_comprado DESC
+                LIMIT :limite";
+
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+
+            $query->bindValue(':ano', $ano, PDO::PARAM_STR);
+
+            if (!empty($mes_referencia)) {
+                $query->bindValue(':mes', $mes_referencia, PDO::PARAM_STR);
+            }
+
+            $query->bindValue(':limite', $limite, PDO::PARAM_INT);
+
+            $query->execute();
+
+            return $query->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $e) {
+            error_log("Erro ao buscar clientes que mais compraram: " . $e->getMessage());
+            return false;
+        }
+    }
+    // quantidade de pedidos por mes ou por periodo *
     public function pedidosPorMes($ano_referencia, $mes_referencia = null)
     {
         $ano = $ano_referencia ?? date('Y');
@@ -826,26 +940,7 @@ class Pedido extends Conexao
             return false;
         }
     }
-    //  as formas de pagamento mais usadas
-    public function formasPagamentoMaisUsadas()
-    {
-        $sql = "SELECT
-                fp.descricao,
-                COUNT(*) AS quantidade
-            FROM pedido p
-            INNER JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
-            GROUP BY fp.descricao
-            ORDER BY quantidade DESC";
-        try {
-            $bd = $this->conectarBanco();
-            $query = $bd->prepare($sql);
-            $query->execute();
-            return $query->fetchAll(PDO::FETCH_OBJ);
-        } catch (PDOException $e) {
-            error_log("Erro ao buscar formas de pagamento mais usadas: " . $e->getMessage());
-            return false;
-        }
-    }
+
     // Resumo de Pedidos por Cliente
     public function resumoPedidosPorCliente($id_cliente = null)
     {
@@ -1000,81 +1095,8 @@ class Pedido extends Conexao
             return false;
         }
     }
-    // clientes que mais compraram, com filtros por ano, mês e limite
-    public function clientesQueMaisCompraram($ano_referencia = null, $mes_referencia = null, $limite = 10)
-    {
-        $ano = $ano_referencia ?? date('Y');
 
-        $sql = "SELECT
-            c.nome_fantasia,
-            COUNT(p.id_pedido) AS total_pedidos,
-            SUM(p.valor_total) AS total_comprado
-            FROM pedido AS p
-            LEFT JOIN cliente AS c ON p.id_cliente = c.id_cliente
-            WHERE p.status_pedido = 'Finalizado'
-            AND YEAR(p.data_finalizacao) = :ano";
 
-        if (!empty($mes_referencia)) {
-            $sql .= " AND MONTH(p.data_finalizacao) = :mes";
-        }
-
-        $sql .= "
-                GROUP BY p.id_cliente
-                ORDER BY total_comprado DESC
-                LIMIT :limite";
-
-        try {
-            $bd = $this->conectarBanco();
-            $query = $bd->prepare($sql);
-
-            $query->bindValue(':ano', $ano, PDO::PARAM_STR);
-
-            if (!empty($mes_referencia)) {
-                $query->bindValue(':mes', $mes_referencia, PDO::PARAM_STR);
-            }
-
-            $query->bindValue(':limite', $limite, PDO::PARAM_INT);
-
-            $query->execute();
-
-            return $query->fetchAll(PDO::FETCH_OBJ);
-        } catch (PDOException $e) {
-            error_log("Erro ao buscar clientes que mais compraram: " . $e->getMessage());
-            return false;
-        }
-    }
-    //metodo de pedidos recentes
-    public function pedidosRecentes($dias = 7)
-    {
-        $dias = (int)$dias;
-        if ($dias < 1 || $dias > 30) {
-            $dias = 7;
-        }
-
-        $sql = "SELECT
-            p.id_pedido,
-            p.numero_pedido,
-            p.data_pedido,
-            p.status_pedido,
-            p.valor_total,
-            c.nome_fantasia AS cliente,
-            fp.descricao AS forma_pagamento
-            FROM pedido p
-            INNER JOIN cliente c ON p.id_cliente = c.id_cliente
-            LEFT JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
-            WHERE p.data_pedido >= DATE_SUB(CURDATE(), INTERVAL :dias DAY)
-            ORDER BY p.data_pedido DESC, p.numero_pedido DESC";
-        try {
-            $bd = $this->conectarBanco();
-            $query = $bd->prepare($sql);
-            $query->bindValue(':dias', $dias, PDO::PARAM_INT);
-            $query->execute();
-            return $query->fetchAll(PDO::FETCH_OBJ);
-        } catch (PDOException $e) {
-            error_log("Erro ao buscar pedidos recentes: " . $e->getMessage());
-            return false;
-        }
-    }
     // Retorna variação de vendas mês a mês para um produto específico
     public function variacaoVendasPorProduto($id_produto, $ano_faturamento)
     {
