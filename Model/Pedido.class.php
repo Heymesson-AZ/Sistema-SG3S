@@ -658,7 +658,6 @@ class Pedido extends Conexao
         $this->setIdPedido($id_pedido);
         $this->setStatusPedido($status_pedido);
 
-
         // Define o fuso horário para 'America/Sao_Paulo', que é o Fuso Horário de Brasília
         $fusoHorarioBrasil = new DateTimeZone('America/Sao_Paulo');
 
