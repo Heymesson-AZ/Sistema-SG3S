@@ -72,41 +72,42 @@ class Auditoria extends Conexao
     // MÉTODOS DE CONSULTA
     // ===========================
 
-    // 1. Listar todas as ações de auditoria agrupadas
+    // 1. Listar todas as ações de auditoria agrupada
     public function listarTudo()
     {
         $sql = "SELECT
-                a.id_auditoria,
-                a.tabela AS tabela_principal,
-                a.id_registro,
-                u.nome_usuario,
-                a.acao,
-                a.data_hora,
-                ad.campo,
-                ad.valor_antigo,
-                ad.valor_novo,
-                ad.descricao,
-                -- campo virtual para agrupar no modal
-                CASE
-                    WHEN a.tabela = 'Cliente' THEN 'Cliente'
-                    WHEN a.tabela = 'Endereco' THEN 'Endereco'
-                    WHEN a.tabela = 'Telefone_Cliente' THEN 'Telefone_Cliente'
-                    WHEN a.tabela = 'Inscricao_Estadual' THEN 'Inscricao_Estadual'
-                    WHEN a.tabela = 'Pedido' THEN 'Pedido'
-                    WHEN a.tabela = 'Item_Pedido' THEN 'Item_Pedido'
-                    WHEN a.tabela = 'Produto' THEN 'Produto'
-                    WHEN a.tabela = 'Fornecedor' THEN 'Fornecedor'
-                    WHEN a.tabela = 'Telefone_Fornecedor' THEN 'Telefone_Fornecedor'
-                    WHEN a.tabela = 'Forma_Pagamento' THEN 'Forma_Pagamento'
-                    WHEN a.tabela = 'Usuario' THEN 'Usuario'
-                    WHEN a.tabela = 'Perfil_Usuario' THEN 'Perfil_Usuario'
-                    ELSE 'Principal'
-                END AS tabela_relacionada
-            FROM Auditoria a
-            JOIN Usuario u ON a.id_usuario = u.id_usuario
-            LEFT JOIN Auditoria_Detalhe ad ON a.id_auditoria = ad.id_auditoria
-            WHERE a.data_hora >= NOW() - INTERVAL 7 DAY
-            ORDER BY a.data_hora DESC, a.id_auditoria ASC";
+    a.id_auditoria,
+    a.tabela,
+    a.id_registro,
+    a.acao,
+    a.data_hora,
+    COALESCE(u.nome_usuario, 'Usuário Excluído / Sistema') AS nome_usuario,
+    ad.campo,
+    ad.valor_antigo,
+    ad.valor_novo,
+    ad.descricao,
+    -- A MÁGICA ACONTECE AQUI: Buscamos o nome do registro principal de várias tabelas
+    COALESCE(
+        cli.nome_fantasia,
+        forn.razao_social,
+        prod.nome_produto,
+        user_alvo.nome_usuario,
+        ped.numero_pedido
+            ) AS nome_registro_principal
+        FROM
+            auditoria a
+        LEFT JOIN usuario u ON a.id_usuario = u.id_usuario
+        LEFT JOIN auditoria_Detalhe ad ON a.id_auditoria = ad.id_auditoria
+        -- Joins condicionais para buscar o nome do registro principal
+        LEFT JOIN cliente cli ON a.tabela = 'cliente' AND a.id_registro = cli.id_cliente
+        LEFT JOIN fornecedor forn ON a.tabela = 'fornecedor' AND a.id_registro = forn.id_fornecedor
+        LEFT JOIN produto prod ON a.tabela = 'produto' AND a.id_registro = prod.id_produto
+        LEFT JOIN usuario user_alvo ON a.tabela = 'usuario' AND a.id_registro = user_alvo.id_usuario
+        LEFT JOIN pedido ped ON a.tabela = 'pedido' AND a.id_registro = ped.id_pedido
+        WHERE
+            a.data_hora >= NOW() - INTERVAL 7 DAY
+        ORDER BY
+            a.data_hora DESC, a.id_auditoria DESC;";
 
         try {
             $bd = $this->conectarBanco();
@@ -118,7 +119,6 @@ class Auditoria extends Conexao
             return false;
         }
     }
-
 
     // 2. Listar auditoria por usuário
     public function listarPorUsuario()

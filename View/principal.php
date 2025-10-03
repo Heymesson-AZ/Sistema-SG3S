@@ -264,87 +264,88 @@
                 </div>
             </div>
         </div>
-        <!-- DASHBOARD - GRÁFICOS -->
-        <section class="container-fluid py-4">
-            <div class="row g-4">
-                <!-- Clientes que Mais Compraram -->
-                <div class="col-lg-6">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-gradient-secondary text-white d-flex align-items-center">
-                            <i class="bi bi-people me-2"></i>
-                            <h6 class="mb-0">Clientes que Mais Compraram</h6>
-                        </div>
-                        <div class="card-body p-3">
-                            <div id="graficoClientesQueMaisCompraram" style="height: 380px;"></div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Pedidos por Mês -->
-                <div class="col-lg-6">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-gradient-dark text-white d-flex align-items-center">
-                            <i class="bi bi-calendar-week me-2"></i>
-                            <h6 class="mb-0">Pedidos por Mês</h6>
-                        </div>
-                        <div class="card-body p-3">
-                            <div id="graficoPedidosPorMes" style="height: 380px;"></div>
+        <?php if ($this->temPermissao(['Administrador'])): ?>
+            <!-- DASHBOARD - GRÁFICOS -->
+            <section class="container-fluid py-4">
+                <div class="row g-4">
+                    <!-- Clientes que Mais Compraram -->
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-gradient-secondary text-white d-flex align-items-center">
+                                <i class="bi bi-people me-2"></i>
+                                <h6 class="mb-0">Clientes que Mais Compraram</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div id="graficoClientesQueMaisCompraram" style="height: 380px;"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <!-- Faturamento Mensal -->
-                <div class="col-lg-12">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-gradient-primary text-white d-flex align-items-center">
-                            <i class="bi bi-bar-chart-line me-2"></i>
-                            <h6 class="mb-0">Faturamento Mensal</h6>
-                        </div>
-                        <div class="card-body p-3">
-                            <div id="graficoFaturamentoMensal" style="height: 380px;"></div>
+                    <!-- Pedidos por Mês -->
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-gradient-dark text-white d-flex align-items-center">
+                                <i class="bi bi-calendar-week me-2"></i>
+                                <h6 class="mb-0">Pedidos por Mês</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div id="graficoPedidosPorMes" style="height: 380px;"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                    <!-- Faturamento Mensal -->
+                    <div class="col-lg-12">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-gradient-primary text-white d-flex align-items-center">
+                                <i class="bi bi-bar-chart-line me-2"></i>
+                                <h6 class="mb-0">Faturamento Mensal</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div id="graficoFaturamentoMensal" style="height: 380px;"></div>
+                            </div>
+                        </div>
+                    </div>
 
-                <!-- Produtos Mais Vendidos -->
-                <div class="col-lg-6">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-gradient-success text-white d-flex align-items-center">
-                            <i class="bi bi-box-seam me-2"></i>
-                            <h6 class="mb-0">Produtos Mais Vendidos</h6>
+                    <!-- Produtos Mais Vendidos -->
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-gradient-success text-white d-flex align-items-center">
+                                <i class="bi bi-box-seam me-2"></i>
+                                <h6 class="mb-0">Produtos Mais Vendidos</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div id="graficoProdutosMaisVendidos" style="height: 380px;"></div>
+                            </div>
                         </div>
-                        <div class="card-body p-3">
-                            <div id="graficoProdutosMaisVendidos" style="height: 380px;"></div>
+                    </div>
+
+                    <!-- Formas de Pagamento -->
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-gradient-warning text-dark d-flex align-items-center">
+                                <i class="bi bi-credit-card me-2"></i>
+                                <h6 class="mb-0">Formas de Pagamento</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div id="graficoFormasPagamento" style="height: 380px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pedidos Recentes -->
+                    <div class="col-lg-12">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-gradient-info text-white d-flex align-items-center">
+                                <i class="bi bi-clock-history me-2"></i>
+                                <h6 class="mb-0">Pedidos Recentes</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div id="graficoPedidosRecentes" style="height: 380px;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Formas de Pagamento -->
-                <div class="col-lg-6">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-gradient-warning text-dark d-flex align-items-center">
-                            <i class="bi bi-credit-card me-2"></i>
-                            <h6 class="mb-0">Formas de Pagamento</h6>
-                        </div>
-                        <div class="card-body p-3">
-                            <div id="graficoFormasPagamento" style="height: 380px;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pedidos Recentes -->
-                <div class="col-lg-12">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-gradient-info text-white d-flex align-items-center">
-                            <i class="bi bi-clock-history me-2"></i>
-                            <h6 class="mb-0">Pedidos Recentes</h6>
-                        </div>
-                        <div class="card-body p-3">
-                            <div id="graficoPedidosRecentes" style="height: 380px;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
+            </section>
+        <?php endif; ?>
         <!-- Calendario -->
         <div class="modal fade" id="modalCalendario" tabindex="-1" aria-labelledby="modalCalendarioLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">

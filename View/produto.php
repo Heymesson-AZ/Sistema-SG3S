@@ -44,13 +44,16 @@
                             <i class="bi bi-plus-lg"></i> Cadastrar Tipo de Produto
                         </button>
                     </div>
-                    <!-- Linha de Consultas -->
-                    <div class="w-100"></div> <!-- quebra de linha -->
-                    <div class="col-md-auto">
-                        <button class="btn btn-secondary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_consultar_produto">
-                            <i class="bi bi-file-earmark-text"></i> Consultar Produto
-                        </button>
-                    </div>
+                <?php endif; ?>
+
+                <!-- Linha de Consultas -->
+                <div class="w-100"></div> <!-- quebra de linha -->
+                <div class="col-md-auto">
+                    <button class="btn btn-secondary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_consultar_produto">
+                        <i class="bi bi-file-earmark-text"></i> Consultar Produto
+                    </button>
+                </div>
+                <?php if ($this->temPermissao(['Administrador'])): ?>
                     <div class="col-md-auto">
                         <button class="btn btn-secondary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_consulta_fornecedor">
                             <i class="bi bi-file-earmark-text"></i> Consultar Fornecedor
@@ -475,7 +478,6 @@
                     $valor->fornecedor,
                     $valor->img_produto,
                     $valor->id_fornecedor,
-                    
                 );
                 //modal excluir usuario
                 $this->modalExcluirProduto(
