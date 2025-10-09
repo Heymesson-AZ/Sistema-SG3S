@@ -187,7 +187,10 @@ class Usuario extends Conexao
             return false;
         }
     }
-    // === ALTERAR USUÁRIO ===
+    /**
+     * Altera os dados de um usuário no banco de dados.
+     * Impede a alteração de perfil do único administrador do sistema.
+     */
     public function alterarUsuario($id_usuario, $nome_usuario, $email, $id_perfil, $cpf, $telefone)
     {
         $this->setIdUsuario($id_usuario);
@@ -200,25 +203,45 @@ class Usuario extends Conexao
         try {
             $bd = $this->conectarBanco();
 
-            // Verifica se existe apenas 1 administrador no sistema
-            $sqlCount = "SELECT COUNT(*) AS total
-                    FROM usuario u
-                    INNER JOIN perfil_usuario p ON u.id_perfil = p.id_perfil
-                    WHERE p.perfil_usuario = 'administrador'";
-            $totalAdmin = (int)$bd->query($sqlCount)->fetch(PDO::FETCH_ASSOC)['total'];
+            // --- LÓGICA DE VALIDAÇÃO ---
 
-            // Se só existir 1 e o novo perfil NÃO for administrador, bloqueia
-            if ($totalAdmin <= 1 && $this->getIdPerfil() != 1) {
-                return "Não é permitido alterar o perfil do único administrador do sistema.";
+            // Supondo que o ID do perfil de administrador seja 1
+            $id_perfil_admin = 1;
+
+            // 1. Buscar o perfil ATUAL do usuário que está sendo editado
+            $sqlPerfilAtual = "SELECT id_perfil FROM usuario WHERE id_usuario = :id_usuario";
+            $qPerfilAtual = $bd->prepare($sqlPerfilAtual);
+            $qPerfilAtual->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
+            $qPerfilAtual->execute();
+            $perfilAtual = $qPerfilAtual->fetch(PDO::FETCH_ASSOC);
+
+            $usuarioEditadoEAdmin = ($perfilAtual && $perfilAtual['id_perfil'] == $id_perfil_admin);
+            $novoPerfilNaoEAdmin = ($this->getIdPerfil() != $id_perfil_admin);
+
+            // 2. Se o usuário a ser editado é um admin e o novo perfil não é,
+            //    precisamos verificar se ele é o último.
+            if ($usuarioEditadoEAdmin && $novoPerfilNaoEAdmin) {
+                $sqlCount = "SELECT COUNT(*) AS total FROM usuario WHERE id_perfil = :id_perfil_admin";
+                $qCount = $bd->prepare($sqlCount);
+                $qCount->bindValue(':id_perfil_admin', $id_perfil_admin, PDO::PARAM_INT);
+                $qCount->execute();
+                $totalAdmin = (int)$qCount->fetch(PDO::FETCH_ASSOC)['total'];
+
+                // 3. Se o total de administradores for 1 ou menos, bloqueia a alteração.
+                if ($totalAdmin <= 1) {
+                    return "Não é permitido alterar o perfil do único administrador do sistema.";
+                }
             }
 
+            // --- FIM DA LÓGICA DE VALIDAÇÃO ---
+
             $sql = "UPDATE usuario
-            SET nome_usuario = :nome,
-                email = :email,
-                cpf = :cpf,
-                telefone = :telefone,
-                id_perfil = :id_perfil
-            WHERE id_usuario = :id_usuario";
+                SET nome_usuario = :nome,
+                    email = :email,
+                    cpf = :cpf,
+                    telefone = :telefone,
+                    id_perfil = :id_perfil
+                WHERE id_usuario = :id_usuario";
 
             $q = $bd->prepare($sql);
             $q->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
@@ -234,8 +257,10 @@ class Usuario extends Conexao
             return "Erro ao alterar usuário: " . $e->getMessage();
         }
     }
-
-    // === EXCLUIR USUÁRIO ===
+    /**
+     * Exclui um usuário do banco de dados.
+     * Impede a exclusão do único administrador do sistema.
+     */
     public function excluirUsuario($id_usuario)
     {
         $this->setIdUsuario($id_usuario);
@@ -243,18 +268,37 @@ class Usuario extends Conexao
         try {
             $bd = $this->conectarBanco();
 
-            // Verifica se existe apenas 1 administrador no sistema
-            $sqlCount = "SELECT COUNT(*) AS total
-                    FROM usuario u
-                    INNER JOIN perfil_usuario p ON u.id_perfil = p.id_perfil
-                    WHERE p.perfil_usuario = 'administrador'";
-            $totalAdmin = (int)$bd->query($sqlCount)->fetch(PDO::FETCH_ASSOC)['total'];
+            // --- LÓGICA DE VALIDAÇÃO ---
 
-            // Se só existir 1, bloqueia exclusão
-            if ($totalAdmin === 1) {
-                return "Não é permitido excluir o único administrador do sistema.";
+            // Supondo que o ID do perfil de administrador seja 1 e o nome seja 'administrador'
+            $id_perfil_admin = 1;
+
+            // 1. Verificar se o usuário a ser excluído é um administrador
+            $sqlPerfil = "SELECT id_perfil FROM usuario WHERE id_usuario = :id_usuario";
+            $qPerfil = $bd->prepare($sqlPerfil);
+            $qPerfil->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
+            $qPerfil->execute();
+
+            $usuario = $qPerfil->fetch(PDO::FETCH_ASSOC);
+            $is_admin = ($usuario && $usuario['id_perfil'] == $id_perfil_admin);
+
+            // 2. Se for um administrador, verificar se ele é o único
+            if ($is_admin) {
+                $sqlCount = "SELECT COUNT(*) AS total FROM usuario WHERE id_perfil = :id_perfil_admin";
+                $qCount = $bd->prepare($sqlCount);
+                $qCount->bindValue(':id_perfil_admin', $id_perfil_admin, PDO::PARAM_INT);
+                $qCount->execute();
+                $totalAdmin = (int)$qCount->fetch(PDO::FETCH_ASSOC)['total'];
+
+                // 3. Se for o único administrador, bloquear a exclusão
+                if ($totalAdmin <= 1) {
+                    return "Não é permitido excluir o único administrador do sistema.";
+                }
             }
 
+            // --- FIM DA LÓGICA DE VALIDAÇÃO ---
+
+            // Se passou na validação, prosseguir com a exclusão
             $sql = "DELETE FROM usuario WHERE id_usuario = :id_usuario";
             $q = $bd->prepare($sql);
             $q->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);

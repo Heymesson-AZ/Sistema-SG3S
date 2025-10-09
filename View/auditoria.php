@@ -199,10 +199,17 @@
                 </form>
             </div>
         </div>
+        <br>
+        <br>
         <div class="container-fluid">
             <div class="row justify-content-center">
                 <div class="col-md-12">
-                    <?php $this->tabelaAuditoria($todas_auditorias); ?>
+                    <?php
+                    // Se a variável com os dados existir e não estiver vazia, renderiza a linha do tempo
+                    if (isset($dadosParaView) && !empty($dadosParaView)) {
+                        $this->renderizarTabelaDeAuditoria($dadosParaView);
+                    };
+                    ?>
                 </div>
             </div>
         </div>

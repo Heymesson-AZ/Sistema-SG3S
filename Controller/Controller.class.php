@@ -5866,26 +5866,23 @@ class Controller
 
 
 
-    // Auditoria
-    public function listar_Auditorias()
+    //  AUDITORIA DO SISTEMA
+
+
+    // funcao de mascara para cpf
+    private function aplicarMascaraCPF($cpf)
     {
-        $objAuditoria = new Auditoria();
-        $objAuditoria->listarTudo();
-        if ($objAuditoria->listarTudo() == true) {
-            $todas_auditorias = $objAuditoria->listarTudo();
-            // menu
-            $menu = $this->menu();
-            // view
-            include_once 'View/auditoria.php';
-        } else {
-            // menu
-            $menu = $this->menu();
-            // view
-            include_once 'View/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao consultar Auditorias Gerais!");
+        // Remove caracteres não numéricos
+        $cpf = preg_replace('/[^0-9]/', '', $cpf);
+
+        // Garante que o CPF tenha 11 dígitos
+        if (strlen($cpf) != 11) {
+            return $cpf;
         }
+
+        return preg_replace("/(\d{3})(\d{3})(\d{3})(\d{2})/", "$1.$2.$3-$4", $cpf);
     }
-    // Dicionario de nomes da tabela
+    // Modificar o nome da tabela para algo facil
     private function traduzirNomeTabela($nomeTecnico)
     {
         $dicionario = [
@@ -5906,170 +5903,360 @@ class Controller
         ];
         return $dicionario[$nomeTecnico] ?? $nomeTecnico;
     }
-    // Dicionário para traduzir nomes de campos para um formato legível.
+    //  renomear os campos do banco de dados
     private function traduzirNomeCampo($nomeTecnico)
     {
         $dicionario = [
-            'nome_representante' => 'Nome do Representante',
+            'nome_representante' => 'Representante',
             'razao_social' => 'Razão Social',
             'nome_fantasia' => 'Nome Fantasia',
             'cnpj_cliente' => 'CNPJ',
             'cnpj_fornecedor' => 'CNPJ',
             'limite_credito' => 'Limite de Crédito',
-            'perfil_usuario' => 'Perfil',
-            'id_perfil' => 'Perfil do Usuário',
+            'inscricao_estadual' => 'Inscrição Estadual',
+            'tipo' => 'Tipo',
+            'numero' => 'Número',
+            'cep' => 'CEP',
+            'cidade' => 'Cidade',
+            'estado' => 'Estado',
+            'bairro' => 'Bairro',
+            'complemento' => 'Complemento',
+            'perfil_usuario' => 'Nome do Perfil',
+            'id_perfil' => 'Perfil',
             'nome_usuario' => 'Nome do Usuário',
-            'status_pedido' => 'Status do Pedido',
-            'valor_total' => 'Valor Total',
-            'valor_frete' => 'Valor do Frete',
+            'cpf' => 'CPF',
+            'telefone' => 'Telefone',
+            'nome_produto' => 'Produto',
+            'composicao' => 'Composição',
+            'largura' => 'Largura',
             'custo_compra' => 'Custo da Compra',
             'valor_venda' => 'Valor de Venda',
+            'data_compra' => 'Data da Compra',
+            'quantidade' => 'Quantidade',
+            'ncm_produto' => 'NCM',
             'quantidade_minima' => 'Qtde. Mínima',
-            'nome_produto' => 'Nome do Produto',
+            'img_produto' => 'Imagem',
+            'id_cor' => 'Cor',
+            'id_tipo_produto' => 'Tipo de Produto',
+            'id_fornecedor' => 'Fornecedor',
             'nome_cor' => 'Cor',
-            'nome_tipo' => 'Tipo de Produto',
+            'nome_tipo' => 'Tipo',
+            'numero_pedido' => 'Nº do Pedido',
+            'id_cliente' => 'Cliente',
+            'id_usuario' => 'Vendedor',
+            'data_pedido' => 'Data do Pedido',
+            'status_pedido' => 'Status',
+            'valor_total' => 'Valor Total',
+            'id_forma_pagamento' => 'Forma de Pagamento',
+            'valor_frete' => 'Frete',
+            'data_finalizacao' => 'Data de Finalização',
+            'id_produto' => 'Produto do Item',
+            'valor_unitario' => 'Valor Unitário',
+            'totalValor_produto' => 'Subtotal do Produto',
+            'descricao' => 'Descrição',
+            'email' => 'E-mail',
+            // Campos especiais das triggers
+            'Contexto' => 'Resumo da Ação',
+            'item_adicionado' => 'Item Adicionado',
         ];
-        // Retorna a tradução ou formata o nome técnico (Ex: 'id_cliente' vira 'Id Cliente')
         return $dicionario[$nomeTecnico] ?? ucfirst(str_replace('_', ' ', $nomeTecnico));
     }
-    // Formata uma linha de detalhe de auditoria em uma frase legível.
-    private function formatarDetalhe($detalhe)
+    //  aplicar formatação condicionao para os campos (mascaras e etc...)
+    private function formatarValor($campo, $valor)
     {
-        $campo = '<strong>' . $this->traduzirNomeCampo($detalhe['campo']) . '</strong>';
-        $valorAntigo = '<em>' . htmlspecialchars($detalhe['valor_antigo']) . '</em>';
-        $valorNovo = '<strong>' . htmlspecialchars($detalhe['valor_novo']) . '</strong>';
-        $acao = $detalhe['acao'];
-
-        if ($acao === 'Cadastro') {
-            return "{$campo} foi definido como {$valorNovo}.";
-        } elseif ($acao === 'Alteração') {
-            if ($detalhe['valor_antigo'] === null || $detalhe['valor_antigo'] === '') {
-                return "{$campo} foi preenchido com o valor {$valorNovo}.";
-            }
-            return "{$campo} foi alterado de {$valorAntigo} para {$valorNovo}.";
+        if ($valor === null || $valor === '') return '<em>(vazio)</em>';
+        switch ($campo) {
+            case 'cnpj_cliente':
+            case 'cnpj_fornecedor':
+                return $this->aplicarMascaraCNPJ($valor);
+            case 'cpf':
+                return $this->aplicarMascaraCPF($valor);
+            case 'telefone':
+            case 'numero':
+                return $this->aplicarMascaraTelefone($valor);
+            case 'cep':
+                return $this->aplicarMascaraCEP($valor);
         }
-        return "Ação de {$acao} no campo {$campo}.";
+        if (in_array($campo, ['data_compra', 'data_pedido', 'data_finalizacao', 'data_hora']) && !empty($valor)) {
+            return date('d/m/Y H:i:s', strtotime($valor));
+        }
+        if (is_numeric($valor)) {
+            $monetarios = ['limite_credito', 'valor_total', 'valor_frete', 'custo_compra', 'valor_venda', 'valor_unitario', 'totalValor_produto'];
+            $quantidades = ['quantidade', 'quantidade_minima', 'largura'];
+            if (in_array($campo, $monetarios)) return 'R$ ' . number_format(floatval($valor), 2, ',', '.');
+            if (in_array($campo, $quantidades)) return number_format(floatval($valor), 2, ',', '.');
+            return $valor; // Retorna IDs e outros números puros como estão
+        }
+        return htmlspecialchars($valor);
     }
-
-
-    public function tabelaAuditoria($auditorias)
+    // =======================================================
+    // MÉTODO 1: AÇÃO PRINCIPAL DO CONTROLLER
+    // =======================================================
+    public function listar_Auditorias()
     {
-        if (empty($auditorias)) {
-            print '<div class="alert alert-info">Nenhum registro de auditoria encontrado para o período.</div>';
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarEventosDeAuditoria();
+        if ($eventosIndividuais !== false) {
+            // Agrupa os eventos individuais em ações lógicas antes de enviar para a view
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'View/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            include_once 'View/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias!");
+        }
+    }
+    // =======================================================
+    // MÉTODO 2: AGRUPADOR DE EVENTOS
+    // =======================================================
+    
+    private function agruparEventosPorAcaoLogica($eventos)
+    {
+        if (empty($eventos)) {
+            return [];
+        }
+
+        $grupos = [];
+        $grupoAtual = [];
+        $timestampAnterior = 0;
+        $usuarioAnterior = null;
+        $intervaloMaximo = 2; // Eventos que ocorrem em até 2 segundos do anterior são agrupados
+
+        foreach ($eventos as $evento) {
+            $timestampAtual = strtotime($evento['data_hora']);
+            $usuarioAtual = $evento['nome_usuario'];
+
+            if (empty($grupoAtual) || ($usuarioAnterior === $usuarioAtual && ($timestampAnterior - $timestampAtual) <= $intervaloMaximo)) {
+                $grupoAtual[] = $evento;
+            } else {
+                $grupos[] = $grupoAtual;
+                $grupoAtual = [$evento];
+            }
+
+            $timestampAnterior = $timestampAtual;
+            $usuarioAnterior = $usuarioAtual;
+        }
+
+        if (!empty($grupoAtual)) {
+            $grupos[] = $grupoAtual;
+        }
+
+        return $grupos;
+    }
+    // =======================================================
+    // MÉTODO 3: IDENTIFICADOR DE EVENTO PRINCIPAL (NOVO)
+    // =======================================================
+    /**
+     * Dentro de um grupo de eventos, identifica qual é o "principal".
+     * @param array $grupo O grupo de eventos de uma única ação.
+     * @return array O evento principal.
+     */
+    private function identificarEventoPrincipalDoGrupo($grupo)
+    {
+        $prioridade = ['pedido', 'cliente', 'fornecedor', 'produto', 'usuario'];
+
+        foreach ($prioridade as $tabela) {
+            foreach ($grupo as $evento) {
+                if ($evento['tabela'] === $tabela) {
+                    return $evento;
+                }
+            }
+        }
+        return $grupo[0];
+    }
+    // =======================================================
+    // MÉTODO 4: RENDERIZADOR DA LINHA DO TEMPO (ATUALIZADO)
+    // =======================================================
+
+    public function renderizarTabelaDeAuditoria($gruposDeEventos)
+    {
+        if (empty($gruposDeEventos)) {
+            echo '<div class="alert alert-info mt-4">Nenhuma atividade registrada nos últimos 7 dias.</div>';
             return;
         }
 
         $modals = '';
+        $grupoIdCounter = 0;
 
-        // 1. Agrupamento de eventos em "ações" (lógica mantida)
-        $acoesAgrupadas = [];
-        $grupoAtualId = null;
-        $ultimaTimestamp = 0;
-        $ultimoUsuarioId = null;
-        $intervaloMaximo = 2;
+        // Início da tabela com o cabeçalho ajustado
+        $html = <<<HTML
+        <div class="table-responsive shadow-sm" style="border-radius: 0.5rem; overflow: hidden;">
+            <table class="table table-bordered table-hover table-striped mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col" style="width: 12%;">Ação</th>
+                        <th scope="col">Registro</th> <th scope="col" style="width: 20%;">Usuário</th>
+                        <th scope="col" style="width: 20%;">Data e Hora</th>
+                        <th scope="col" style="width: 10%;" class="text-center">Detalhes</th>
+                    </tr>
+                </thead>
+                <tbody>
+        HTML;
 
-        foreach ($auditorias as $aud) {
-            $timestampAtual = strtotime($aud['data_hora']);
-            $usuarioIdAtual = $aud['nome_usuario'];
+        foreach ($gruposDeEventos as $grupo) {
+            $eventoPrincipal = $this->identificarEventoPrincipalDoGrupo($grupo);
+            $infoAcao = $this->obterInfoAcao($eventoPrincipal['acao']);
+            $idModal = 'modal_grupo_' . ($grupoIdCounter++);
+            $classeLinha = 'tr-' . strtolower($eventoPrincipal['acao']);
 
-            if ($usuarioIdAtual !== $ultimoUsuarioId || ($ultimaTimestamp - $timestampAtual) > $intervaloMaximo) {
-                $grupoAtualId = $aud['id_auditoria'];
-                $acoesAgrupadas[$grupoAtualId] = [
-                    'eventos' => [],
-                    'nome_usuario' => $aud['nome_usuario'],
-                    'data_hora' => $aud['data_hora'],
-                    'tabelas_afetadas' => [],
-                    'nome_registro_principal' => null
-                ];
-            }
+            // ===== LÓGICA PARA REMOVER A REDUNDÂNCIA =====
+            $registroPrincipal = htmlspecialchars($eventoPrincipal['nome_registro_principal']);
+            $area = $this->traduzirNomeTabela($eventoPrincipal['tabela']);
 
-            $id_evento = $aud['id_auditoria'];
-            if (!isset($acoesAgrupadas[$grupoAtualId]['eventos'][$id_evento])) {
-                $acoesAgrupadas[$grupoAtualId]['eventos'][$id_evento] = [
-                    'acao' => $aud['acao'],
-                    'tabela' => $aud['tabela'],
-                    'detalhes' => []
-                ];
-            }
+            // Remove o nome da área do título principal, se já estiver lá (Ex: "Pedido: 000001" vira "000001")
+            $nomeDoRegistro = str_ireplace($area . ': ', '', $registroPrincipal);
 
-            // Se este evento tem um nome de registro principal, ele se torna o nome do grupo
-            if (!empty($aud['nome_registro_principal'])) {
-                $acoesAgrupadas[$grupoAtualId]['nome_registro_principal'] = $aud['nome_registro_principal'];
-            }
+            $html .= <<<HTML
+                <tr class="{$classeLinha}">
+                    <td>
+                        <span class="badge {$infoAcao['classe_css']} fs-6">
+                            <i class="bi {$infoAcao['icone']} me-1"></i> {$infoAcao['nome']}
+                        </span>
+                    </td>
 
-            if (!empty($aud['campo'])) {
-                $acoesAgrupadas[$grupoAtualId]['eventos'][$id_evento]['detalhes'][] = [
-                    'campo' => $aud['campo'],
-                    'valor_antigo' => is_numeric($aud['valor_antigo']) ? 'R$ ' . number_format($aud['valor_antigo'], 2, ',', '.') : $aud['valor_antigo'],
-                    'valor_novo' => is_numeric($aud['valor_novo']) ? 'R$ ' . number_format($aud['valor_novo'], 2, ',', '.') : $aud['valor_novo'],
-                    'acao' => $aud['acao'] // Passando a ação para a função de formatação
-                ];
-            }
+                    <td>
+                        <div class="fw-bold">{$nomeDoRegistro}</div>
+                        <small class="text-muted">{$area}</small>
+                    </td>
 
-            if (!in_array($aud['tabela'], $acoesAgrupadas[$grupoAtualId]['tabelas_afetadas'])) {
-                $acoesAgrupadas[$grupoAtualId]['tabelas_afetadas'][] = $aud['tabela'];
-            }
+                    <td>
+                        {$eventoPrincipal['nome_usuario']}
+                    </td>
+                    <td>
+                        {$this->formatarValor('data_hora',$eventoPrincipal['data_hora'])}
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#{$idModal}">
+                            <i class="bi bi-search"></i> Ver
+                        </button>
+                    </td>
+                </tr>
+            HTML;
 
-            $ultimaTimestamp = $timestampAtual;
-            $ultimoUsuarioId = $usuarioIdAtual;
+            $modals .= $this->gerarModalDetalhesImersivo($idModal, $grupo);
         }
 
-        // 2. Geração da Tabela Principal
-        print '<div class="table-responsive mt-4">';
-        print '<table class="table table-hover table-bordered align-middle text-center shadow-sm">';
-        print '<thead class="table-primary"><tr><th>Usuário</th><th>Ação</th><th>Registro Principal</th><th>Data/Hora</th><th>Detalhes</th></tr></thead>';
-        print '<tbody>';
+        $html .= '</tbody></table></div>';
+        echo $html . $modals;
+    }
+    // =======================================================
+    // MÉTODO 5: GERADOR DE MODAL
+    // =======================================================
+    private function gerarModalDetalhesImersivo($idModal, $grupo)
+    {
+        $eventoPrincipal = $this->identificarEventoPrincipalDoGrupo($grupo);
+        $infoAcao = $this->obterInfoAcao($eventoPrincipal['acao']);
+        $corpoDoModal = $this->renderizarDetalhesDoGrupo($grupo);
 
-        foreach ($acoesAgrupadas as $idGrupo => $acao) {
-            $idModal = md5($idGrupo);
-            $acaoPrincipal = $acao['eventos'][array_key_first($acao['eventos'])]['acao'];
-            $dataHora = date('d/m/Y H:i:s', strtotime($acao['data_hora']));
+        $modal = <<<HTML
+            <div class="modal fade" id="{$idModal}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header {$infoAcao['classe_css']} text-white">
+                            <h5 class="modal-title"><i class="bi {$infoAcao['icone']} me-2"></i> Detalhes da Ação</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4 bg-light">
+                            <div class="summary-card mb-4">
+                                <p class="mb-1">
+                                    <span class="badge {$infoAcao['classe_css']}">{$infoAcao['nome']}</span>
+                                    em <strong>{$eventoPrincipal['nome_registro_principal']}</strong>
+                                </p>
+                                <p class="small text-muted mb-0">
+                                    Realizado por <strong>{$eventoPrincipal['nome_usuario']}</strong> em {$this->formatarValor('data_hora',$eventoPrincipal['data_hora'])}.
+                                </p>
+                            </div>
+                            {$corpoDoModal}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        HTML;
+        return $modal;
+    }
+    // =======================================================
+    // MÉTODO 6: RENDERIZADOR DOS DETALHES DO GRUPO
+    // =======================================================
+    private function renderizarDetalhesDoGrupo($grupo)
+    {
+        // 1. Agrupa os eventos por tabela para consolidar a exibição
+        $eventosPorTabela = [];
+        foreach ($grupo as $evento) {
+            $eventosPorTabela[$evento['tabela']][] = $evento;
+        }
 
-            // MELHORIA: Título contextual
-            $tituloAcao = $this->traduzirNomeTabela($acao['tabelas_afetadas'][0]);
+        $html = '';
+        foreach ($eventosPorTabela as $nomeTabela => $eventos) {
+            $html .= '<div class="card mb-3 shadow-sm">';
+            $html .= '<div class="card-header"><strong>' . $this->traduzirNomeTabela($nomeTabela) . '</strong></div>';
+            $html .= '<div class="card-body">';
 
-            $registroPrincipal = !empty($acao['nome_registro_principal'])
-                ? htmlspecialchars($acao['nome_registro_principal'])
-                : '<em>N/D</em>';
-
-            print '<tr>';
-            print '<td class="fw-bold">' . htmlspecialchars(explode(" ", $acao['nome_usuario'])[0]) . '</td>';
-            print '<td><span class="badge bg-' . ($acaoPrincipal === 'Cadastro' ? 'success' : ($acaoPrincipal === 'Alteração' ? 'warning text-dark' : 'danger')) . '">' . $acaoPrincipal . '</span></td>';
-            print '<td><strong>' . $tituloAcao . ':</strong> ' . $registroPrincipal . '</td>';
-            print '<td>' . $dataHora . '</td>';
-            print '<td><button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modal_' . $idModal . '"><i class="bi bi-eye"></i> Ver</button></td>';
-            print '</tr>';
-
-            // 3. Geração do Modal
-            $modal  = '<div class="modal fade" id="modal_' . $idModal . '" tabindex="-1">';
-            $modal .= '<div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">';
-            $modal .= '<div class="modal-header bg-primary text-white"><h5 class="modal-title">📋 Detalhes da Ação</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>';
-            $modal .= '<div class="modal-body">';
-            $modal .= "<p><strong>Usuário:</strong> " . htmlspecialchars($acao['nome_usuario']) . "</p>";
-            $modal .= "<p><strong>Registro Principal:</strong> {$tituloAcao}: {$registroPrincipal}</p>";
-            $modal .= "<p><strong>Data/Hora:</strong> {$dataHora}</p><hr>";
-
-            foreach ($acao['eventos'] as $evento) {
-                $modal .= '<h6 class="mt-3 text-primary">Tabela: ' . $this->traduzirNomeTabela($evento['tabela']) . ' (' . htmlspecialchars($evento['acao']) . ')</h6>';
-                if (empty($evento['detalhes'])) {
-                    $modal .= '<p class="text-muted"><i>Sem detalhes de campos para esta parte da ação.</i></p>';
-                } else {
-                    $modal .= '<ul class="list-group list-group-flush">';
-                    foreach ($evento['detalhes'] as $detalhe) {
-                        // MELHORIA: Usando a nova função para formatar a descrição
-                        $modal .= '<li class="list-group-item">' . $this->formatarDetalhe($detalhe) . '</li>';
-                    }
-                    $modal .= '</ul>';
+            $contador = 0;
+            foreach ($eventos as $evento) {
+                // Adiciona um separador se houver mais de um evento do mesmo tipo (ex: vários itens de pedido)
+                if ($contador > 0) {
+                    $html .= '<hr>';
                 }
+
+                $detalhes = $evento['detalhes'];
+                if (empty($detalhes)) {
+                    $html .= '<p class="text-muted fst-italic">Nenhum detalhe técnico foi registrado.</p>';
+                } else {
+                    $resumo = '';
+                    $dados = [];
+
+                    foreach ($detalhes as $detalhe) {
+                        if ($detalhe['campo'] === 'Contexto' && !empty($detalhe['descricao'])) {
+                            $resumo = '<p class="lead">' . htmlspecialchars($detalhe['descricao']) . '</p>';
+                            continue;
+                        }
+                        $dados[$detalhe['campo']] = [
+                            'novo' => $detalhe['valor_novo_legivel'] ?? $detalhe['valor_novo'] ?? '',
+                            'antigo' => $detalhe['valor_antigo_legivel'] ?? $detalhe['valor_antigo'] ?? ''
+                        ];
+                    }
+
+                    $html .= $resumo;
+
+                    if (!empty($dados)) {
+                        $html .= '<dl class="row mb-0">';
+                        foreach ($dados as $campo => $valores) {
+                            $html .= '<dt class="col-sm-4 py-2 text-muted">' . $this->traduzirNomeCampo($campo) . '</dt>';
+                            $html .= '<dd class="col-sm-8 py-2">';
+                            if ($evento['acao'] === 'Alteração' && $valores['antigo'] !== $valores['novo']) {
+                                $html .= '<span class="text-danger"><del>' . $this->formatarValor($campo, $valores['antigo']) . '</del></span> → ';
+                                $html .= '<span class="text-success"><strong>' . $this->formatarValor($campo, $valores['novo']) . '</strong></span>';
+                            } else {
+                                $valor = ($evento['acao'] === 'Cadastro' || $evento['acao'] === 'Alteração') ? $valores['novo'] : $valores['antigo'];
+                                $html .= '<strong>' . $this->formatarValor($campo, $valor) . '</strong>';
+                            }
+                            $html .= '</dd>';
+                        }
+                        $html .= '</dl>';
+                    }
+                }
+                $contador++;
             }
-
-            $modal .= '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button></div>';
-            $modal .= '</div></div></div>';
-            $modals .= $modal;
+            $html .= '</div></div>';
         }
-
-        print '</tbody></table></div>';
-        print $modals;
+        return $html;
+    }
+    // =======================================================
+    // MÉTODO 7: HELPER DE INFORMAÇÕES DA AÇÃO
+    // =======================================================
+    private function obterInfoAcao($acao)
+    {
+        $map = [
+            'Cadastro'  => ['nome' => 'Cadastro',  'classe_css' => 'bg-success',        'icone' => 'bi-plus-circle-fill'],
+            'Alteração' => ['nome' => 'Alteração', 'classe_css' => 'bg-warning text-dark', 'icone' => 'bi-pencil-fill'],
+            'Exclusão'  => ['nome' => 'Exclusão',  'classe_css' => 'bg-danger',         'icone' => 'bi-trash-fill'],
+        ];
+        return $map[$acao] ?? ['nome' => $acao, 'classe_css' => 'bg-secondary', 'icone' => 'bi-question-circle-fill'];
     }
 
 

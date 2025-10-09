@@ -666,7 +666,6 @@ if (isset($_POST['salvar_pedido'])) {
             $itens[] = compact('id_produto', 'quantidade', 'valor_unitario', 'totalValor_produto');
         }
     }
-
     if (empty($itens)) {
         $objController->mostrarMensagemErro("Itens vazios");
         exit;
