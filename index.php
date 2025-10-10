@@ -1,41 +1,74 @@
 <?php
 session_start();
-error_reporting(~E_ALL & ~E_NOTICE & ~E_WARNING);
 
-// Carregamento do autoload
+// Carregamento do autoload do Composer
+require __DIR__ . '/vendor/autoload.php';
+// Seu autoload personalizado (se necessário para classes fora do padrão PSR-4)
 include_once "autoload.php";
 
-require __DIR__ . '/vendor/autoload.php';
-
 // Carregamento manual do .env
-// Verifica se o arquivo .env existe
 $env = parse_ini_file(__DIR__ . '/.env', false, INI_SCANNER_RAW) ?: [];
-// Verifica se o arquivo .env foi carregado corretamente
 foreach ($env as $key => $value) {
     $value = trim($value, "\"'");
     putenv("$key=$value");
     $_ENV[$key] = $value;
     $_SERVER[$key] = $value;
 }
-// recuperar senha
+
+// Configuração de exibição de erros com base no ambiente
+if (getenv('APP_ENV') === 'development') {
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', 0);
+    ini_set('log_errors', 1);
+    error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+}
+
+// --- ROTAS DE AÇÃO (POST) ---
+
+// 1. Recuperar senha
 if (isset($_POST['recuperar_senha'])) {
-    // Verifica se o campo de email foi enviado
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        // TODO: Redirecionar com mensagem de erro
+        print "Erro: Formato de e-mail inválido.";
+        exit();
+    }
+
     $objController = new Controller();
     $objController->recuperarSenha($email);
     exit();
 }
-// login do usuário
+
+// 2. Login do usuário
 if (isset($_POST['login'])) {
-    // Verifica se o campo de CPF e senha foram enviados limpos
+    $cpf = isset($_POST['cpf']) ? trim($_POST['cpf']) : '';
+    $senha = isset($_POST['senha']) ? trim($_POST['senha']) : '';
+
+    if (empty($cpf) || empty($senha)) {
+        // TODO: Redirecionar com mensagem de erro
+        print "Erro: CPF e Senha são obrigatórios.";
+        exit();
+    }
+
+    $cpfLimpo = preg_replace('/[^0-9]/', '', $cpf); // Remove tudo que não for dígito
+
+    if (strlen($cpfLimpo) != 11) {
+        // TODO: Redirecionar com mensagem de erro
+        print "Erro: Formato de CPF inválido.";
+        exit();
+    }
+
     $objController = new Controller();
-    $cpf = htmlspecialchars(trim($_POST['cpf']));
-    $senha = htmlspecialchars(trim($_POST['senha']));
-    $cpfLimpo = str_replace(['.', '-'], '', $cpf);
     $objController->validar($cpfLimpo, $senha);
-} else {
-    // Verifica se o usuário já está logado
-    $objController = new Controller();
-    $objController->validarSessao();
-    include_once "router.php";
+    exit();
 }
+
+// --- ROTEAMENTO PRINCIPAL (GET ou Sessão Ativa) ---
+
+// Se nenhuma ação POST foi tratada, verifica a sessão e carrega o roteador
+$objController = new Controller();
+$objController->validarSessao();
+include_once "router.php";
