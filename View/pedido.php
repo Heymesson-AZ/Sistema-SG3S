@@ -336,7 +336,7 @@
                         $this->modalExcluirPedido($origem, $id_pedido, $numero_pedido, $nome_fantasia);
                     };
                     // Modal de Alterar Pedido
-                    $this->modalAlterarPedido($pedidos);
+                    $this->modalAlterarPedido($pedidos, $pagina);
                     ?>
                     <?php
                     //modal de Aprovar Pedido

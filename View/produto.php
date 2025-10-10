@@ -22,7 +22,7 @@
                 <p class="lead">Utilize as opções acima para navegar pelo Sistema</p>
             </div>
             <div class="row justify-content-center g-4 mt-4">
-                <?php if ($this->temPermissao(['Administrador'])): ?>
+                <?php if ($this->temPermissao(['Administrador', 'Administrador Master'])): ?>
                     <!-- Linha de Cadastros -->
                     <div class="col-md-auto">
                         <button class="btn btn-primary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_verificar_produto">
@@ -53,7 +53,7 @@
                         <i class="bi bi-file-earmark-text"></i> Consultar Produto
                     </button>
                 </div>
-                <?php if ($this->temPermissao(['Administrador'])): ?>
+                <?php if ($this->temPermissao(['Administrador', 'Administrador Master'])): ?>
                     <div class="col-md-auto">
                         <button class="btn btn-secondary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#modal_consulta_fornecedor">
                             <i class="bi bi-file-earmark-text"></i> Consultar Fornecedor
@@ -71,7 +71,6 @@
                     </div>
                 <?php endif; ?>
             </div>
-
             <!-- Modal de Verificação de Produto -->
             <div class="modal fade" id="modal_verificar_produto" tabindex="-1" aria-labelledby="modalVerificarProdutoLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -222,7 +221,7 @@
                                     <legend class="float-none w-auto px-2">Dados do Tipo de Produto</legend>
                                     <div class="mb-3">
                                         <label for="nome_tipo_produto" class="form-label">Nome do Tipo de Produto *</label>
-                                        <input type="text" class="form-control" id="nome_tipo_produto" name="nome_tipo_produto"
+                                        <input type="text" class="form-control" id="nome_tipo" name="nome_tipo"
                                             required autocomplete="off" placeholder="Digite o nome do tipo de produto"
                                             pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$"
                                             title="Somente letras e espaços são permitidos" />
@@ -267,7 +266,7 @@
                                     <button type="reset" class="btn btn-outline-secondary w-50 py-2">
                                         <i class="bi bi-arrow-counterclockwise"></i> Limpar
                                     </button>
-                                    <button type="submit" name="cadastrar_cor" class="btn btn-success w-50 py-2">
+                                    <button type="submit" name="cadastrar_cor_produto" class="btn btn-success w-50 py-2">
                                         <i class="bi bi-check-circle"></i> Cadastrar
                                     </button>
                                 </div>
@@ -329,7 +328,7 @@
                                     </div>
                                 </div>
                                 <div class="text-center mt-4">
-                                    <button type="submit" name="consultar_cor" class="btn btn-primary">
+                                    <button type="submit" name="consultar_cor_produto" class="btn btn-primary">
                                         <i class="bi bi-search"></i> Consultar
                                     </button>
                                 </div>
@@ -438,6 +437,28 @@
                     </div>
                 </div>
             </div>
+            <div class="container-fluid">
+                <div class="row justify-content-center mt-4">
+                    <div class="col-md-6">
+                        <!-- tabela de produtos -->
+                        <?php if (isset($cores)) {
+                            $this->tabelaConsultaCor($cores);
+                        };
+                        ?>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+                <div class="row justify-content-center mt-4">
+                    <div class="col-md-6">
+                        <!-- tabela de produtos -->
+                        <?php if (isset($tiposProduto)) {
+                            $this->tabelaConsultaTipoProduto($tiposProduto);
+                        };
+                        ?>
+                    </div>
+                </div>
+            </div>
             <?php
             // fornecedor
             foreach ($fornecedor as $key => $valor) {
@@ -486,6 +507,28 @@
                 );
                 // modal de detalhes de Produtos
                 $this->modalDetalhesProduto($produto);
+            };
+
+            foreach ($cores as $key => $valor) {
+                $this->modalAlterarCor(
+                    $valor->id_cor,
+                    $valor->nome_cor
+                );
+                $this->modalExcluirCor(
+                    $valor->id_cor,
+                    $valor->nome_cor
+                );
+            };
+
+            foreach ($tiposProduto as $key => $valor) {
+                $this->modalAlterarTipoProduto(
+                    $valor->id_tipo_produto,
+                    $valor->nome_tipo
+                );
+                $this->modalExcluirTipoProduto(
+                    $valor->id_tipo_produto,
+                    $valor->nome_tipo
+                );
             };
             ?>
         </main>

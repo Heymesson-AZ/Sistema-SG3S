@@ -235,7 +235,7 @@
                         // Modal de Excluir Pedido
                         $this->modalExcluirPedido($origem, $id_pedido, $numero_pedido, $nome_fantasia);
                     };
-                    $this->modalAlterarPedido($pedidos);
+                    $this->modalAlterarPedido($pedidos, $pagina);
                     ?>
                     <?php
                     foreach ($pedidos as $key => $valor) {
@@ -264,7 +264,7 @@
                 </div>
             </div>
         </div>
-        <?php if ($this->temPermissao(['Administrador'])): ?>
+        <?php if ($this->temPermissao(['Administrador','Administrador Master'])): ?>
             <!-- DASHBOARD - GRÁFICOS -->
             <section class="container-fluid py-4">
                 <div class="row g-4">

@@ -1319,6 +1319,32 @@ class Controller
             $this->mostrarMensagemErro("Erro ao alterar Perfil");
         }
     }
+    // excluir perfil
+    public function excluir_Perfil($id_perfil)
+    {
+        // Instancia a classe Perfil
+        $objPerfil = new Perfil();
+        // Invocar o método
+        if ($objPerfil->excluirPerfil($id_perfil) == true) {
+            // Inicia a sessão
+            session_start();
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view do usuário
+            include_once 'view/usuario.php';
+            // Exibir mensagem de sucesso
+            $this->mostrarMensagemSucesso("Perfil excluído com sucesso");
+        } else {
+            // Inicia a sessão
+            session_start();
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view do usuário
+            include_once 'view/usuario.php';
+            // Exibir mensagem de erro
+            $this->mostrarMensagemErro("Não é possível excluir este perfil, pois existem usuários associados a ele.");
+        }
+    }
     // tabela de consulta de perfil
     public function tabelaConsultaPerfil($perfis)
     {
@@ -1379,37 +1405,11 @@ class Controller
         print '</table>';
         print '</div>';
     }
-    // excluir perfil
-    public function excluir_Perfil($id_perfil)
-    {
-        // Instancia a classe Perfil
-        $objPerfil = new Perfil();
-        // Invocar o método
-        if ($objPerfil->excluirPerfil($id_perfil) == true) {
-            // Inicia a sessão
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/usuario.php';
-            // Exibir mensagem de sucesso
-            $this->mostrarMensagemSucesso("Perfil excluído com sucesso");
-        } else {
-            // Inicia a sessão
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/usuario.php';
-            // Exibir mensagem de erro
-            $this->mostrarMensagemErro("Não é possível excluir este perfil, pois existem usuários associados a ele.");
-        }
-    }
     // modal de alterar Perfil de Usuario
     public function modalAlterarPerfil($id_perfil, $perfil_usuario)
     {
         print '<div class="modal fade" id="alterar_perfil' . $id_perfil . '" tabindex="-1" aria-labelledby="alterarPerfilLabel" aria-hidden="true">';
-        print '<div class="modal-dialog modal-lg modal-dialog-centered">';
+        print '<div class="modal-dialog modal-default modal-dialog-centered">';
         print '<div class="modal-content">';
 
         // Cabeçalho da modal
@@ -2918,6 +2918,380 @@ class Controller
         }
     }
 
+
+    // COR DO PRODUTO
+
+    public function cadastrar_CorProduto($nome_cor)
+    {
+        $objCor = new Cor();
+        // Verifica se a cor já existe no banco de dados
+        // A função consultarCor retorna um array. Se não estiver vazio, a cor já existe.
+        if (!empty($objCor->consultarCor($nome_cor))) {
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            $this->mostrarMensagemErro("Cor já cadastrada");
+            exit();
+        } else {
+            // Invoca o método da classe Cor para cadastrar
+            if ($objCor->cadastrarCor($nome_cor) == true) {
+                session_start();
+                $menu = $this->menu();
+                include_once 'view/produto.php';
+                $this->mostrarMensagemSucesso("Cor cadastrada com sucesso");
+            } else {
+                session_start();
+                $menu = $this->menu();
+                include_once 'view/produto.php';
+                $this->mostrarMensagemErro("Erro ao cadastrar Cor");
+            }
+        }
+    }
+    public function consultar_CorProduto($nome_cor = null)
+    {
+        $objCor = new Cor();
+        // Invoca o método de consulta
+        $cores = $objCor->consultarCor($nome_cor);
+        if ($cores !== false) {
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+        } else {
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            $this->mostrarMensagemErro("Erro ao consultar Cores");
+        }
+    }
+    public function alterar_CorProduto($id_cor, $nome_cor)
+    {
+        $objCor = new Cor();
+        // Invoca o método de alteração
+        if ($objCor->alterarCor($id_cor, $nome_cor) == true) {
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';;
+            $this->mostrarMensagemSucesso("Cor alterada com sucesso");
+        } else {
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            $this->mostrarMensagemErro("Erro ao alterar Cor");
+        }
+    }
+    public function excluir_CorProduto($id_cor)
+    {
+        $objCor = new Cor();
+        // Invoca o método de exclusão, que pode retornar true, false ou 'em_uso'
+        $resultado = $objCor->excluirCor($id_cor);
+        if ($resultado === true) {
+            session_start();
+            $menu = $this->menu();
+            // IMPORTANTE: Altere 'view/cores.php' para o caminho da sua view de cores
+            include_once 'view/produto.php';
+            $this->mostrarMensagemSucesso("Cor excluída com sucesso");
+        } else if ($resultado === 'em_uso') {
+            // Caso específico em que a cor está associada a outro registro
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            $this->mostrarMensagemErro("Não é possível excluir esta cor, pois existem produtos associados a ela.");
+        } else {
+            // Qualquer outro tipo de erro
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            $this->mostrarMensagemErro("Erro ao excluir Cor");
+        }
+    }
+    public function tabelaConsultaCor($cores)
+    {
+        if (empty($cores)) return;
+
+        print '<div class="table-responsive mt-4">';
+        print '<table class="table table-striped table-hover table-bordered align-middle text-center">';
+        print '<thead class="table-primary">';
+        print '<tr>';
+        print '<th scope="col">Cor</th>';
+        print '<th scope="col">Ações</th>';
+        print '</tr>';
+        print '</thead>';
+        print '<tbody>';
+
+        foreach ($cores as $valor) {
+            print '<tr>';
+            print '<td>' . htmlspecialchars($valor->nome_cor, ENT_QUOTES, 'UTF-8') . '</td>';
+            print '<td>';
+            print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
+            print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_cor' . $valor->id_cor . '"><i class="bi bi-pencil-square"></i></button>';
+            print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_cor' . $valor->id_cor . '"><i class="bi bi-trash"></i></button>';
+            print '</div>';
+            print '</td>';
+            print '</tr>';
+        }
+        print '</tbody>';
+        print '</table>';
+        print '</div>';
+    }
+    public function modalAlterarCor($id_cor, $nome_cor)
+    {
+        print '<div class="modal fade" id="alterar_cor' . $id_cor . '" tabindex="-1" aria-labelledby="alterarCorLabel" aria-hidden="true">';
+        print '<div class="modal-dialog modal-default modal-dialog-centered">';
+        print '<div class="modal-content">';
+
+        // Cabeçalho
+        print '<div class="modal-header">';
+        print '<h6 class="modal-title" id="modalCorAlterarLabel">Alterar Cor</h6>';
+        print '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '</div>';
+
+        // Corpo
+        print '<div class="modal-body">';
+        print '<form action="index.php" method="POST" id="formulario_cor_alterar_' . $id_cor . '">';
+        print '<input type="hidden" name="id_cor" value="' . $id_cor . '">';
+        print '<fieldset class="border border-black p-3 mb-4">';
+        print '<legend class="float-none w-auto px-2">Dados da Cor</legend>';
+
+        print '<div class="mb-3">';
+        print '<label for="nome_cor_alterar_' . $id_cor . '" class="form-label">Nome da Cor *</label>';
+        print '<input type="text" class="form-control" id="nome_cor_alterar_' . $id_cor . '" name="alterar_cor_produto" required autocomplete="off" placeholder="Digite o nome da cor" value="' . htmlspecialchars($nome_cor, ENT_QUOTES) . '">';
+        print '</div>';
+
+        print '</fieldset>';
+        print '</form>';
+        print '</div>'; // fecha modal-body
+
+        // Rodapé
+        print '<div class="modal-footer">';
+        print '<div class="container-fluid">';
+        print '<div class="row g-2">';
+        print '<div class="col-md-6">';
+        print '<button type="button" class="btn btn-outline-secondary w-100 py-2" data-bs-dismiss="modal">';
+        print '<i class="bi bi-x-circle"></i> Cancelar';
+        print '</button>';
+        print '</div>';
+        print '<div class="col-md-6">';
+        print '<button type="submit" form="formulario_cor_alterar_' . $id_cor . '" name="alterar_cor" class="btn btn-primary w-100 py-2">';
+        print '<i class="bi bi-check-circle"></i> Alterar';
+        print '</button>';
+        print '</div>';
+        print '</div>'; // fecha row
+        print '</div>'; // fecha container-fluid
+        print '</div>'; // fecha modal-footer
+
+        print '</div>'; // fecha modal-content
+        print '</div>'; // fecha modal-dialog
+        print '</div>'; // fecha modal
+    }
+    public function modalExcluirCor($id_cor, $nome_cor)
+    {
+        print '<div class="modal fade" id="excluir_cor' . $id_cor . '" tabindex="-1" aria-labelledby="excluirCorLabel" aria-hidden="true">';
+        print '<div class="modal-dialog modal-dialog-centered">';
+        print '<div class="modal-content">';
+        print '<div class="modal-header">';
+        print '<h5 class="modal-title" id="excluirCorLabel">Excluir Cor</h5>';
+        print '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>';
+        print '</div>';
+        print '<div class="modal-body">';
+        print 'Tem certeza que deseja excluir a cor <strong>' . htmlspecialchars($nome_cor, ENT_QUOTES, 'UTF-8') . '</strong>?';
+        print '</div>';
+        print '<form action="index.php" method="post">';
+        print '<div class="modal-footer">';
+        print '<input type="hidden" name="id_cor" value="' . $id_cor . '">';
+        print '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>';
+        print '<button type="submit" name="excluir_cor_produto" class="btn btn-danger">Excluir</button>';
+        print '</div>';
+        print '</form>';
+        print '</div>';
+        print '</div>';
+        print '</div>';
+    }
+
+
+    // TIPO DO PRODUTO
+
+
+    public function cadastrar_TipoProduto($nome_tipo)
+    {
+        $objTipoProduto = new TipoProduto();
+
+        // Verifica se o tipo de produto já existe
+        if (!empty($objTipoProduto->consultarTipo($nome_tipo))) {
+            session_start();
+            $menu = $this->menu();
+            // IMPORTANTE: Altere 'view/produto.php' se a view for outra
+            include_once 'view/produto.php';
+            $this->mostrarMensagemErro("Tipo de produto já cadastrado");
+            exit();
+        } else {
+            // Invoca o método da classe para cadastrar
+            if ($objTipoProduto->cadastrarTipo($nome_tipo) == true) {
+                session_start();
+                $menu = $this->menu();
+                include_once 'view/produto.php';
+                $this->mostrarMensagemSucesso("Tipo de produto cadastrado com sucesso");
+            } else {
+                session_start();
+                $menu = $this->menu();
+                include_once 'view/produto.php';
+                $this->mostrarMensagemErro("Erro ao cadastrar Tipo de Produto");
+            }
+        }
+    }
+    public function consultar_TipoProduto($nome_tipo = null)
+    {
+        $objTipoProduto = new TipoProduto();
+
+        // Invoca o método de consulta
+        $tiposProduto = $objTipoProduto->consultarTipo($nome_tipo);
+
+        if ($tiposProduto !== false) {
+            session_start();
+            $menu = $this->menu();
+            // A variável $tiposProduto estará disponível na view
+            include_once 'view/produto.php';
+        } else {
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            $this->mostrarMensagemErro("Erro ao consultar Tipos de Produto");
+        }
+    }
+    public function alterar_TipoProduto($id_tipo_produto, $nome_tipo)
+    {
+        $objTipoProduto = new TipoProduto();
+
+        if ($objTipoProduto->alterarTipo($id_tipo_produto, $nome_tipo) == true) {
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            $this->mostrarMensagemSucesso("Tipo de produto alterado com sucesso");
+        } else {
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            $this->mostrarMensagemErro("Erro ao alterar Tipo de Produto");
+        }
+    }
+    public function excluir_TipoProduto($id_tipo_produto)
+    {
+        $objTipoProduto = new TipoProduto();
+
+        // O método excluirTipo retorna 'false' se estiver em uso ou se ocorrer um erro.
+        if ($objTipoProduto->excluirTipo($id_tipo_produto) === true) {
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            $this->mostrarMensagemSucesso("Tipo de produto excluído com sucesso");
+        } else {
+            // Mensagem genérica que cobre tanto o caso de estar em uso quanto outros erros.
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            $this->mostrarMensagemErro("Não é possível excluir. Verifique se o tipo de produto não está associado a um produto existente.");
+        }
+    }
+    public function tabelaConsultaTipoProduto($tiposProduto)
+    {
+        if (empty($tiposProduto)) return;
+
+        print '<div class="table-responsive mt-4">';
+        print '<table class="table table-striped table-hover table-bordered align-middle text-center">';
+        print '<thead class="table-primary">';
+        print '<tr>';
+        print '<th scope="col">Tipo de Produto</th>';
+        print '<th scope="col">Ações</th>';
+        print '</tr>';
+        print '</thead>';
+        print '<tbody>';
+
+        foreach ($tiposProduto as $valor) {
+            print '<tr>';
+            print '<td>' . htmlspecialchars($valor->nome_tipo, ENT_QUOTES, 'UTF-8') . '</td>';
+            print '<td>';
+            print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
+            print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_tipo_produto' . $valor->id_tipo_produto . '"><i class="bi bi-pencil-square"></i></button>';
+            print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_tipo_produto' . $valor->id_tipo_produto . '"><i class="bi bi-trash"></i></button>';
+            print '</div>';
+            print '</td>';
+            print '</tr>';
+        }
+        print '</tbody>';
+        print '</table>';
+        print '</div>';
+    }
+    public function modalAlterarTipoProduto($id_tipo_produto, $nome_tipo)
+    {
+        print '<div class="modal fade" id="alterar_tipo_produto' . $id_tipo_produto . '" tabindex="-1" aria-labelledby="alterarTipoProdutoLabel" aria-hidden="true">';
+        print '<div class="modal-dialog modal-lg modal-dialog-centered">';
+        print '<div class="modal-content">';
+
+        // Cabeçalho
+        print '<div class="modal-header">';
+        print '<h6 class="modal-title" id="modalTipoProdutoAlterarLabel">Alterar Tipo de Produto</h6>';
+        print '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>';
+        print '</div>';
+
+        // Corpo
+        print '<div class="modal-body">';
+        print '<form action="index.php" method="POST" id="formulario_tipo_produto_alterar_' . $id_tipo_produto . '">';
+        print '<input type="hidden" name="id_tipo_produto" value="' . $id_tipo_produto . '">';
+        print '<fieldset class="border border-black p-3 mb-4">';
+        print '<legend class="float-none w-auto px-2">Dados do Tipo de Produto</legend>';
+        print '<div class="mb-3">';
+        print '<label for="nome_tipo_alterar_' . $id_tipo_produto . '" class="form-label">Nome do Tipo de Produto *</label>';
+        print '<input type="text" class="form-control" id="nome_tipo_alterar_' . $id_tipo_produto . '" name="nome_tipo_produto" required autocomplete="off" placeholder="Digite o nome do tipo" value="' . htmlspecialchars($nome_tipo, ENT_QUOTES) . '">';
+        print '</div>';
+        print '</fieldset>';
+        print '</form>';
+        print '</div>';
+
+        // Rodapé
+        print '<div class="modal-footer">';
+        print '<div class="container-fluid">';
+        print '<div class="row g-2">';
+        print '<div class="col-md-6">';
+        print '<button type="button" class="btn btn-outline-secondary w-100 py-2" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>';
+        print '</div>';
+        print '<div class="col-md-6">';
+        print '<button type="submit" form="formulario_tipo_produto_alterar_' . $id_tipo_produto . '" name="alterar_tipo_produto" class="btn btn-primary w-100 py-2"><i class="bi bi-check-circle"></i> Alterar</button>';
+        print '</div>';
+        print '</div>';
+        print '</div>';
+        print '</div>';
+
+        print '</div>';
+        print '</div>';
+        print '</div>';
+    }
+    public function modalExcluirTipoProduto($id_tipo_produto, $nome_tipo)
+    {
+        print '<div class="modal fade" id="excluir_tipo_produto' . $id_tipo_produto . '" tabindex="-1" aria-labelledby="excluirTipoProdutoLabel" aria-hidden="true">';
+        print '<div class="modal-dialog modal-dialog-centered">';
+        print '<div class="modal-content">';
+        print '<div class="modal-header">';
+        print '<h5 class="modal-title" id="excluirTipoProdutoLabel">Excluir Tipo de Produto</h5>';
+        print '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>';
+        print '</div>';
+        print '<div class="modal-body">';
+        print 'Tem certeza que deseja excluir o tipo <strong>' . htmlspecialchars($nome_tipo, ENT_QUOTES, 'UTF-8') . '</strong>?';
+        print '</div>';
+        print '<form action="index.php" method="post">';
+        print '<div class="modal-footer">';
+        print '<input type="hidden" name="id_tipo_produto" value="' . $id_tipo_produto . '">';
+        print '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>';
+        print '<button type="submit" name="excluir_tipo_produto" class="btn btn-danger">Excluir</button>';
+        print '</div>';
+        print '</form>';
+        print '</div>';
+        print '</div>';
+        print '</div>';
+    }
+
+
+
+
+
     // CLIENTE
 
     // verificar cliente
@@ -4083,6 +4457,7 @@ class Controller
             session_start();
             // Passa os resultados para a view
             $pedidos = $objPedido->consultarPedido($numero_pedido, $id_cliente, $data_pedido, $status_pedido, $id_forma_pagamento);
+            $pagina = $origem;
             if ($origem === 'pedido') {
                 // Carregar o menu
                 $menu = $this->menu();
@@ -4198,6 +4573,189 @@ class Controller
         print    '</tbody>
             </table>
         </div>';
+    }
+    // modal de alterar pedido
+    public function modalAlterarPedido($pedidos, $origem)
+    {
+        if (empty($pedidos)) return;
+
+        // Agrupar itens por pedido
+        $pedidosAgrupados = [];
+
+        foreach ($pedidos as $pedido) {
+            $id = $pedido->id_pedido;
+
+            if (!isset($pedidosAgrupados[$id])) {
+                $pedidosAgrupados[$id] = [
+                    'dados' => $pedido,
+                    'itens' => [],
+                ];
+            }
+
+            if (!empty($pedido->id_item_pedido)) {
+                // MODIFICADO: Adiciona os novos campos ao array de itens
+                $pedidosAgrupados[$id]['itens'][] = [
+                    'id_produto'     => $pedido->id_produto,
+                    'nome_produto'   => $pedido->nome_produto,
+                    'nome_cor'       => $pedido->nome_cor,
+                    'largura'        => $pedido->largura,
+                    'quantidade'     => $pedido->quantidade,
+                    'valor_unitario' => $pedido->valor_unitario,
+                ];
+            }
+        }
+
+        foreach ($pedidosAgrupados as $pedido) {
+            $idModal = 'modal_alterar_pedido_' . $pedido['dados']->numero_pedido;
+            $dados   = $pedido['dados'];
+            $itens   = $pedido['itens'];
+            $valorFrete = isset($dados->valor_frete) ? $dados->valor_frete : 0;
+
+            print '<div class="modal fade modal-alterar-pedido" id="' . $idModal . '" tabindex="-1" aria-labelledby="' . $idModal . '_label" aria-hidden="true">';
+            print '   <div class="modal-dialog modal-xl modal-dialog-centered">';
+            print '     <div class="modal-content">';
+
+            // Cabeçalho
+            print '       <div class="modal-header bg-light">';
+            print '         <h5 class="modal-title fw-bold" id="' . $idModal . '_label">';
+            print '           <i class="bi bi-pencil-square me-2"></i> Alterar Pedido #' . $dados->numero_pedido;
+            print '         </h5>';
+            print '         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
+            print '       </div>';
+
+            // Corpo
+            print '       <div class="modal-body">';
+            print '         <form action="index.php" method="POST" class="form-alterar-pedido" id="form_' . $dados->numero_pedido . '">';
+            print '           <input type="hidden" name="origem" value="' . htmlspecialchars($origem) . '">';
+            print '           <input type="hidden" name="id_pedido" value="' . $dados->id_pedido . '">';
+            print '           <input type="hidden" name="alterar_pedido" value="1">';
+
+            print '           <div class="row g-4">';
+
+            /** LADO ESQUERDO **/
+            print '             <div class="col-md-4">';
+
+            // Cliente
+            print '               <fieldset class="border rounded p-3 mb-4">';
+            print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Cliente</legend>';
+            print '                 <div class="mb-3 position-relative">';
+            print '                   <label for="cliente_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Cliente</label>';
+            print '                   <div class="input-group">';
+            print '                     <span class="input-group-text"><i class="bi bi-search"></i></span>';
+            print '                     <input type="text" class="form-control cliente-input" id="cliente_pedido_' . $dados->numero_pedido . '" name="cliente_pedido" value="' . htmlspecialchars($dados->nome_fantasia) . '" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">';
+            print '                   </div>';
+            print '                   <div id="resultado_busca_cliente_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
+            print '                   <input type="hidden" class="id-cliente" name="id_cliente" value="' . $dados->id_cliente . '">';
+            print '                 </div>';
+            print '               </fieldset>';
+
+            // Dados do pedido
+            print '               <fieldset class="border rounded p-3 mb-4">';
+            print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Dados do Pedido</legend>';
+            print '                 <div class="row g-3">';
+            print '                   <div class="col-md-6">';
+            print '                     <label for="frete_' . $dados->numero_pedido . '" class="form-label">Frete</label>';
+            print '                     <input type="text" class="form-control frete" id="frete_' . $dados->numero_pedido . '" name="valor_frete" value="R$ ' . number_format($valorFrete, 2, ',', '.') . '">';
+            print '                   </div>';
+            print '                   <div class="col-md-6">';
+            print '                     <label for="valor_total_' . $dados->numero_pedido . '" class="form-label">Valor Total</label>';
+            print '                     <input type="text" class="form-control valor-total" id="valor_total_' . $dados->numero_pedido . '" name="valor_total" readonly value="R$ ' . number_format($dados->valor_total, 2, ',', '.') . '">';
+            print '                   </div>';
+            print '                   <div class="col-12">';
+            $this->selectConsultaForma_Pagamento($dados->id_forma_pagamento);
+            print '                   </div>';
+            print '                 </div>';
+            print '               </fieldset>';
+
+            print '             </div>';
+
+            /** LADO DIREITO **/
+            print '             <div class="col-md-8">';
+            print '               <fieldset class="border rounded p-3 h-100">';
+            print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Produtos</legend>';
+
+            // Busca produto
+            print '                 <div class="row g-3 align-items-end mb-3">';
+            print '                   <div class="col-md-8 position-relative">';
+            print '                     <label for="produto_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Produto</label>';
+            print '                     <div class="input-group">';
+            print '                       <span class="input-group-text"><i class="bi bi-search"></i></span>';
+            print '                       <input type="text" class="form-control produto-input" id="produto_pedido_' . $dados->numero_pedido . '" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off">';
+            print '                     </div>';
+            print '                     <div id="resultado_busca_produto_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
+            print '                   </div>';
+            print '                   <div class="col-md-4">';
+            print '                     <label for="quantidade_' . $dados->numero_pedido . '" class="form-label">Quantidade</label>';
+            print '                     <div class="input-group">';
+            print '                       <input type="text" class="form-control quantidade-input" id="quantidade_' . $dados->numero_pedido . '" name="quantidade" min="1" autocomplete="off">';
+            print '                       <button type="button" class="btn btn-outline-primary adicionar-produto" id="adicionar_produto_' . $dados->numero_pedido . '">';
+            print '                         <i class="bi bi-plus"></i>';
+            print '                       </button>';
+            print '                     </div>';
+            print '                   </div>';
+            print '                 </div>';
+
+            // Tabela produtos
+            print '                 <div class="table-responsive">';
+            print '                   <label class="form-label fw-semibold">Produtos do Pedido</label>';
+            print '                   <table class="table table-bordered table-striped table-sm align-middle text-center">';
+            print '                     <thead class="table-light">';
+            print '                       <tr>';
+            // MODIFICADO: Adiciona os cabeçalhos da tabela
+            print '                         <th class="text-start">Produto</th>';
+            print '                         <th>Cor</th>';
+            print '                         <th>Largura (m)</th>';
+            print '                         <th>Quantidade</th>';
+            print '                         <th>Valor Unitário</th>';
+            print '                         <th>Valor Total</th>';
+            print '                         <th>Ação</th>';
+            print '                       </tr>';
+            print '                     </thead>';
+            print '                     <tbody id="tbody_lista_pedido_' . $dados->numero_pedido . '">';
+
+            foreach ($itens as $item) {
+                $valorTotalLinha = $item['quantidade'] * $item['valor_unitario'];
+                print '                       <tr data-id-produto="' . $item['id_produto'] . '">';
+                // MODIFICADO: Adiciona as células com os novos dados
+                print '                         <td class="text-start">' . htmlspecialchars($item['nome_produto']) . '</td>';
+                print '                         <td>' . (!empty($item['nome_cor']) ? htmlspecialchars($item['nome_cor']) : '-') . '</td>';
+                print '                         <td>' . (!empty($item['largura']) ? htmlspecialchars($item['largura']) : '-') . '</td>';
+                print '                         <td><input type="text" class="form-control form-control-sm text-center quantidade-item" name="itens[' . $item['id_produto'] . '][quantidade]" value="' . $item['quantidade'] . '" min="1"></td>';
+                print '                         <td>R$ ' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>';
+                print '                         <td>R$ ' . number_format($valorTotalLinha, 2, ',', '.') . '</td>';
+                print '                         <td class="acao-item"></td>';
+                print '                         <input type="hidden" name="itens[' . $item['id_produto'] . '][id_produto]" value="' . $item['id_produto'] . '">';
+                print '                         <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_unitario]" value="' . $item['valor_unitario'] . '">';
+                print '                         <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_total]" value="' . $valorTotalLinha . '">';
+                print '                       </tr>';
+            }
+
+            print '                     </tbody>';
+            print '                   </table>';
+            print '                 </div>';
+
+            print '               </fieldset>';
+            print '             </div>';
+
+            print '           </div>'; // fim row
+
+            // Rodapé
+            print '           <div class="modal-footer">';
+            print '             <button type="submit" class="btn btn-success salvar-pedido" id="alterar_pedido_' . $dados->numero_pedido . '" disabled>';
+            print '               <i class="bi bi-check-circle me-1"></i> Salvar Alterações';
+            print '             </button>';
+            print '             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">';
+            print '               <i class="bi bi-x-lg me-1"></i> Fechar';
+            print '             </button>';
+            print '           </div>';
+
+            print '         </form>';
+            print '       </div>';
+
+            print '     </div>';
+            print '   </div>';
+            print '</div>';
+        }
     }
     // Método auxiliar para criar botões
     private function botao($classe, $target, $icone, $titulo = '')
@@ -4380,189 +4938,7 @@ class Controller
         print '</div>';
         print '</div>';
     }
-    // modal de alterar pedido
-    public function modalAlterarPedido($pedidos)
-    {
-        if (empty($pedidos)) return;
 
-        // Agrupar itens por pedido
-        $pedidosAgrupados = [];
-
-        foreach ($pedidos as $pedido) {
-            $id = $pedido->id_pedido;
-
-            if (!isset($pedidosAgrupados[$id])) {
-                $pedidosAgrupados[$id] = [
-                    'dados' => $pedido,
-                    'itens' => [],
-                ];
-            }
-
-            if (!empty($pedido->id_item_pedido)) {
-                // MODIFICADO: Adiciona os novos campos ao array de itens
-                $pedidosAgrupados[$id]['itens'][] = [
-                    'id_produto'     => $pedido->id_produto,
-                    'nome_produto'   => $pedido->nome_produto,
-                    'nome_cor'       => $pedido->nome_cor,     // ADICIONADO
-                    'largura'        => $pedido->largura,      // ADICIONADO
-                    'quantidade'     => $pedido->quantidade,
-                    'valor_unitario' => $pedido->valor_unitario,
-                ];
-            }
-        }
-
-        foreach ($pedidosAgrupados as $pedido) {
-            $idModal = 'modal_alterar_pedido_' . $pedido['dados']->numero_pedido;
-            $dados   = $pedido['dados'];
-            $itens   = $pedido['itens'];
-            $valorFrete = isset($dados->valor_frete) ? $dados->valor_frete : 0;
-
-            print '<div class="modal fade modal-alterar-pedido" id="' . $idModal . '" tabindex="-1" aria-labelledby="' . $idModal . '_label" aria-hidden="true">';
-            print '   <div class="modal-dialog modal-xl modal-dialog-centered">';
-            print '     <div class="modal-content">';
-
-            // Cabeçalho
-            print '       <div class="modal-header bg-light">';
-            print '         <h5 class="modal-title fw-bold" id="' . $idModal . '_label">';
-            print '           <i class="bi bi-pencil-square me-2"></i> Alterar Pedido #' . $dados->numero_pedido;
-            print '         </h5>';
-            print '         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
-            print '       </div>';
-
-            // Corpo
-            print '       <div class="modal-body">';
-            print '         <form action="index.php" method="POST" class="form-alterar-pedido" id="form_' . $dados->numero_pedido . '">';
-            print '           <input type="hidden" name="origem" value="pedido">';
-            print '           <input type="hidden" name="id_pedido" value="' . $dados->id_pedido . '">';
-            print '           <input type="hidden" name="alterar_pedido" value="1">';
-
-            print '           <div class="row g-4">';
-
-            /** LADO ESQUERDO **/
-            print '             <div class="col-md-4">';
-
-            // Cliente
-            print '               <fieldset class="border rounded p-3 mb-4">';
-            print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Cliente</legend>';
-            print '                 <div class="mb-3 position-relative">';
-            print '                   <label for="cliente_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Cliente</label>';
-            print '                   <div class="input-group">';
-            print '                     <span class="input-group-text"><i class="bi bi-search"></i></span>';
-            print '                     <input type="text" class="form-control cliente-input" id="cliente_pedido_' . $dados->numero_pedido . '" name="cliente_pedido" value="' . htmlspecialchars($dados->nome_fantasia) . '" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">';
-            print '                   </div>';
-            print '                   <div id="resultado_busca_cliente_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
-            print '                   <input type="hidden" class="id-cliente" name="id_cliente" value="' . $dados->id_cliente . '">';
-            print '                 </div>';
-            print '               </fieldset>';
-
-            // Dados do pedido
-            print '               <fieldset class="border rounded p-3 mb-4">';
-            print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Dados do Pedido</legend>';
-            print '                 <div class="row g-3">';
-            print '                   <div class="col-md-6">';
-            print '                     <label for="frete_' . $dados->numero_pedido . '" class="form-label">Frete</label>';
-            print '                     <input type="text" class="form-control frete" id="frete_' . $dados->numero_pedido . '" name="valor_frete" value="R$ ' . number_format($valorFrete, 2, ',', '.') . '">';
-            print '                   </div>';
-            print '                   <div class="col-md-6">';
-            print '                     <label for="valor_total_' . $dados->numero_pedido . '" class="form-label">Valor Total</label>';
-            print '                     <input type="text" class="form-control valor-total" id="valor_total_' . $dados->numero_pedido . '" name="valor_total" readonly value="R$ ' . number_format($dados->valor_total, 2, ',', '.') . '">';
-            print '                   </div>';
-            print '                   <div class="col-12">';
-            $this->selectConsultaForma_Pagamento($dados->id_forma_pagamento);
-            print '                   </div>';
-            print '                 </div>';
-            print '               </fieldset>';
-
-            print '             </div>';
-
-            /** LADO DIREITO **/
-            print '             <div class="col-md-8">';
-            print '               <fieldset class="border rounded p-3 h-100">';
-            print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Produtos</legend>';
-
-            // Busca produto
-            print '                 <div class="row g-3 align-items-end mb-3">';
-            print '                   <div class="col-md-8 position-relative">';
-            print '                     <label for="produto_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Produto</label>';
-            print '                     <div class="input-group">';
-            print '                       <span class="input-group-text"><i class="bi bi-search"></i></span>';
-            print '                       <input type="text" class="form-control produto-input" id="produto_pedido_' . $dados->numero_pedido . '" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off">';
-            print '                     </div>';
-            print '                     <div id="resultado_busca_produto_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
-            print '                   </div>';
-            print '                   <div class="col-md-4">';
-            print '                     <label for="quantidade_' . $dados->numero_pedido . '" class="form-label">Quantidade</label>';
-            print '                     <div class="input-group">';
-            print '                       <input type="text" class="form-control quantidade-input" id="quantidade_' . $dados->numero_pedido . '" name="quantidade" min="1" autocomplete="off">';
-            print '                       <button type="button" class="btn btn-outline-primary adicionar-produto" id="adicionar_produto_' . $dados->numero_pedido . '">';
-            print '                         <i class="bi bi-plus"></i>';
-            print '                       </button>';
-            print '                     </div>';
-            print '                   </div>';
-            print '                 </div>';
-
-            // Tabela produtos
-            print '                 <div class="table-responsive">';
-            print '                   <label class="form-label fw-semibold">Produtos do Pedido</label>';
-            print '                   <table class="table table-bordered table-striped table-sm align-middle text-center">';
-            print '                     <thead class="table-light">';
-            print '                       <tr>';
-            // MODIFICADO: Adiciona os cabeçalhos da tabela
-            print '                         <th class="text-start">Produto</th>';
-            print '                         <th>Cor</th>';
-            print '                         <th>Largura (m)</th>';
-            print '                         <th>Quantidade</th>';
-            print '                         <th>Valor Unitário</th>';
-            print '                         <th>Valor Total</th>';
-            print '                         <th>Ação</th>';
-            print '                       </tr>';
-            print '                     </thead>';
-            print '                     <tbody id="tbody_lista_pedido_' . $dados->numero_pedido . '">';
-
-            foreach ($itens as $item) {
-                $valorTotalLinha = $item['quantidade'] * $item['valor_unitario'];
-                print '                       <tr data-id-produto="' . $item['id_produto'] . '">';
-                // MODIFICADO: Adiciona as células com os novos dados
-                print '                         <td class="text-start">' . htmlspecialchars($item['nome_produto']) . '</td>';
-                print '                         <td>' . (!empty($item['nome_cor']) ? htmlspecialchars($item['nome_cor']) : '-') . '</td>';
-                print '                         <td>' . (!empty($item['largura']) ? htmlspecialchars($item['largura']) : '-') . '</td>';
-                print '                         <td><input type="text" class="form-control form-control-sm text-center quantidade-item" name="itens[' . $item['id_produto'] . '][quantidade]" value="' . $item['quantidade'] . '" min="1"></td>';
-                print '                         <td>R$ ' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>';
-                print '                         <td>R$ ' . number_format($valorTotalLinha, 2, ',', '.') . '</td>';
-                print '                         <td class="acao-item"></td>';
-                print '                         <input type="hidden" name="itens[' . $item['id_produto'] . '][id_produto]" value="' . $item['id_produto'] . '">';
-                print '                         <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_unitario]" value="' . $item['valor_unitario'] . '">';
-                print '                         <input type="hidden" name="itens[' . $item['id_produto'] . '][valor_total]" value="' . $valorTotalLinha . '">';
-                print '                       </tr>';
-            }
-
-            print '                     </tbody>';
-            print '                   </table>';
-            print '                 </div>';
-
-            print '               </fieldset>';
-            print '             </div>';
-
-            print '           </div>'; // fim row
-
-            // Rodapé
-            print '           <div class="modal-footer">';
-            print '             <button type="submit" class="btn btn-success salvar-pedido" id="alterar_pedido_' . $dados->numero_pedido . '" disabled>';
-            print '               <i class="bi bi-check-circle me-1"></i> Salvar Alterações';
-            print '             </button>';
-            print '             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">';
-            print '               <i class="bi bi-x-lg me-1"></i> Fechar';
-            print '             </button>';
-            print '           </div>';
-
-            print '         </form>';
-            print '       </div>';
-
-            print '     </div>';
-            print '   </div>';
-            print '</div>';
-        }
-    }
 
     // metodo para alterar o pedido
     public function alterar_Pedido(

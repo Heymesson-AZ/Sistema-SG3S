@@ -42,18 +42,43 @@ class Cor extends Conexao
             return false;
         }
     }
+    private function verificarUsoCor($id_cor)
+    {
+        $sql = "SELECT COUNT(*) FROM produto WHERE id_cor = :id_cor";
+
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+            $query->bindParam(':id_cor', $id_cor, PDO::PARAM_INT);
+            $query->execute();
+            return $query->fetchColumn(); // Retorna a contagem
+        } catch (PDOException $e) {
+            print "Erro ao verificar uso da cor: " . $e->getMessage();
+            return false;
+        }
+    }
     // Método para excluir cor
     public function excluirCor($id_cor)
     {
         $this->setIdCor($id_cor);
-        $sql = "DELETE FROM cor WHERE id_cor = :id_cor";
+
         try {
+            // 1. Verificar se a cor está em uso
+            $emUso = $this->verificarUsoCor($this->getIdCor());
+
+            if ($emUso > 0) {
+                return false;
+            }
+
+            // 2. Se não estiver em uso, prosseguir com a exclusão
+            $sql = "DELETE FROM cor WHERE id_cor = :id_cor";
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);
             $query->bindParam(':id_cor', $this->getIdCor(), PDO::PARAM_INT);
             $query->execute();
             return true;
         } catch (PDOException $e) {
+            // Em caso de erro na consulta ou exclusão
             print "Erro ao excluir cor: " . $e->getMessage();
             return false;
         }
@@ -80,11 +105,13 @@ class Cor extends Conexao
     public function consultarCor($nome_cor = null)
     {
         $this->setNomeCor($nome_cor);
-        $sql = "SELECT id_cor, nome_cor FROM cor WHERE 1=1";
+        $sql = "SELECT * FROM cor WHERE 1=1";
+
         if ($nome_cor !== null) {
             $sql .= " AND nome_cor LIKE :nome_cor";
         }
-        $sql .= " ORDER BY id_cor ASC";
+
+        $sql .= " ORDER BY nome_cor ASC";
         try {
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);

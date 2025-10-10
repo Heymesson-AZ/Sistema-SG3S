@@ -56,6 +56,13 @@ class Perfil extends Conexao
     {
         // Atributos para
         $this->setIdPerfil($id_perfil);
+
+        $perfilUsado = $this->verificarUsoPerfil($this->getIdPerfil());
+
+        if ($perfilUsado > 0) {
+            return false;
+        }
+
         // Montar query
         $sql = "DELETE FROM perfil_usuario WHERE id_perfil = :id_perfil";
         // Executar a query
@@ -72,6 +79,23 @@ class Perfil extends Conexao
             return true;
         } catch (PDOException $e) {
             // Retornar false
+            return false;
+        }
+    }
+    private function verificarUsoPerfil($id_perfil)
+    {
+        // IMPORTANTE: Substitua 'sua_tabela' pelo nome da tabela que usa a cor (ex: produtos, veiculos)
+        // e 'id_cor_fk' pelo nome da coluna de chave estrangeira correspondente.
+        $sql = "SELECT COUNT(*) FROM usuario WHERE id_perfil = :id_cor";
+
+        try {
+            $bd = $this->conectarBanco();
+            $query = $bd->prepare($sql);
+            $query->bindParam(':id_cor', $id_perfil, PDO::PARAM_INT);
+            $query->execute();
+            return $query->fetchColumn(); // Retorna a contagem
+        } catch (PDOException $e) {
+            print "Erro ao verificar uso da cor: " . $e->getMessage();
             return false;
         }
     }
@@ -115,7 +139,7 @@ class Perfil extends Conexao
             $sql .= " AND perfil_usuario LIKE :perfil_usuario";
         }
         // ordenar
-        $sql.= " ORDER BY id_perfil ASC";
+        $sql .= " ORDER BY id_perfil ASC";
         try {
             // Conectar ao banco
             $bd = $this->conectarBanco();

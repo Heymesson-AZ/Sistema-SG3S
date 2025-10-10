@@ -121,36 +121,32 @@ if (isset($_POST['alterar_senha'])) {
 
 // PERFIL
 
-// Função utilitária para sanitizar nome de perfil
-function limparNomePerfil($valor)
-{
-    return htmlspecialchars(trim($valor));
-}
+
 // ================= VERIFICAR PERFIL =================
 if (isset($_POST['verificar_perfil'])) {
-    $nome_perfil = limparNomePerfil($_POST['nome_perfil']);
+    $nome_perfil = limparTexto($_POST['nome_perfil']);
     $objController->consultar_Perfil($nome_perfil);
 }
 // ================= CADASTRAR PERFIL =================
 if (isset($_POST['cadastrar_perfil'])) {
-    $nome_perfil = limparNomePerfil($_POST['nome_perfil']);
+    $nome_perfil = limparTexto($_POST['nome_perfil']);
     $objController->cadastrar_Perfil($nome_perfil);
 }
 // ================= CONSULTAR PERFIL =================
 if (isset($_POST['consultar_perfil'])) {
-    $nome_perfil = limparNomePerfil($_POST['nome_perfil']);
+    $nome_perfil = limparTexto($_POST['nome_perfil']);
     $objController->consultar_Perfil($nome_perfil);
 }
 // ================= ALTERAR PERFIL =================
 if (isset($_POST['alterar_perfil'])) {
-    $id_perfil = intval($_POST['id_perfil']);
-    $nome_perfil = limparNomePerfil($_POST['perfil_usuario']);
+    $id_perfil = $_POST['id_perfil'];
+    $nome_perfil = limparTexto($_POST['perfil_usuario']);
     $objController->alterar_Perfil($id_perfil, $nome_perfil);
 }
 // ================= EXCLUIR PERFIL =================
 if (isset($_POST['excluir_perfil'])) {
-    $id_perfil = intval($_POST['id_perfil']);
-    $nome_perfil = limparNomePerfil($_POST['nome_perfil']);
+    $id_perfil = $_POST['id_perfil'];
+    $nome_perfil = limparTexto($_POST['nome_perfil']);
     $objController->excluir_Perfil($id_perfil, $nome_perfil);
 }
 
@@ -418,7 +414,7 @@ if (isset($_POST['verificar_produto'])) {
     $id_cor           = limparTexto($_POST['id_cor']);
     $largura      = limparNumero($_POST['largura']);
     $id_fornecedor = $_POST['id_fornecedor'];
-    
+
     $objController->verificar_Produto($nome_produto, $id_cor, $largura, $id_fornecedor);
 }
 // ================= EXCLUIR PRODUTO =================
@@ -427,6 +423,62 @@ if (isset($_POST['excluir_produto'])) {
     $nome_produto = limparTexto($_POST['nome_produto']);
     $objController->excluir_Produto($id_produto, $nome_produto);
 }
+
+
+
+// cadastrar tipo do produto
+// ================= CADASTRAR TIPO DO PRODUTO =================
+if (isset($_POST['cadastrar_tipo_produto'])) {
+    $nome_tipo = limparTexto($_POST['nome_tipo']);
+
+    $objController->cadastrar_TipoProduto($nome_tipo);
+}
+// ================= CONSULTAR  TIPO DO PRODUTO =================
+if (isset($_POST['consultar_tipo_produto'])) {
+    $nome_tipo = limparTexto($_POST['nome_tipo']);
+    $objController->consultar_TipoProduto($nome_tipo);
+}
+// ================= ALTERAR TIPO DO PRODUTO =================
+if (isset($_POST['alterar_tipo_produto'])) {
+    $id_tipo_produto = $_POST['id_tipo_produto'];
+    $nome_tipo = limparTexto($_POST['nome_tipo']);
+    $objController->alterar_TipoProduto($id_tipo_produto, $nome_tipo);
+}
+
+// ================= EXCLUIR TIPO DO PRODUTO =================
+if (isset($_POST['excluir_tipo_produto'])) {
+    $id_tipo_produto = $_POST['id_tipo_produto'];
+    $nome_tipo = limparTexto($_POST['nome_tipo']);
+    $objController->excluir_TipoProduto($id_tipo_produto, $nome_tipo);
+}
+
+
+
+
+// cadastrar cor do produto
+// ================= CADASTRAR COR DO PRODUTO =================
+if (isset($_POST['cadastrar_cor_produto'])) {
+    $nome_cor = limparTexto($_POST['nome_cor']);
+    $objController->cadastrar_CorProduto($nome_cor);
+}
+// ================= CONSULTAR COR DO PRODUTO =================
+if (isset($_POST['consultar_cor_produto'])) {
+    $nome_cor = limparTexto($_POST['nome_cor']);
+    $objController->consultar_CorProduto($nome_cor);
+}
+// ================= ALTERAR COR DO PRODUTO =================
+if (isset($_POST['alterar_cor_produto'])) {
+    $id_cor = $_POST['id_cor'];
+    $nome_cor = limparTexto($_POST['nome_cor']);
+    $objController->alterar_CorProduto($id_perfil, $nome_perfil);
+}
+// ================= EXCLUIR COR DO PRODUTO =================
+if (isset($_POST['excluir_cor_produto'])) {
+    $id_cor = $_POST['id_cor'];
+    $nome_cor = limparTexto($_POST['nome_cor']);
+    $objController->excluir_CorProduto($id_cor, $nome_cor);
+}
+
 
 // CLIENTE
 
