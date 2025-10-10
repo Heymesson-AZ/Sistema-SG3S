@@ -234,7 +234,7 @@
                                         <i class="bi bi-arrow-counterclockwise"></i> Limpar
                                     </button>
                                     <button type="submit" name="cadastrar_tipo_produto" class="btn btn-success w-50 py-2">
-                                        <i class="bi bi-plus"></i> Cadastrar
+                                        <i class="bi bi-check-circle"></i> Cadastrar
                                     </button>
                                 </div>
                             </form>
@@ -268,7 +268,7 @@
                                         <i class="bi bi-arrow-counterclockwise"></i> Limpar
                                     </button>
                                     <button type="submit" name="cadastrar_cor" class="btn btn-success w-50 py-2">
-                                        <i class="bi bi-plus"></i> Cadastrar
+                                        <i class="bi bi-check-circle"></i> Cadastrar
                                     </button>
                                 </div>
                             </form>

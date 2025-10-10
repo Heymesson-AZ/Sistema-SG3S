@@ -533,7 +533,7 @@ class Controller
         }
 
         // Links administrativos
-        if ($this->temPermissao(['Administrador'])) {
+        if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
             $adminLinks = [
                 ['usuario', 'fas fa-users', 'Usuário'],
                 ['pedido', 'fas fa-shopping-bag', 'Pedidos'],
@@ -952,19 +952,57 @@ class Controller
         print '</thead>';
         print '<tbody>';
 
+        // Armazena os dados do usuário logado para facilitar a leitura do código
+        $id_usuario_logado = $_SESSION['id_usuario'];
+        $perfil_usuario_logado = $_SESSION['perfil'];
+
         foreach ($resultado as $valor) {
-            $nomeUsuario = explode(" ", $valor->nome_usuario)[0];
+            $nomeUsuario = explode(" ", htmlspecialchars($valor->nome_usuario, ENT_QUOTES, 'UTF-8'))[0];
+            $perfil_usuario_linha = $valor->perfil_usuario; // Perfil do usuário na linha atual
 
             print '<tr>';
             print '<td>' . $nomeUsuario . '</td>';
-            print '<td>' . $valor->email . '</td>';
+            print '<td>' . htmlspecialchars($valor->email, ENT_QUOTES, 'UTF-8') . '</td>';
             print '<td>' . $this->aplicarMascaraTelefone($valor->telefone) . '</td>';
-            print '<td>' . $valor->perfil_usuario . '</td>';
+            print '<td>' . htmlspecialchars($perfil_usuario_linha, ENT_QUOTES, 'UTF-8') . '</td>';
             print '<td>';
             print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
-            print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_usuario' . $valor->id_usuario . '"><i class="bi bi-pencil-square"></i></button>';
-            print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_usuario' . $valor->id_usuario . '"><i class="bi bi-trash"></i></button>';
-            print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#alterar_senha' . $valor->id_usuario . '"><i class="bi bi-key"></i></button>';
+
+            // ---- INÍCIO DA LÓGICA DE PERMISSÃO ATUALIZADA ----
+
+            // Regra 1: O usuário está vendo a sua própria linha na tabela.
+            if ($valor->id_usuario == $id_usuario_logado) {
+                // Permite que o usuário edite seus próprios dados (nome, email, etc.)
+                print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_usuario' . $valor->id_usuario . '"><i class="bi bi-pencil-square"></i></button>';
+                // Opcional: botão para alterar a própria senha.
+                print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#alterar_senha' . $valor->id_usuario . '"><i class="bi bi-key"></i></button>';
+            }
+            // Regra 2: O usuário logado está vendo a linha de outro usuário.
+            else {
+                $mostrar_botoes_outros = false;
+
+                // Se o usuário logado é "Administrador Master".
+                if ($perfil_usuario_logado === 'Administrador Master') {
+                    // Ele pode ver os botões para todos os outros usuários.
+                    $mostrar_botoes_outros = true;
+                }
+                // Se o usuário logado é "Administrador".
+                elseif ($perfil_usuario_logado === 'Administrador') {
+                    // Ele só pode ver os botões se o perfil da linha NÃO for "Administrador Master".
+                    if ($perfil_usuario_linha !== 'Administrador Master') {
+                        $mostrar_botoes_outros = true;
+                    }
+                }
+
+                // Se a flag for verdadeira, exibe todos os botões para o outro usuário.
+                if ($mostrar_botoes_outros) {
+                    print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_usuario' . $valor->id_usuario . '"><i class="bi bi-pencil-square"></i></button>';
+                    print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_usuario' . $valor->id_usuario . '"><i class="bi bi-trash"></i></button>';
+                    print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#alterar_senha' . $valor->id_usuario . '"><i class="bi bi-key"></i></button>';
+                }
+            }
+            // ---- FIM DA LÓGICA DE PERMISSÃO ----
+
             print '</div>';
             print '</td>';
             print '</tr>';
@@ -1006,28 +1044,32 @@ class Controller
         required autocomplete="off" placeholder="Digite o nome completo"
         pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$"
         title="Somente letras e espaços são permitidos"
-        value="' . htmlspecialchars($nome_usuario) . '">';
+        value="' . htmlspecialchars($nome_usuario, ENT_QUOTES, 'UTF-8') . '">';
         print '</div>';
 
-
+        // A lógica aqui está correta: o select de perfil só aparece se o usuário que está sendo editado
+        // NÃO for o usuário logado, impedindo que alguém altere o próprio perfil.
         if ($id_usuario != $_SESSION['id_usuario']) {
             print '<div class="col-md-6">';
+            // PONTO DE ATENÇÃO: A função select_perfilUsuario pode precisar ser ajustada
+            // para que um 'Administrador' não possa promover outro usuário a 'Administrador Master'.
             $this->select_perfilUsuario($id_perfil);
             print '</div>';
         }
+
         print '<div class="col-md-6">';
         print '<label for="telefone_alterar" class="form-label">Telefone *</label>';
         print '<input type="tel" class="form-control" id="telefone_alterar" name="telefone"
         required autocomplete="off" placeholder="(00) 00000-0000"
         pattern="\\(\\d{2}\\) \\d{4,5}-\\d{4}" title="Formato esperado: (XX) XXXXX-XXXX"
-        value="' . htmlspecialchars($telefone) . '">';
+        value="' . htmlspecialchars($telefone, ENT_QUOTES, 'UTF-8') . '">';
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="email_usuario_alterar" class="form-label">Email *</label>';
         print '<input type="email" class="form-control" id="email" name="email"
         required autocomplete="off" placeholder="exemplo@dominio.com"
-        value="' . htmlspecialchars($email) . '">';
+        value="' . htmlspecialchars($email, ENT_QUOTES, 'UTF-8') . '">';
         print '</div>';
 
         print '<div class="col-md-6">';
@@ -1035,7 +1077,7 @@ class Controller
         print '<input type="text" class="form-control" id="cpf_usuario_alterar" name="cpf"
         required autocomplete="off" placeholder="000.000.000-00"
         pattern="\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}" title="Formato esperado: XXX.XXX.XXX-XX"
-        value="' . htmlspecialchars($cpf) . '">';
+        value="' . htmlspecialchars($cpf, ENT_QUOTES, 'UTF-8') . '">';
         print '</div>';
 
         print '</div>'; // fecha row
@@ -1171,7 +1213,6 @@ class Controller
         print '  </div>';   // modal-dialog
         print '</div>';     // modal
     }
-
     // select de usuarios
     public function selectUsuario($id_usuario = null)
     {
@@ -1279,9 +1320,9 @@ class Controller
         }
     }
     // tabela de consulta de perfil
-    public function tabelaConsultaPerfil($perfil)
+    public function tabelaConsultaPerfil($perfis)
     {
-        if (empty($perfil)) return;
+        if (empty($perfis)) return;
 
         print '<div class="table-responsive mt-4">';
         print '<table class="table table-striped table-hover table-bordered align-middle text-center">';
@@ -1292,12 +1333,40 @@ class Controller
         print '</tr>';
         print '</thead>';
         print '<tbody>';
-        foreach ($perfil as $valor) {
+
+        // Armazena o perfil do usuário logado em uma variável para facilitar a leitura.
+        $perfil_usuario_logado = $_SESSION['perfil'];
+
+        foreach ($perfis as $valor) {
             print '<tr>';
-            print '<td>' . $valor->perfil_usuario . '</td>';
+            print '<td>' . htmlspecialchars($valor->perfil_usuario, ENT_QUOTES, 'UTF-8') . '</td>';
             print '<td>';
             print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
-            if ($valor->perfil_usuario != "Administrador") {
+
+            // ---- INÍCIO DA LÓGICA DE PERMISSÃO ----
+
+            // Variável para controlar a exibição dos botões.
+            $mostrar_botoes = false;
+
+            // Perfil que está sendo exibido na linha atual da tabela.
+            $perfil_da_linha = $valor->perfil_usuario;
+
+            // Regra 1: Se o usuário logado é "Administrador Master".
+            if ($perfil_usuario_logado === 'Administrador Master') {
+                // Ele pode editar/remover todos, EXCETO o seu próprio perfil.
+                if ($perfil_da_linha !== 'Administrador Master') {
+                    $mostrar_botoes = true;
+                }
+            }
+            // Regra 2: Se o usuário logado é "Administrador".
+            elseif ($perfil_usuario_logado === 'Administrador') {
+                // Ele pode editar/remover os outros, EXCETO o seu próprio perfil e o do "Administrador Master".
+                if ($perfil_da_linha !== 'Administrador' && $perfil_da_linha !== 'Administrador Master') {
+                    $mostrar_botoes = true;
+                }
+            }
+            // Se a variável $mostrar_botoes for true, exibe os botões.
+            if ($mostrar_botoes) {
                 print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_perfil' . $valor->id_perfil . '"><i class="bi bi-pencil-square"></i></button>';
                 print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_perfil' . $valor->id_perfil . '"><i class="bi bi-trash"></i></button>';
             }
@@ -1305,6 +1374,7 @@ class Controller
             print '</td>';
             print '</tr>';
         }
+
         print '</tbody>';
         print '</table>';
         print '</div>';
@@ -1417,34 +1487,47 @@ class Controller
         $objUsuario = new Perfil();
         // Invocar o método da classe Usuario para consultar os perfis de usuário
         $resultado = $objUsuario->consultarPerfil(null, null);
+
         print '<label for="usuario" class="form-label">Perfil de Usuário: </label>';
-        print '<select name="id_perfil" class="form-select" aria-label="Default select example" required>';
+        print '<select name="id_perfil" class="form-select" aria-label="Default select example">';
         print '<option selected value="">Selecione um Perfil</option>';
+
         foreach ($resultado as $key => $valor) {
+            if ($valor->perfil_usuario == 'Administrador Master' && !$this->temPermissao(['Administrador Master'])) {
+                continue;
+            }
+
             if ($valor->id_perfil == $id_perfil) {
-                print '<option selected value="' . $valor->id_perfil . '">' . $valor->perfil_usuario . '</option>';
+                print '<option selected value="' . htmlspecialchars($valor->id_perfil) . '">' . htmlspecialchars($valor->perfil_usuario) . '</option>';
             } else {
-                print '<option value="' . $valor->id_perfil . '">' . $valor->perfil_usuario . '</option>';
+                print '<option value="' . htmlspecialchars($valor->id_perfil) . '">' . htmlspecialchars($valor->perfil_usuario) . '</option>';
             }
         }
+
         print '</select>';
     }
-
     public function select_perfilUsuarioConsulta($id_perfil = null)
     {
         $objUsuario = new Perfil();
         // Invocar o método da classe Usuario para consultar os perfis de usuário
         $resultado = $objUsuario->consultarPerfil(null, null);
+
         print '<label for="usuario" class="form-label">Perfil de Usuário: </label>';
         print '<select name="id_perfil" class="form-select" aria-label="Default select example">';
         print '<option selected value="">Selecione um Perfil</option>';
+
         foreach ($resultado as $key => $valor) {
+            if ($valor->perfil_usuario == 'Administrador Master' && !$this->temPermissao(['Administrador Master'])) {
+                continue;
+            }
+
             if ($valor->id_perfil == $id_perfil) {
-                print '<option selected value="' . $valor->id_perfil . '">' . $valor->perfil_usuario . '</option>';
+                print '<option selected value="' . htmlspecialchars($valor->id_perfil) . '">' . htmlspecialchars($valor->perfil_usuario) . '</option>';
             } else {
-                print '<option value="' . $valor->id_perfil . '">' . $valor->perfil_usuario . '</option>';
+                print '<option value="' . htmlspecialchars($valor->id_perfil) . '">' . htmlspecialchars($valor->perfil_usuario) . '</option>';
             }
         }
+
         print '</select>';
     }
 
@@ -1891,9 +1974,9 @@ class Controller
         print '<th scope="col">Razão Social</th>';
         print '<th scope="col">E-mail</th>';
 
-        if ($this->temPermissao(['Administrador'])) {
-            print '<th scope="col">Ações</th>';
-        }
+
+        print '<th scope="col">Ações</th>';
+
 
         print '</tr>';
         print '</thead>';
@@ -1904,21 +1987,21 @@ class Controller
             print '<td>' . htmlspecialchars($valor->razao_social) . '</td>';
             print '<td>' . htmlspecialchars($valor->email) . '</td>';
 
-            if ($this->temPermissao(['Administrador'])) {
-                print '<td>';
-                print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
-                print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_fornecedor' . $valor->id_fornecedor . '">
+
+            print '<td>';
+            print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
+            print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_fornecedor' . $valor->id_fornecedor . '">
                     <i class="bi bi-pencil-square"></i>
                    </button>';
-                print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_fornecedor' . $valor->id_fornecedor . '">
+            print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_fornecedor' . $valor->id_fornecedor . '">
                     <i class="bi bi-trash"></i>
                    </button>';
-                print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_fornecedor' . $valor->id_fornecedor . '">
+            print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_fornecedor' . $valor->id_fornecedor . '">
                     <i class="bi bi-eye"></i>
                    </button>';
-                print '</div>';
-                print '</td>';
-            }
+            print '</div>';
+            print '</td>';
+
 
             print '</tr>';
         }
@@ -2656,7 +2739,7 @@ class Controller
         print '<th scope="col">Largura</th>';
         print '<th scope="col">Qtd</th>';
         print '<th scope="col">Valor Venda</th>';
-        if ($this->temPermissao(["Administrador"])) {
+        if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
             print '<th scope="col">Ações</th>';
         }
         print '</tr>';
@@ -2684,7 +2767,7 @@ class Controller
             print '<td>R$ ' . number_format($valor->valor_venda, 2, ',', '.') . '</td>';
 
             // Ações
-            if ($this->temPermissao(["Administrador"])) {
+            if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
                 print '<td>';
                 print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
                 // Detalhes sempre visível
@@ -2762,7 +2845,7 @@ class Controller
                                     </div> ';
 
             // Campos restritos ao administrador
-            if ($this->temPermissao(["Administrador"])) {
+            if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
                 print '
                                     <div class="row mb-2">
                                         <div class="col-md-6"><strong>Custo Compra:</strong> R$ ' . number_format($valor->custo_compra, 2, ',', '.') . '</div>
@@ -2917,7 +3000,7 @@ class Controller
         print '<th scope="col">E-mail</th>';
         print '<th scope="col">Limite de Crédito</th>';
 
-        if ($this->temPermissao(['Administrador'])) {
+        if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
             print '<th scope="col">Ações</th>';
         }
 
@@ -2935,7 +3018,7 @@ class Controller
             print '<td>' . htmlspecialchars($valor->email) . '</td>';
             print '<td>R$ ' . $limite . '</td>';
 
-            if ($this->temPermissao(['Administrador'])) {
+            if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
                 print '<td>';
                 print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
                 print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_cliente' . $valor->id_cliente . '">
@@ -3808,23 +3891,23 @@ class Controller
         print '<thead class="table-primary">';
         print '<tr>';
         print '<th scope="col">Descrição</th>';
-        if ($this->temPermissao(['Administrador'])) {
-            print '<th scope="col">Ações</th>';
-        }
+
+        print '<th scope="col">Ações</th>';
+
         print '</tr>';
         print '</thead>';
         print '<tbody>';
         foreach ($forma_pagamento as $valor) {
             print '<tr>';
             print '<td>' . $valor->descricao . '</td>';
-            if ($this->temPermissao(['Administrador'])) {
-                print '<td>';
-                print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
-                print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_forma_pagamento' . $valor->id_forma_pagamento . '"><i class="bi bi-pencil-square"></i></button>';
-                print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_forma_pagamento' . $valor->id_forma_pagamento . '"><i class="bi bi-trash"></i></button>';
-                print '</div>';
-                print '</td>';
-            }
+
+            print '<td>';
+            print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
+            print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_forma_pagamento' . $valor->id_forma_pagamento . '"><i class="bi bi-pencil-square"></i></button>';
+            print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_forma_pagamento' . $valor->id_forma_pagamento . '"><i class="bi bi-trash"></i></button>';
+            print '</div>';
+            print '</td>';
+
             print '</tr>';
         }
         print '</tbody>';
@@ -4079,7 +4162,7 @@ class Controller
             // Ações
             print '<td><div class="d-flex gap-2 justify-content-center flex-wrap">';
 
-            if ($this->temPermissao(['Administrador'])) {
+            if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
                 switch ($status) {
                     case 'Pendente':
                         // Pode alterar, aprovar ou excluir
@@ -6011,7 +6094,7 @@ class Controller
     // =======================================================
     // MÉTODO 2: AGRUPADOR DE EVENTOS
     // =======================================================
-    
+
     private function agruparEventosPorAcaoLogica($eventos)
     {
         if (empty($eventos)) {

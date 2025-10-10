@@ -7,7 +7,7 @@ $(document).ready(function () {
     $container.find('.alert-temporaria').remove();
     const alerta = $(`
       <div class="alert alert-${tipo} alert-temporaria"
-            style="margin-top:5px; display:none;">
+           style="margin-top:5px; display:none;">
         ${msg}
       </div>
     `);
@@ -36,21 +36,35 @@ $(document).ready(function () {
   $(".cep").mask("00000-000");
   $(".dinheiro").mask("000.000.000,00", { reverse: true });
 
-  // Atualiza botões e required
+  // =======================================================================
+  // FUNÇÃO ATUALIZAR TELEFONES (AJUSTADA)
+  // =======================================================================
   function atualizarTelefones($container) {
     const itens = $container.find('.telefone-item');
-    itens.each(function (i) {
-      const $btnAdd = $(this).find('.add-telefone');
-      const $btnRem = $(this).find('.remover-telefone');
+    const numItens = itens.length;
+    const $primeiraLinha = itens.first();
 
-      if (i === 0) {
+    // A primeira linha (de entrada) só é obrigatória se for a ÚNICA linha.
+    if (numItens <= 1) {
+      $primeiraLinha.find('.telefone-tipo, .telefone').prop('required', true);
+    } else {
+      $primeiraLinha.find('.telefone-tipo, .telefone').prop('required', false);
+    }
+
+    // Configura botões e a obrigatoriedade para todas as linhas
+    itens.each(function (i) {
+      const $linhaAtual = $(this);
+      const $btnAdd = $linhaAtual.find('.add-telefone');
+      const $btnRem = $linhaAtual.find('.remover-telefone');
+
+      if (i === 0) { // Primeira linha (entrada)
         $btnAdd.show();
         $btnRem.hide();
-        $(this).find('.telefone-tipo, .telefone').attr('required', true);
-      } else {
+      } else { // Linhas de telefones já adicionados
         $btnAdd.hide();
         $btnRem.show();
-        $(this).find('.telefone-tipo, .telefone').attr('required', true);
+        // Garante que os telefones já adicionados sejam obrigatórios
+        $linhaAtual.find('.telefone-tipo, .telefone').prop('required', true);
       }
     });
   }
@@ -86,19 +100,18 @@ $(document).ready(function () {
       return;
     }
 
-    const index = $container.find('.telefone-item').length;
+    const index = Date.now(); // Usar timestamp para garantir índice único
     const clone = $primeira.clone(true, true);
 
     clone.find('.telefone-tipo').val(tipo);
-    clone.find('.telefone')
-      .val(numero)
-      .mask(tipo === 'celular' ? '(00) 0 0000-0000' : '(00) 0000-0000');
+    clone.find('.telefone').val(numero);
 
     clone.find('select, input').each(function () {
       this.name = this.name.replace(/\[\d+\]/, `[${index}]`);
     });
 
     $container.append(clone);
+    aplicarMascaraPorTipo(clone); // Aplica máscara no clone
 
     $primeira.find('.telefone-tipo').val('');
     $primeira.find('.telefone').val('').unmask();
@@ -108,19 +121,18 @@ $(document).ready(function () {
 
   // Remover telefone
   $(document).on('click', '#telefones-container .remover-telefone', function () {
-    const $container = $('#telefones-container');
-    if ($container.find('.telefone-item').length > 1) {
-      $(this).closest('.telefone-item').remove();
-      atualizarTelefones($container);
-    }
+    $(this).closest('.telefone-item').remove();
+    atualizarTelefones($('#telefones-container'));
   });
 
   // Inicializar
-  const $container = $('#telefones-container');
-  atualizarTelefones($container);
-  $container.find('.telefone-item').each(function () {
-    aplicarMascaraPorTipo($(this));
-  });
+  const $containerCadastro = $('#telefones-container');
+  if ($containerCadastro.length) {
+    atualizarTelefones($containerCadastro);
+    $containerCadastro.find('.telefone-item').each(function () {
+      aplicarMascaraPorTipo($(this));
+    });
+  }
 });
 
 
@@ -133,7 +145,7 @@ $(document).ready(function () {
     $container.find('.alert-temporaria').remove();
     const alerta = $(`
       <div class="alert alert-${tipo} alert-temporaria" 
-            style="margin-top:5px; display:none;">
+           style="margin-top:5px; display:none;">
         ${msg}
       </div>
     `);
@@ -157,24 +169,50 @@ $(document).ready(function () {
     }
   }
 
-  // Atualiza botões e required
+  // =======================================================================
+  // FUNÇÃO ATUALIZAR TELEFONES (AJUSTADA)
+  // =======================================================================
   function atualizarTelefones($container) {
     const itens = $container.find('.telefone-item');
-    itens.each(function (i) {
-      const $btnAdd = $(this).find('.add-telefone');
-      const $btnRem = $(this).find('.remover-telefone');
+    const numItens = itens.length;
+    const $primeiraLinha = itens.first();
 
-      if (i === 0) {
+    // A primeira linha (de entrada) só é obrigatória se for a ÚNICA linha,
+    // ou se já veio preenchida do banco e é a única.
+    const primeiroTelefoneValor = $primeiraLinha.find('.telefone').val().trim();
+    if (numItens <= 1 && primeiroTelefoneValor === '') {
+      $primeiraLinha.find('.telefone-tipo, .telefone').prop('required', true);
+    } else {
+      $primeiraLinha.find('.telefone-tipo, .telefone').prop('required', false);
+    }
+
+    // Configura botões e a obrigatoriedade para todas as linhas
+    itens.each(function (i) {
+      const $linhaAtual = $(this);
+      const $btnAdd = $linhaAtual.find('.add-telefone');
+      const $btnRem = $linhaAtual.find('.remover-telefone');
+
+      if (i === 0) { // Primeira linha (entrada)
         $btnAdd.show();
-        $btnRem.hide();
-        $(this).find('.telefone-tipo, .telefone').attr('required');
-      } else {
+        // Esconde o botão remover se for a única linha E estiver vazia
+        if (numItens <= 1 && $linhaAtual.find('.telefone').val().trim() === '') {
+          $btnRem.hide();
+        } else {
+          $btnRem.show();
+        }
+      } else { // Linhas de telefones já adicionados
         $btnAdd.hide();
         $btnRem.show();
-        $(this).find('.telefone-tipo, .telefone').attr('required', true);
+        // Garante que os telefones já adicionados sejam obrigatórios
+        $linhaAtual.find('.telefone-tipo, .telefone').prop('required', true);
       }
     });
+    // Se houver apenas uma linha preenchida, o primeiro campo torna-se obrigatório
+    if (numItens === 1 && $primeiraLinha.find('.telefone').val().trim() !== '') {
+      $primeiraLinha.find('.telefone-tipo, .telefone').prop('required', true);
+    }
   }
+
 
   // Trocar máscara ao mudar tipo
   $(document).on('change', '[id^="telefones-container-"] .telefone-tipo', function () {
@@ -207,19 +245,22 @@ $(document).ready(function () {
       return;
     }
 
-    const index = $container.find('.telefone-item').length;
+    const index = Date.now(); // Usar timestamp para garantir índice único
     const clone = $primeira.clone(true, true);
 
     clone.find('.telefone-tipo').val(tipo);
-    clone.find('.telefone')
-      .val(numero)
-      .mask(tipo === 'celular' ? '(00) 0 0000-0000' : '(00) 0000-0000');
+    clone.find('.telefone').val(numero);
 
     clone.find('select, input').each(function () {
       this.name = this.name.replace(/\[\d+\]/, `[${index}]`);
+      // Garante que o novo campo não tenha um ID duplicado
+      if (this.id) {
+        this.id = this.id + '_' + index;
+      }
     });
 
     $container.append(clone);
+    aplicarMascaraPorTipo(clone); // Aplica máscara no clone
 
     $primeira.find('.telefone-tipo').val('');
     $primeira.find('.telefone').val('').unmask();
@@ -232,13 +273,20 @@ $(document).ready(function () {
     const $container = $(this).closest('[id^="telefones-container-"]');
     if ($container.find('.telefone-item').length > 1) {
       $(this).closest('.telefone-item').remove();
-      atualizarTelefones($container);
+    } else {
+      // Se for o último, apenas limpa os campos
+      const $linha = $(this).closest('.telefone-item');
+      $linha.find('.telefone-tipo').val('');
+      $linha.find('.telefone').val('').unmask();
     }
+    atualizarTelefones($container);
   });
+
   // Inicializar todos os containers de alteração
   $('[id^="telefones-container-"]').each(function () {
-    atualizarTelefones($(this));
-    $(this).find('.telefone-item').each(function () {
+    const $container = $(this);
+    atualizarTelefones($container);
+    $container.find('.telefone-item').each(function () {
       aplicarMascaraPorTipo($(this));
     });
   });

@@ -85,7 +85,7 @@
             </div>
             <!-- Modal de cadastro de perfil de Usuário -->
             <div class="modal fade" id="modal_perfil" tabindex="-1" aria-labelledby="modalPerfilLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-dialog modal-default modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h6 class="modal-title" id="modalPerfilLabel">Novo Perfil</h6>
@@ -109,7 +109,7 @@
                                         <i class="bi bi-arrow-counterclockwise"></i> Limpar
                                     </button>
                                     <button type="submit" name="cadastrar_perfil" class="btn btn-success w-50 py-2">
-                                        <i class="bi bi-plus"></i> Cadastrar
+                                        <i class="bi bi-check-circle"></i> Cadastrar
                                     </button>
                                 </div>
                             </form>

@@ -1,3 +1,6 @@
+// ======================================================
+// SCRIPT PARA CADASTRO DE FORNECEDOR
+// ======================================================
 $(document).ready(function () {
 
     // =======================
@@ -32,36 +35,35 @@ $(document).ready(function () {
         }
     }
 
-    // =======================
-    // Atualiza botões e required
-    // =======================
+    // =======================================================================
+    // FUNÇÃO ATUALIZAR TELEFONES (AJUSTADA)
+    // =======================================================================
     function atualizarTelefones($container) {
         const itens = $container.find('.telefone-item');
+        const numItens = itens.length;
+        const $primeiraLinha = itens.first();
 
+        // A primeira linha (de entrada) só é obrigatória se for a ÚNICA linha.
+        if (numItens <= 1) {
+            $primeiraLinha.find('.telefone-tipo, .telefone').prop('required', true);
+        } else {
+            $primeiraLinha.find('.telefone-tipo, .telefone').prop('required', false);
+        }
+
+        // Configura botões e a obrigatoriedade para todas as linhas
         itens.each(function (i) {
-            const $linha = $(this);
-            const $btnAdd = $linha.find('.add-telefone');
-            const $btnRem = $linha.find('.remover-telefone');
-            const $tipo = $linha.find('select.telefone-tipo');
-            const $numero = $linha.find('input.telefone');
+            const $linhaAtual = $(this);
+            const $btnAdd = $linhaAtual.find('.add-telefone');
+            const $btnRem = $linhaAtual.find('.remover-telefone');
 
-            if (i === 0) {
+            if (i === 0) { // Primeira linha (entrada)
                 $btnAdd.show();
                 $btnRem.hide();
-
-                // required só se primeira linha estiver realmente vazia
-                if ($tipo.val() || $numero.val()) {
-                    $tipo.removeAttr('required');
-                    $numero.removeAttr('required');
-                } else {
-                    $tipo.attr('required', true);
-                    $numero.attr('required', true);
-                }
-            } else {
+            } else { // Linhas de telefones já adicionados
                 $btnAdd.hide();
                 $btnRem.show();
-                $tipo.attr('required', true);
-                $numero.attr('required', true);
+                // Garante que os telefones já adicionados sejam obrigatórios
+                $linhaAtual.find('.telefone-tipo, .telefone').prop('required', true);
             }
         });
     }
@@ -101,21 +103,19 @@ $(document).ready(function () {
             return;
         }
 
-        const index = $container.find('.telefone-item').length;
+        const index = Date.now(); // Usar timestamp para garantir índice único
         const clone = $primeira.clone(true, true);
 
         clone.find('select.telefone-tipo').val(tipo);
-        clone.find('input.telefone')
-            .val(numero)
-            .mask(tipo === 'celular' ? '(00) 0 0000-0000' : '(00) 0000-0000');
+        clone.find('input.telefone').val(numero);
 
         clone.find('select, input').each(function () {
             this.name = this.name.replace(/\[\d+\]/, `[${index}]`);
         });
 
         $container.append(clone);
+        aplicarMascaraPorTipo(clone);
 
-        // Limpa a primeira linha para próximo cadastro
         $primeira.find('select.telefone-tipo').val('');
         $primeira.find('input.telefone').val('').unmask();
 
@@ -127,6 +127,7 @@ $(document).ready(function () {
     // =======================
     $(document).on('click', '#telefones-container-fornecedor .remover-telefone', function () {
         const $container = $('#telefones-container-fornecedor');
+        // Só remove se houver mais de um item (para não remover a linha de entrada)
         if ($container.find('.telefone-item').length > 1) {
             $(this).closest('.telefone-item').remove();
             atualizarTelefones($container);
@@ -136,12 +137,13 @@ $(document).ready(function () {
     // =======================
     // Inicializar
     // =======================
-    const $container = $('#telefones-container-fornecedor');
-    atualizarTelefones($container);
-    $container.find('.telefone-item').each(function () {
-        aplicarMascaraPorTipo($(this));
-    });
-
+    const $containerCadastro = $('#telefones-container-fornecedor');
+    if ($containerCadastro.length) {
+        atualizarTelefones($containerCadastro);
+        $containerCadastro.find('.telefone-item').each(function () {
+            aplicarMascaraPorTipo($(this));
+        });
+    }
 });
 
 // ======================================================
@@ -153,7 +155,7 @@ $(document).ready(function () {
         $container.find('.alert-temporaria').remove();
         const alerta = $(`
       <div class="alert alert-${tipo} alert-temporaria" 
-            style="margin-top:5px; display:none;">
+           style="margin-top:5px; display:none;">
         ${msg}
       </div>
     `);
@@ -177,22 +179,47 @@ $(document).ready(function () {
         }
     }
 
+    // =======================================================================
+    // FUNÇÃO ATUALIZAR TELEFONES (AJUSTADA)
+    // =======================================================================
     function atualizarTelefones($container) {
         const itens = $container.find('.telefone-item');
-        itens.each(function (i) {
-            const $btnAdd = $(this).find('.add-telefone');
-            const $btnRem = $(this).find('.remover-telefone');
+        const numItens = itens.length;
+        const $primeiraLinha = itens.first();
 
-            if (i === 0) {
+        // A primeira linha (de entrada) só é obrigatória se for a ÚNICA linha e estiver VAZIA.
+        const primeiroTelefoneValor = $primeiraLinha.find('.telefone').val().trim();
+        if (numItens <= 1 && primeiroTelefoneValor === '') {
+            $primeiraLinha.find('.telefone-tipo, .telefone').prop('required', true);
+        } else {
+            $primeiraLinha.find('.telefone-tipo, .telefone').prop('required', false);
+        }
+
+        // Configura botões e a obrigatoriedade para todas as linhas
+        itens.each(function (i) {
+            const $linhaAtual = $(this);
+            const $btnAdd = $linhaAtual.find('.add-telefone');
+            const $btnRem = $linhaAtual.find('.remover-telefone');
+
+            if (i === 0) { // Primeira linha
                 $btnAdd.show();
-                $btnRem.hide();
-                $(this).find('.telefone-tipo, .telefone').attr('required');
-            } else {
+                // Esconde o botão remover se for a única linha E estiver vazia
+                if (numItens <= 1 && $linhaAtual.find('.telefone').val().trim() === '') {
+                    $btnRem.hide();
+                } else {
+                    $btnRem.show();
+                }
+            } else { // Linhas de telefones já adicionados
                 $btnAdd.hide();
                 $btnRem.show();
-                $(this).find('.telefone-tipo, .telefone').attr('required', true);
+                $linhaAtual.find('.telefone-tipo, .telefone').prop('required', true);
             }
         });
+
+        // Caso especial: se houver apenas uma linha preenchida (vinda do DB), ela deve ser obrigatória
+        if (numItens === 1 && $primeiraLinha.find('.telefone').val().trim() !== '') {
+            $primeiraLinha.find('.telefone-tipo, .telefone').prop('required', true);
+        }
     }
 
     // Trocar máscara ao mudar tipo
@@ -226,21 +253,22 @@ $(document).ready(function () {
             return;
         }
 
-        const index = $container.find('.telefone-item').length;
+        const index = Date.now();
         const clone = $primeira.clone(true, true);
 
         clone.find('.telefone-tipo').val(tipo);
-        clone.find('.telefone')
-            .val(numero)
-            .mask(tipo === 'celular' ? '(00) 0 0000-0000' : '(00) 0000-0000');
+        clone.find('.telefone').val(numero);
 
         clone.find('select, input').each(function () {
             this.name = this.name.replace(/\[\d+\]/, `[${index}]`);
+            if (this.id) {
+                this.id = this.id + '_' + index;
+            }
         });
 
         $container.append(clone);
+        aplicarMascaraPorTipo(clone);
 
-        // Limpar a primeira linha sempre que adicionar
         $primeira.find('.telefone-tipo').val('');
         $primeira.find('.telefone').val('').unmask();
 
@@ -252,14 +280,20 @@ $(document).ready(function () {
         const $container = $(this).closest('[id^="telefones-container-fornecedor-"]');
         if ($container.find('.telefone-item').length > 1) {
             $(this).closest('.telefone-item').remove();
-            atualizarTelefones($container);
+        } else {
+            // Se for o último, apenas limpa os campos
+            const $linha = $(this).closest('.telefone-item');
+            $linha.find('.telefone-tipo').val('');
+            $linha.find('.telefone').val('').unmask();
         }
+        atualizarTelefones($container);
     });
 
     // Inicializar todos os containers de alteração
     $('[id^="telefones-container-fornecedor-"]').each(function () {
-        atualizarTelefones($(this));
-        $(this).find('.telefone-item').each(function () {
+        const $container = $(this);
+        atualizarTelefones($container);
+        $container.find('.telefone-item').each(function () {
             aplicarMascaraPorTipo($(this));
         });
     });
