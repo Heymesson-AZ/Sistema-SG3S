@@ -430,8 +430,9 @@ if (isset($_POST['excluir_produto'])) {
 // ================= CADASTRAR TIPO DO PRODUTO =================
 if (isset($_POST['cadastrar_tipo_produto'])) {
     $nome_tipo = limparTexto($_POST['nome_tipo']);
-
-    $objController->cadastrar_TipoProduto($nome_tipo);
+    // CORREÇÃO: Pega 'origem' se existir, senão, define como uma string vazia.
+    $origem = $_POST['origem'] ?? '';
+    $objController->cadastrar_TipoProduto($nome_tipo, $origem);
 }
 // ================= CONSULTAR  TIPO DO PRODUTO =================
 if (isset($_POST['consultar_tipo_produto'])) {
@@ -459,8 +460,11 @@ if (isset($_POST['excluir_tipo_produto'])) {
 // ================= CADASTRAR COR DO PRODUTO =================
 if (isset($_POST['cadastrar_cor_produto'])) {
     $nome_cor = limparTexto($_POST['nome_cor']);
-    $objController->cadastrar_CorProduto($nome_cor);
+    // CORREÇÃO: Pega 'origem' se existir, senão, define como uma string vazia.
+    $origem = $_POST['origem'] ?? '';
+    $objController->cadastrar_CorProduto($nome_cor, $origem);
 }
+
 // ================= CONSULTAR COR DO PRODUTO =================
 if (isset($_POST['consultar_cor_produto'])) {
     $nome_cor = limparTexto($_POST['nome_cor']);
@@ -931,9 +935,55 @@ if (isset($_POST['cliente_mais_compraram'])) {
 
 // Auditoria
 
-// auditorias gerais
+// Card 1: Auditorias Gerais (últimos 7 dias)
 if (isset($_POST['auditorias_gerais'])) {
     $objController->listar_Auditorias();
+}
+// Card 2: Auditorias por Usuário
+if (isset($_POST['auditorias_por_usuario']) && !empty($_POST['id_usuario'])) {
+    $id_usuario = $_POST['id_usuario'];
+    $objController->listar_AuditoriasPorUsuario($id_usuario);
+}
+// Card 3: Auditorias por Ação
+if (isset($_POST['auditorias_por_acao']) && !empty($_POST['acao_auditoria'])) {
+    $acao = $_POST['acao_auditoria'];
+    $objController->listar_AuditoriasPorAcao($acao);
+}
+// Card 4: Auditorias por Período
+if (isset($_POST['auditorias_por_periodo']) && !empty($_POST['data_inicio_auditoria']) && !empty($_POST['data_fim_auditoria'])) {
+    $data_inicio = $_POST['data_inicio_auditoria'];
+    $data_fim = $_POST['data_fim_auditoria'];
+    $objController->listar_AuditoriasPorPeriodo($data_inicio, $data_fim);
+}
+// Card 6: Auditorias por Tabela e Período
+if (isset($_POST['auditorias_tabela_periodo']) && !empty($_POST['tabela_periodo']) && !empty($_POST['data_inicio_periodo']) && !empty($_POST['data_fim_periodo'])) {
+    $tabela = $_POST['tabela_periodo'];
+    $data_inicio = $_POST['data_inicio_periodo'];
+    $data_fim = $_POST['data_fim_periodo'];
+    $objController->listar_AuditoriasTabelaPeriodo($tabela, $data_inicio, $data_fim);
+}
+// Card 7: Auditorias por Usuário e Período
+if (isset($_POST['auditorias_usuario_periodo']) && !empty($_POST['id_usuario']) && !empty($_POST['data_inicio_usuario']) && !empty($_POST['data_fim_usuario'])) {
+    $id_usuario = $_POST['id_usuario'];
+    $data_inicio = $_POST['data_inicio_usuario'];
+    $data_fim = $_POST['data_fim_usuario'];
+    $objController->listar_AuditoriasUsuarioPeriodo($id_usuario, $data_inicio, $data_fim);
+}
+
+
+// Card 5: Auditorias por Usuário e Ação
+if (isset($_POST['auditorias_usuario_acao']) && !empty($_POST['id_usuario']) && !empty($_POST['acao_usuario'])) {
+    $id_usuario = $_POST['id_usuario'];
+    $acao = $_POST['acao_usuario'];
+    $objController->listar_AuditoriasUsuarioAcao($id_usuario, $acao);
+}
+// Card 8: Auditorias por Usuário, Ação e Período
+if (isset($_POST['auditorias_usuario_acao_periodo']) && !empty($_POST['id_usuario']) && !empty($_POST['acao_usuario_periodo']) && !empty($_POST['data_inicio_total']) && !empty($_POST['data_fim_total'])) {
+    $id_usuario = $_POST['id_usuario'];
+    $acao = $_POST['acao_usuario_periodo'];
+    $data_inicio = $_POST['data_inicio_total'];
+    $data_fim = $_POST['data_fim_total'];
+    $objController->listar_AuditoriasUsuarioAcaoPeriodo($id_usuario, $acao, $data_inicio, $data_fim);
 }
 
 // DASHBOARD

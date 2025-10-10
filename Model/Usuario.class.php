@@ -306,7 +306,7 @@ class Usuario extends Conexao
 
             return true;
         } catch (PDOException $e) {
-            return "Erro ao excluir usuário: " . $e->getMessage();
+            return "No momento não e possível excluir esse usuario, pois possui registros de Auditoria";
         }
     }
 

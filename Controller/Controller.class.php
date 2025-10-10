@@ -1220,7 +1220,7 @@ class Controller
         // Invocar o método da classe Usuario para consultar os perfis de usuário
         $resultado = $objUsuario->consultarUsuario(null, null);
         print '<label for="usuario" class="form-label"> Usuário: </label>';
-        print '<select name="id_usuario" class="form-select" aria-label="Default select example">';
+        print '<select name="id_usuario" class="form-select" aria-label="Default select example" required>';
         print '<option selected value="">Selecione o Usuario </option>';
         foreach ($resultado as $key => $valor) {
             if ($valor->id_usuario == $id_usuario) {
@@ -2375,9 +2375,8 @@ class Controller
         print '                    <div class="input-group">';
         print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
         print '                      <input type="hidden" id="id_tipo_hidden" name="id_tipo_produto" value="" />';
-        print '                      <input type="text" class="form-control" id="tipo_produto" placeholder="Digite o tipo de produto" autocomplete="off" required/>';
+        print '                      <input type="text" class="form-control" id="tipo_produto" placeholder="Digite o tipo de produto" disabled autocomplete="off" required/>';
         print '                      <div id="resultado_busca_tipo" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
-        print '                      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_tipo_produto"><i class="bi bi-plus-lg"></i></button>';
         print '                    </div>';
         print '                  </div>';
 
@@ -2387,9 +2386,9 @@ class Controller
         print '                    <div class="input-group">';
         print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
         print '                      <input type="hidden" id="id_cor_hidden_cadastro" name="id_cor" value="' . $_SESSION['produto_cadastro']['id_cor'] . '"/>';
-        print '                      <input type="text" class="form-control" id="cor_cadastro" placeholder="Digite a cor" autocomplete="off" required value="' . $_SESSION['produto_cadastro']['cor'] . '"/>';
+        print '                      <input type="text" class="form-control" id="cor_cadastro" placeholder="Digite a cor" autocomplete="off" required disabled value="' . $_SESSION['produto_cadastro']['cor'] . '"/>';
         print '                      <div id="resultado_busca_cor_cadastro" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
-        print '                      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_cor"><i class="bi bi-plus-lg"></i></button>';
+
         print '                    </div>';
         print '                  </div>';
 
@@ -2448,7 +2447,7 @@ class Controller
         print '                    <div class="position-relative">';
         print '                      <div class="input-group">';
         print '                        <span class="input-group-text"><i class="bi bi-search"></i></span>';
-        print '                        <input type="hidden" id="id_fornecedor_hidden_cadastro" name="id_fornecedor" value="' . $_SESSION['produto_cadastro']['id_fornecedor'] . '"/>';
+        print '                        <input type="hidden" id="id_fornecedor_hidden_cadastro" name="id_fornecedor" disabled value="' . $_SESSION['produto_cadastro']['id_fornecedor'] . '"/>';
         print '                        <input type="text" class="form-control" id="id_fornecedor_produto_cadastro" placeholder="Digite o nome do fornecedor" autocomplete="off" value="' . $_SESSION['produto_cadastro']['fornecedor'] . '"/>';
         print '                      </div>';
         print '                      <div id="resultado_busca_fornecedor_cadastro" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>';
@@ -2502,6 +2501,7 @@ class Controller
         print '});';
         print '</script>';
     }
+
     // ========================
     // Modal de Alteração Produto
     // ========================
@@ -2569,8 +2569,8 @@ class Controller
         print '                    <label for="tipo_produto' . $id_produto . '" class="form-label">Tipo *</label>';
         print '                    <div class="input-group">';
         print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
-        print '                      <input type="hidden" id="id_tipo_hidden' . $id_produto . '" name="id_tipo_produto" value="' . $id_tipo_produto . '"/>';
-        print '                      <input type="text" class="form-control" id="tipo_produto' . $id_produto . '" placeholder="Digite o tipo de produto" autocomplete="off" required value="' . $tipo_produto . '"/> ';
+        print '                      <input type="hidden" id="id_tipo_hidden' . $id_produto . '" name="id_tipo_produto"  value="' . $id_tipo_produto . '"/>';
+        print '                      <input type="text" class="form-control" id="tipo_produto' . $id_produto . '" disabled placeholder="Digite o tipo de produto" autocomplete="off" required value="' . $tipo_produto . '"/> ';
         print '                      <div id="resultado_busca_tipo' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
         print '                      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_tipo_produto"><i class="bi bi-plus-lg"></i></button>';
         print '                    </div>';
@@ -2644,7 +2644,7 @@ class Controller
         print '                      <div class="input-group">';
         print '                        <span class="input-group-text"><i class="bi bi-search"></i></span>';
         print '                        <input type="hidden" id="id_fornecedor_hidden' . $id_produto . '" name="id_fornecedor" value="' . $id_fornecedor . '"/>';
-        print '                        <input type="text" class="form-control" id="id_fornecedor_produto' . $id_produto . '" placeholder="Digite o nome do fornecedor" autocomplete="off" value="' . $fornecedor . '"/>';
+        print '                        <input type="text" class="form-control" id="id_fornecedor_produto' . $id_produto . '"  disabled placeholder="Digite o nome do fornecedor" autocomplete="off" value="' . $fornecedor . '"/>';
         print '                      </div>';
         print '                      <div id="resultado_busca_fornecedor' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>';
         print '                    </div>';
@@ -2921,28 +2921,47 @@ class Controller
 
     // COR DO PRODUTO
 
-    public function cadastrar_CorProduto($nome_cor)
+    public function cadastrar_CorProduto($nome_cor, $origem)
     {
         $objCor = new Cor();
-        // Verifica se a cor já existe no banco de dados
-        // A função consultarCor retorna um array. Se não estiver vazio, a cor já existe.
+
+        // 1. Verifica se a cor já existe no banco de dados
         if (!empty($objCor->consultarCor($nome_cor))) {
+            // Se a requisição veio do JavaScript, responde com JSON de erro
+            if ($origem === 'javascript') {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Esta cor já está cadastrada.']);
+                exit; // Para a execução aqui
+            }
+
+            // Se for uma requisição normal, exibe a página com a mensagem de erro
             session_start();
             $menu = $this->menu();
             include_once 'view/produto.php';
             $this->mostrarMensagemErro("Cor já cadastrada");
             exit();
+        }
+
+        // 2. Se a cor não existe, tenta cadastrar
+        $cadastrouComSucesso = $objCor->cadastrarCor($nome_cor);
+
+        // 3. Verifica a origem para decidir o que responder
+        if ($origem === 'javascript') {
+            header('Content-Type: application/json');
+            if ($cadastrouComSucesso) {
+                echo json_encode(['success' => true, 'message' => 'Cor cadastrada com sucesso!']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Erro inesperado ao tentar cadastrar a cor.']);
+            }
+            exit; // Para a execução aqui
         } else {
-            // Invoca o método da classe Cor para cadastrar
-            if ($objCor->cadastrarCor($nome_cor) == true) {
-                session_start();
-                $menu = $this->menu();
-                include_once 'view/produto.php';
+            // Se for uma requisição normal, exibe a página com a mensagem apropriada
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            if ($cadastrouComSucesso) {
                 $this->mostrarMensagemSucesso("Cor cadastrada com sucesso");
             } else {
-                session_start();
-                $menu = $this->menu();
-                include_once 'view/produto.php';
                 $this->mostrarMensagemErro("Erro ao cadastrar Cor");
             }
         }
@@ -3111,29 +3130,47 @@ class Controller
     // TIPO DO PRODUTO
 
 
-    public function cadastrar_TipoProduto($nome_tipo)
+    public function cadastrar_TipoProduto($nome_tipo, $origem)
     {
         $objTipoProduto = new TipoProduto();
 
-        // Verifica se o tipo de produto já existe
+        // 1. Verifica se o tipo de produto já existe
         if (!empty($objTipoProduto->consultarTipo($nome_tipo))) {
+            // Se a requisição veio do JavaScript, responde com JSON de erro
+            if ($origem === 'javascript') {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Este tipo de produto já está cadastrado.']);
+                exit; // Para a execução aqui
+            }
+
+            // Se for uma requisição normal, exibe a página com a mensagem de erro
             session_start();
             $menu = $this->menu();
-            // IMPORTANTE: Altere 'view/produto.php' se a view for outra
             include_once 'view/produto.php';
             $this->mostrarMensagemErro("Tipo de produto já cadastrado");
             exit();
+        }
+
+        // 2. Se o tipo não existe, tenta cadastrar
+        $cadastrouComSucesso = $objTipoProduto->cadastrarTipo($nome_tipo);
+
+        // 3. Verifica a origem para decidir o que responder
+        if ($origem === 'javascript') {
+            header('Content-Type: application/json');
+            if ($cadastrouComSucesso) {
+                echo json_encode(['success' => true, 'message' => 'Tipo de produto cadastrado com sucesso!']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Erro inesperado ao tentar cadastrar o tipo.']);
+            }
+            exit; // Para a execução aqui
         } else {
-            // Invoca o método da classe para cadastrar
-            if ($objTipoProduto->cadastrarTipo($nome_tipo) == true) {
-                session_start();
-                $menu = $this->menu();
-                include_once 'view/produto.php';
+            // Se for uma requisição normal, exibe a página com a mensagem apropriada
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/produto.php';
+            if ($cadastrouComSucesso) {
                 $this->mostrarMensagemSucesso("Tipo de produto cadastrado com sucesso");
             } else {
-                session_start();
-                $menu = $this->menu();
-                include_once 'view/produto.php';
                 $this->mostrarMensagemErro("Erro ao cadastrar Tipo de Produto");
             }
         }
@@ -6449,7 +6486,7 @@ class Controller
         return htmlspecialchars($valor);
     }
     // =======================================================
-    // MÉTODO 1: AÇÃO PRINCIPAL DO CONTROLLER
+    // MÉTODO De Consultas
     // =======================================================
     public function listar_Auditorias()
     {
@@ -6467,6 +6504,170 @@ class Controller
             $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias!");
         }
     }
+
+    /**
+     * Card 2: Auditorias por Usuário.
+     * @param int $id_usuario O ID do usuário a ser filtrado.
+     */
+    public function listar_AuditoriasPorUsuario($id_usuario)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuario($id_usuario);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'View/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'View/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias para este usuário!");
+        }
+    }
+
+    /**
+     * Card 3: Auditorias por Ação.
+     * @param string $acao Ação a ser filtrada ('INSERT', 'UPDATE', 'DELETE').
+     */
+    public function listar_AuditoriasPorAcao($acao)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorAcao($acao);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'View/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'View/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias por ação!");
+        }
+    }
+
+    /**
+     * Card 4: Auditorias por Período.
+     * @param string $data_inicio Data de início do filtro.
+     * @param string $data_fim Data final do filtro.
+     */
+    public function listar_AuditoriasPorPeriodo($data_inicio, $data_fim)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorPeriodo($data_inicio, $data_fim);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'View/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'View/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias por período!");
+        }
+    }
+
+    /**
+     * Card 5: Auditorias por Usuário e Ação.
+     * @param int $id_usuario ID do usuário.
+     * @param string $acao Ação a ser filtrada.
+     */
+    public function listar_AuditoriasUsuarioAcao($id_usuario, $acao)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuarioAcao($id_usuario, $acao);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'View/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'View/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+        }
+    }
+
+    /**
+     * Card 6: Auditorias por Tabela e Período.
+     * @param string $tabela Nome da tabela.
+     * @param string $data_inicio Data de início.
+     * @param string $data_fim Data final.
+     */
+    public function listar_AuditoriasTabelaPeriodo($tabela, $data_inicio, $data_fim)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorTabelaPeriodo($tabela, $data_inicio, $data_fim);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'View/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'View/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+        }
+    }
+
+    /**
+     * Card 7: Auditorias por Usuário e Período.
+     * @param int $id_usuario ID do usuário.
+     * @param string $data_inicio Data de início.
+     * @param string $data_fim Data final.
+     */
+    public function listar_AuditoriasUsuarioPeriodo($id_usuario, $data_inicio, $data_fim)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuarioPeriodo($id_usuario, $data_inicio, $data_fim);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'View/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'View/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+        }
+    }
+
+    /**
+     * Card 8: Auditorias por Usuário, Ação e Período.
+     * @param int $id_usuario ID do usuário.
+     * @param string $acao Ação a ser filtrada.
+     * @param string $data_inicio Data de início.
+     * @param string $data_fim Data final.
+     */
+    public function listar_AuditoriasUsuarioAcaoPeriodo($id_usuario, $acao, $data_inicio, $data_fim)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuarioAcaoPeriodo($id_usuario, $acao, $data_inicio, $data_fim);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'View/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'View/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+        }
+    }
+
     // =======================================================
     // MÉTODO 2: AGRUPADOR DE EVENTOS
     // =======================================================
