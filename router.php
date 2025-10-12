@@ -761,6 +761,7 @@ if (isset($_POST['buscar_pedidos'])) {
 // =====================
 // ALTERAR PEDIDO
 // =====================
+
 if (isset($_POST['alterar_pedido'])) {
     $id_pedido = $_POST['id_pedido'];
     $id_cliente = $_POST['id_cliente'];

@@ -150,20 +150,19 @@ class Pedido extends Conexao
                 ip.id_item_pedido,
                 ip.id_produto,
                 pr.nome_produto,
-                pr.largura,          -- ADICIONADO: Largura do produto
-                co.nome_cor,         -- ADICIONADO: Nome da cor
-                
+                pr.largura,
+                co.nome_cor,
                 ip.quantidade,
                 ip.valor_unitario,
                 ip.totalValor_produto
 
-            FROM pedido p
-            INNER JOIN cliente c ON p.id_cliente = c.id_cliente
-            INNER JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
-            LEFT JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
-            LEFT JOIN produto pr ON ip.id_produto = pr.id_produto
-            LEFT JOIN cor co ON pr.id_cor = co.id_cor -- ADICIONADO: Join com a tabela de cor
-            WHERE 1=1";
+                FROM pedido p
+                LEFT JOIN cliente c ON p.id_cliente = c.id_cliente
+                LEFT JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
+                LEFT JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
+                LEFT JOIN produto pr ON ip.id_produto = pr.id_produto
+                LEFT JOIN cor co ON pr.id_cor = co.id_cor
+                WHERE 1=1";
 
         // Aplica os filtros dinamicamente
         if (!empty($this->getNumeroPedido())) {
@@ -175,13 +174,14 @@ class Pedido extends Conexao
         if (!empty($this->getStatusPedido())) {
             $sql .= " AND p.status_pedido = :status_pedido";
         }
+        // Correção no filtro de data
         if (!empty($this->getDataPedido())) {
-            $sql .= " AND p.data_pedido = :data_pedido";
+            // Compara apenas a parte da data, ignorando a hora
+            $sql .= " AND DATE(p.data_pedido) = :data_pedido";
         }
         if (!empty($this->getIdFormaPagamento())) {
             $sql .= " AND p.id_forma_pagamento = :id_forma_pagamento";
         }
-
         // Sempre por último!
         $sql .= " ORDER BY p.numero_pedido DESC";
 

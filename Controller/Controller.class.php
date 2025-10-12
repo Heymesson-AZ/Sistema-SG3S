@@ -4483,43 +4483,41 @@ class Controller
         }
     }
     // consultar pedidos
-    public function consultar_Pedido($numero_pedido, $id_cliente, $data_pedido, $status_pedido, $id_forma_pagamento, $origem)
-    {
-        // Instaciar a classe
+    public function consultar_Pedido(
+        $numero_pedido,
+        $id_cliente,
+        $status_pedido,
+        $data_pedido,
+        $id_forma_pagamento,
+        $origem
+    ) {
+        // Instanciar a classe
         $objPedido = new Pedido();
-        // Invocar o método da classe Pedido para consultar os pedidos
-        $objPedido->consultarPedido($numero_pedido, $id_cliente, $data_pedido, $status_pedido, $id_forma_pagamento);
-        // Verificar se houve retorno de resultados
-        if ($objPedido->consultarPedido($numero_pedido, $id_cliente, $data_pedido, $status_pedido, $id_forma_pagamento) == true) {
-            session_start();
-            // Passa os resultados para a view
-            $pedidos = $objPedido->consultarPedido($numero_pedido, $id_cliente, $data_pedido, $status_pedido, $id_forma_pagamento);
-            $pagina = $origem;
-            if ($origem === 'pedido') {
-                // Carregar o menu
-                $menu = $this->menu();
-                include_once 'View/pedido.php';
-            } else if ($origem === 'principal') {
-                // Carregar o menu
-                $menu = $this->menu();
-                // Incluir a view do principal
-                include_once 'View/principal.php';
-            }
-        } else {
-            session_start();
-            if ($origem === 'pedido') {
-                // Carregar o menu
-                $menu = $this->menu();
-                // Incluir a view do pedido
-                include_once 'View/pedido.php';
-            } else {
-                // Carregar o menu
-                $menu = $this->menu();
-                // Incluir a view do principal
-                include_once 'View/principal.php';
-            }
+
+        $pedidos = $objPedido->consultarPedido(
+            $numero_pedido,
+            $id_cliente,
+            $status_pedido,
+            $data_pedido,
+            $id_forma_pagamento
+        );
+
+        session_start();
+
+        if (empty($pedidos)) {
             $this->mostrarMensagemErro("Nenhum pedido encontrado");
-        };
+        }
+
+        // Carregar o menu
+        $menu = $this->menu();
+
+        // Incluir a View correta com base na origem
+        if ($origem === 'pedido') {
+            include_once 'View/pedido.php';
+        } else { // Simplificado, já que 'principal' é o outro caso
+            include_once 'View/principal.php';
+        }
+        exit;
     }
     // tabela de comnsulta de pedido
     public function tabelaConsultar_Pedido($pedidos)

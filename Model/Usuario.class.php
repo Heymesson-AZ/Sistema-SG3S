@@ -155,8 +155,8 @@ class Usuario extends Conexao
         $this->setIdPerfil($id_perfil);
         // Montar a query para consultar um usuário
         $sql = "SELECT u.id_usuario, u.nome_usuario, u.email, u.cpf, u.senha, u.telefone, p.perfil_usuario,p.id_perfil
-        FROM Usuario as u
-        LEFT JOIN Perfil_Usuario as p ON u.id_perfil = p.id_perfil
+        FROM usuario as u
+        LEFT JOIN perfil_usuario as p ON u.id_perfil = p.id_perfil
         WHERE true";
         // Adicionando condições de filtro
         if (!empty($this->getNomeUsuario())) {
