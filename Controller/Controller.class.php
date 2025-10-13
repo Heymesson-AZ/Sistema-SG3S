@@ -4128,7 +4128,7 @@ class Controller
         $objCliente = new Cliente();
         // Invocar o método para obter a lista de clientes
         $clientes = $objCliente->consultarCliente(null, null, null);
-        print '<select name="id_cliente" class="form-select" aria-label="Default select example">';
+        print '<select name="id_cliente" class="form-select" aria-label="Default select example" id="id_cliente">';
         print '<option selected value="">Selecione o Cliente </option>';
         foreach ($clientes as $key => $valor) {
             if ($valor->id_cliente == $id_cliente) {
@@ -4512,10 +4512,10 @@ class Controller
         $menu = $this->menu();
 
         // Incluir a View correta com base na origem
-        if ($origem === 'pedido') {
-            include_once 'View/pedido.php';
-        } else { // Simplificado, já que 'principal' é o outro caso
-            include_once 'View/principal.php';
+        if ($origem === 'principal') {
+            include_once 'view/principal.php';
+        } else {
+            include_once 'view/pedido.php';
         }
         exit;
     }

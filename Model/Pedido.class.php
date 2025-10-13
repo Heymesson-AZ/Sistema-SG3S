@@ -174,7 +174,7 @@ class Pedido extends Conexao
         if (!empty($this->getStatusPedido())) {
             $sql .= " AND p.status_pedido = :status_pedido";
         }
-        // Correção no filtro de data
+        // filtro de data
         if (!empty($this->getDataPedido())) {
             // Compara apenas a parte da data, ignorando a hora
             $sql .= " AND DATE(p.data_pedido) = :data_pedido";

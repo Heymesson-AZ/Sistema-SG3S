@@ -9,6 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Favicon -->
+    <link rel="icon" href="img/favicon.ico">
     <link rel="stylesheet" href="assets/css/index.css">
     <link rel="stylesheet" href="assets/css/modal.css">
     <link rel="stylesheet" href="assets/css/dashboard.css">
@@ -16,10 +18,8 @@
 
 <body>
     <?php
-    // Renderiza o menu principal
     print $menu;
     ?>
-
     <main class="container text-center mt-4">
         <div class="text-center mb-4">
             <h1 class="display-9">Sistema de Gerenciamento SG3S</h1>
@@ -54,9 +54,7 @@
                 <div class="col-md-12">
                     <?php
                     // Renderiza a tabela de consulta de pedidos, se houver dados
-                    if (!empty($pedidos)) {
-                        $this->tabelaConsultar_Pedido($pedidos);
-                    }
+                    $this->tabelaConsultar_Pedido($pedidos);
                     ?>
                 </div>
             </div>
@@ -196,7 +194,7 @@
                                             </div>
                                         </div>
                                         <div class="table-responsive">
-                                            <label class="form-label fw-semibold">Produtos do Pedido</label>
+                                            <label class="form-label fw-semibold" for="produto_pedido">Produtos do Pedido</label>
                                             <table class="table table-bordered table-striped table-sm align-middle text-center">
                                                 <thead class="table-light">
                                                     <tr>
@@ -255,7 +253,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="cliente" class="form-label">Cliente</label>
+                                    <label for="id_cliente" class="form-label">Cliente</label>
                                     <?php $this->selectClientes($id_cliente = null); ?>
                                 </div>
                                 <div class="col-md-4">
@@ -272,7 +270,6 @@
                 </div>
             </div>
         </div>
-
         <div class="modal fade" id="modalCalendario" tabindex="-1" aria-labelledby="modalCalendarioLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
@@ -295,7 +292,7 @@
 
         // Modais que recebem o array completo de pedidos
         $this->modalDetalhesPedido($pedidos);
-        $this->modalAlterarPedido($pedidos, $pagina);
+        $this->modalAlterarPedido($pedidos, $origem);
 
         // Gera os modais de ação para cada pedido em um único laço
         foreach ($pedidos as $pedido) {
@@ -306,7 +303,6 @@
         }
     }
     ?>
-
     <footer class="text-center py-1 mt-6 bg-light">
         <p>&copy; 2025 Sistema de Gerenciamento SG3S. Todos os direitos reservados.</p>
         <p>Developed by Heymesson Azêvedo.</p>

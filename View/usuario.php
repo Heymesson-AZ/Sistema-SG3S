@@ -1,6 +1,5 @@
     <!DOCTYPE html>
     <html lang="pt-br">
-
     <head>
         <title>Sistema de Gerenciamento SG3S</title>
         <meta charset="utf-8" />
@@ -14,7 +13,6 @@
         <!-- CSS Personalizado -->
         <link rel="stylesheet" href="assets/css/index.css">
     </head>
-
     <body>
         <main class="container-fluid mt-4">
             <div class="text-center mb-4">
@@ -274,5 +272,4 @@
         <!-- ajax de produtos com baixo estoque-->
         <script src="assets/js/notificacao.js"></script>
     </body>
-
     </html>

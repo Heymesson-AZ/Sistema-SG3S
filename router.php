@@ -747,7 +747,7 @@ if (isset($_POST['buscar_pedidos'])) {
     $data_pedido = htmlspecialchars(trim($_POST['data_pedido']));
     $status_pedido = htmlspecialchars(trim($_POST['status_pedido']));
     $id_forma_pagamento = $_POST['id_forma_pagamento'];
-    $origem = $_POST['origem'] ?? '';
+    $origem = $_POST['origem'];
 
     $objController->consultar_Pedido(
         $numero_pedido,
