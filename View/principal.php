@@ -227,21 +227,30 @@
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modalConsultaPedidoLabel"><i class="bi bi-search"></i> Consultar Pedidos</h5>
+                        <h5 class="modal-title" id="modalConsultaPedidoLabel">
+                            <i class="bi bi-search"></i> Consultar Pedidos
+                        </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                     </div>
+
                     <div class="modal-body">
                         <form id="formulario_consulta_pedido" action="index.php" method="POST">
                             <input type="hidden" name="origem" value="principal">
-                            <div class="row g-4">
+
+                            <div class="row g-3">
+                                <!-- Número do Pedido -->
                                 <div class="col-md-4">
                                     <label for="numero_pedido" class="form-label">Número do Pedido</label>
                                     <input type="text" class="form-control" id="numero_pedido" name="numero_pedido" placeholder="Digite o número do pedido" autocomplete="off">
                                 </div>
+
+                                <!-- Data do Pedido -->
                                 <div class="col-md-4">
                                     <label for="data_pedido" class="form-label">Data do Pedido</label>
                                     <input type="date" class="form-control" id="data_pedido" name="data_pedido">
                                 </div>
+
+                                <!-- Status do Pedido -->
                                 <div class="col-md-4">
                                     <label for="status_pedido" class="form-label">Status do Pedido</label>
                                     <select id="status_pedido" name="status_pedido" class="form-select">
@@ -252,16 +261,25 @@
                                         <option value="Cancelado">Cancelado</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="id_cliente" class="form-label">Cliente</label>
-                                    <?php $this->selectClientes($id_cliente = null); ?>
+
+                                <!-- Cliente -->
+                                <div class="col-md-8">
+                                    <label for="cliente_pedido_consulta" class="form-label">Buscar Cliente</label>
+                                    <div class="input-group position-relative">
+                                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                        <input type="text" class="form-control" id="cliente_pedido_consulta" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">
+                                        <div id="resultado_busca_cliente_consulta" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>
+                                    </div>
                                 </div>
+
+                                <!-- Forma de Pagamento -->
                                 <div class="col-md-4">
                                     <?php $this->selectConsultaForma_Pagamento($id_forma_pagamento = null); ?>
                                 </div>
                             </div>
+
                             <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-primary mb-3" id="buscar_pedidos" name="buscar_pedidos">
+                                <button type="submit" class="btn btn-primary" id="buscar_pedidos" name="buscar_pedidos">
                                     <i class="bi bi-search"></i> Buscar Pedidos
                                 </button>
                             </div>
@@ -270,6 +288,7 @@
                 </div>
             </div>
         </div>
+
         <div class="modal fade" id="modalCalendario" tabindex="-1" aria-labelledby="modalCalendarioLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
@@ -314,6 +333,7 @@
 
     <script src="assets/js/cadastroPedido.js"></script>
     <script src="assets/js/alteracaoPedido.js"></script>
+
     <script src="assets/js/notificacao.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="assets/js/charts.js"></script>

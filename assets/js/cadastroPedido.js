@@ -5,20 +5,30 @@ document.addEventListener("DOMContentLoaded", function () {
     let valorTotal = 0;
     let valorFrete = 0;
     let produtoSelecionado = null;
+    let timeoutCliente = null;
+    let timeoutProduto = null;
+    const DEBOUNCE_DELAY = 500;
 
     // ===========================
-    // SELETORES DO DOM
+    // SELETORES DO DOM - MODAL DE CADASTRO DE PEDIDO
     // ===========================
     const inputCliente = document.getElementById("cliente_pedido");
+    const resultadoCliente = document.getElementById("resultado_busca_cliente");
     const inputProduto = document.getElementById("produto_pedido");
     const inputQuantidade = document.getElementById("quantidade");
-    const resultadoCliente = document.getElementById("resultado_busca_cliente");
     const resultadoProduto = document.getElementById("resultado_busca_produto");
     const tbody = document.getElementById("tbody_lista_pedido");
     const btnSalvar = document.getElementById("salvar_pedido");
     const btnAdicionar = document.getElementById("adicionar_produto");
     const freteEl = document.getElementById("frete");
-    const selectPagamento = document.querySelector("select[name='id_forma_pagamento']");
+    const selectPagamento = document.querySelector("#modal_pedido select[name='id_forma_pagamento']");
+
+    // ===========================
+    // SELETORES DO DOM - MODAL DE CONSULTA DE PEDIDO (NOVO)
+    // ===========================
+    const inputClienteConsulta = document.getElementById("cliente_pedido_consulta");
+    const resultadoClienteConsulta = document.getElementById("resultado_busca_cliente_consulta");
+
 
     // ===========================
     // FUNÇÕES UTILITÁRIAS
@@ -62,6 +72,134 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ===========================
+    // BUSCA DINÂMICA (AJAX)
+    // ===========================
+    function buscarCliente(termo, resultadoElemento, inputElemento) {
+        if (!termo) {
+            if (resultadoElemento) resultadoElemento.innerHTML = "";
+            return;
+        }
+        ativarSpinner(inputElemento);
+        fetch("index.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `cliente_pedido=${encodeURIComponent(termo)}`,
+        })
+            .then(res => res.text())
+            .then(data => {
+                if (resultadoElemento) resultadoElemento.innerHTML = data;
+                desativarSpinner(inputElemento);
+            })
+            .catch(() => {
+                mostrarAlerta("Erro ao buscar cliente.");
+                desativarSpinner(inputElemento);
+            });
+    }
+
+    function buscarProduto(termo) {
+        if (!termo) {
+            if (resultadoProduto) resultadoProduto.innerHTML = "";
+            document.getElementById("id_produto_hidden")?.remove();
+            produtoSelecionado = null;
+            return;
+        }
+        ativarSpinner(inputProduto);
+        fetch("index.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `produto_pedido=${encodeURIComponent(termo)}`,
+        })
+            .then(res => res.text())
+            .then(data => {
+                if (resultadoProduto) resultadoProduto.innerHTML = data;
+                desativarSpinner(inputProduto);
+            })
+            .catch(() => {
+                mostrarAlerta("Erro ao buscar produto.");
+                desativarSpinner(inputProduto);
+            });
+    }
+
+    // ===========================
+    // LISTENERS - MODAL CADASTRO DE PEDIDO
+    // ===========================
+    if (inputCliente) {
+        inputCliente.addEventListener("input", (e) => {
+            clearTimeout(timeoutCliente);
+            const termo = e.target.value.trim();
+            if (!termo) {
+                document.getElementById("id_cliente_hidden")?.remove();
+                verificarLimiteCredito();
+            }
+            timeoutCliente = setTimeout(() => buscarCliente(termo, resultadoCliente, inputCliente), DEBOUNCE_DELAY);
+        });
+    }
+
+    if (resultadoCliente) {
+        resultadoCliente.addEventListener("click", function (e) {
+            const clienteItem = e.target.closest(".cliente-item");
+            if (!clienteItem) return;
+            if (inputCliente) inputCliente.value = clienteItem.textContent;
+            let hiddenIdCliente = document.getElementById("id_cliente_hidden");
+            if (!hiddenIdCliente) {
+                hiddenIdCliente = document.createElement("input");
+                hiddenIdCliente.type = "hidden";
+                hiddenIdCliente.id = "id_cliente_hidden";
+                hiddenIdCliente.name = "id_cliente";
+                inputCliente?.parentElement.appendChild(hiddenIdCliente);
+            }
+            hiddenIdCliente.value = clienteItem.dataset.id;
+            this.innerHTML = "";
+            verificarLimiteCredito();
+        });
+    }
+
+    // ===============================================
+    // LISTENERS - MODAL DE CONSULTA DE PEDIDO (NOVO)
+    // ===============================================
+    if (inputClienteConsulta) {
+        inputClienteConsulta.addEventListener("input", (e) => {
+            clearTimeout(timeoutCliente);
+            const termo = e.target.value.trim();
+            // Limpa o ID se o campo for apagado
+            if (!termo) {
+                const hiddenInput = document.getElementById("id_cliente_consulta_hidden");
+                if (hiddenInput) {
+                    hiddenInput.remove();
+                }
+            }
+            timeoutCliente = setTimeout(() => buscarCliente(termo, resultadoClienteConsulta, inputClienteConsulta), DEBOUNCE_DELAY);
+        });
+    }
+
+    if (resultadoClienteConsulta) {
+        resultadoClienteConsulta.addEventListener("click", function (e) {
+            const clienteItem = e.target.closest(".cliente-item");
+            if (!clienteItem) return;
+
+            // Preenche o input com o nome do cliente
+            if (inputClienteConsulta) inputClienteConsulta.value = clienteItem.textContent;
+
+            // Procura por um input hidden existente ou cria um novo
+            let hiddenIdCliente = document.getElementById("id_cliente_consulta_hidden");
+            if (!hiddenIdCliente) {
+                hiddenIdCliente = document.createElement("input");
+                hiddenIdCliente.type = "hidden";
+                hiddenIdCliente.id = "id_cliente_consulta_hidden";
+                // IMPORTANTE: O 'name' deve ser 'id_cliente' para o formulário de consulta enviar o parâmetro correto
+                hiddenIdCliente.name = "id_cliente";
+                // Adiciona o input hidden dentro do formulário de consulta
+                document.getElementById("formulario_consulta_pedido").appendChild(hiddenIdCliente);
+            }
+            // Define o valor do ID do cliente
+            hiddenIdCliente.value = clienteItem.dataset.id;
+
+            // Limpa os resultados da busca
+            this.innerHTML = "";
+        });
+    }
+
+    // ===========================
     // ATUALIZAÇÔES DE TOTAIS E BOTÕES
     // ===========================
     function atualizarValorTotalComFrete() {
@@ -75,7 +213,6 @@ document.addEventListener("DOMContentLoaded", function () {
         valorTotal = 0;
         if (!tbody) return;
         tbody.querySelectorAll("tr").forEach(tr => {
-            // **AJUSTE:** Busca o campo com nome simples para somar corretamente
             const hiddenTotal = tr.querySelector("input[name='totalValor_produto']");
             if (hiddenTotal) {
                 valorTotal += parseFloat(hiddenTotal.value) || 0;
@@ -92,7 +229,6 @@ document.addEventListener("DOMContentLoaded", function () {
         btnSalvar.disabled = !(idCliente && idPagamento && possuiProdutos);
     }
 
-    // ... Funções de verificar limite e busca AJAX permanecem iguais ...
     function verificarLimiteCredito() {
         const idCliente = document.getElementById("id_cliente_hidden")?.value;
         const total = Number(valorTotal.toFixed(2));
@@ -100,32 +236,22 @@ document.addEventListener("DOMContentLoaded", function () {
             verificarBotaoSalvar(); return;
         }
         fetch("index.php", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: `verificar_limite=1&id_cliente=${idCliente}&valor_total=${total}`, })
-        .then(res => res.text()).then(resdata => {
-            let limiteExcedido = false;
-            if (resdata.trim()) {
-                try {
-                    const json = JSON.parse(resdata);
-                    if (json.status === false) {
-                        limiteExcedido = true;
-                        if (btnSalvar) btnSalvar.disabled = true;
-                        mostrarAlerta(`⚠️ Limite de crédito excedido!<br><strong>Limite:</strong> R$ ${parseFloat(json.limite_credito).toFixed(2).replace(".", ",")}<br><strong>Pedido:</strong> R$ ${total.toFixed(2).replace(".", ",")}`, "danger", 6000);
-                    }
-                } catch (e) {}
-            }
-            if (!limiteExcedido) { verificarBotaoSalvar(); }
-        }).catch(() => { if (btnSalvar) btnSalvar.disabled = true; mostrarAlerta("Erro ao verificar limite de crédito!", "danger"); });
+            .then(res => res.text()).then(resdata => {
+                let limiteExcedido = false;
+                if (resdata.trim()) {
+                    try {
+                        const json = JSON.parse(resdata);
+                        if (json.status === false) {
+                            limiteExcedido = true;
+                            if (btnSalvar) btnSalvar.disabled = true;
+                            mostrarAlerta(`⚠️ Limite de crédito excedido!<br><strong>Limite:</strong> R$ ${parseFloat(json.limite_credito).toFixed(2).replace(".", ",")}<br><strong>Pedido:</strong> R$ ${total.toFixed(2).replace(".", ",")}`, "danger", 6000);
+                        }
+                    } catch (e) { }
+                }
+                if (!limiteExcedido) { verificarBotaoSalvar(); }
+            }).catch(() => { if (btnSalvar) btnSalvar.disabled = true; mostrarAlerta("Erro ao verificar limite de crédito!", "danger"); });
     }
-    let timeoutCliente = null;
-    let timeoutProduto = null;
-    const DEBOUNCE_DELAY = 500;
-    if (inputCliente) {
-        inputCliente.addEventListener("input", (e) => {
-            clearTimeout(timeoutCliente);
-            const termo = e.target.value.trim();
-            if (!termo) { document.getElementById("id_cliente_hidden")?.remove(); verificarLimiteCredito(); }
-            timeoutCliente = setTimeout(() => buscarCliente(termo), DEBOUNCE_DELAY);
-        });
-    }
+
     if (inputProduto) {
         inputProduto.addEventListener("input", (e) => {
             clearTimeout(timeoutProduto);
@@ -133,34 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
             timeoutProduto = setTimeout(() => buscarProduto(termo), DEBOUNCE_DELAY);
         });
     }
-    function buscarCliente(termo) {
-        if (!termo) { if (resultadoCliente) resultadoCliente.innerHTML = ""; return; }
-        ativarSpinner(inputCliente);
-        fetch("index.php", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: `cliente_pedido=${encodeURIComponent(termo)}`, })
-        .then(res => res.text()).then(data => { if (resultadoCliente) resultadoCliente.innerHTML = data; desativarSpinner(inputCliente); }).catch(() => { mostrarAlerta("Erro ao buscar cliente."); desativarSpinner(inputCliente); });
-    }
-    function buscarProduto(termo) {
-        if (!termo) { if (resultadoProduto) resultadoProduto.innerHTML = ""; document.getElementById("id_produto_hidden")?.remove(); produtoSelecionado = null; return; }
-        ativarSpinner(inputProduto);
-        fetch("index.php", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: `produto_pedido=${encodeURIComponent(termo)}`, })
-        .then(res => res.text()).then(data => { if (resultadoProduto) resultadoProduto.innerHTML = data; desativarSpinner(inputProduto); }).catch(() => { mostrarAlerta("Erro ao buscar produto."); desativarSpinner(inputProduto); });
-    }
-    if (resultadoCliente) {
-        resultadoCliente.addEventListener("click", function (e) {
-            const clienteItem = e.target.closest(".cliente-item");
-            if (!clienteItem) return;
-            if (inputCliente) inputCliente.value = clienteItem.textContent;
-            let hiddenIdCliente = document.getElementById("id_cliente_hidden");
-            if (!hiddenIdCliente) {
-                hiddenIdCliente = document.createElement("input");
-                hiddenIdCliente.type = "hidden"; hiddenIdCliente.id = "id_cliente_hidden"; hiddenIdCliente.name = "id_cliente";
-                inputCliente?.parentElement.appendChild(hiddenIdCliente);
-            }
-            hiddenIdCliente.value = clienteItem.dataset.id;
-            this.innerHTML = "";
-            verificarLimiteCredito();
-        });
-    }
+
     if (resultadoProduto) {
         resultadoProduto.addEventListener("click", function (e) {
             const produtoItem = e.target.closest(".produto-item");
@@ -201,53 +300,52 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             fetch("index.php", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: `verificar_quantidade=1&id_produto=${idProduto}&quantidade=${qtd}`, })
-            .then(res => res.text()).then(data => {
-                if (data.includes("erro_quantidade")) {
-                    mostrarAlerta("Quantidade insuficiente em estoque!");
+                .then(res => res.text()).then(data => {
+                    if (data.includes("erro_quantidade")) {
+                        mostrarAlerta("Quantidade insuficiente em estoque!");
+                        if (inputQuantidade) inputQuantidade.value = "";
+                        return;
+                    }
+
+                    const valorUnitario = produtoSelecionado.valorVenda;
+                    const valorLinha = valorUnitario * qtd;
+                    const tr = tbody.insertRow();
+                    tr.dataset.idProduto = idProduto;
+
+                    tr.insertCell(0).textContent = produtoSelecionado.nome;
+                    tr.insertCell(1).textContent = produtoSelecionado.cor || '-';
+                    tr.insertCell(2).textContent = produtoSelecionado.largura || '-';
+                    const cellQtd = tr.insertCell(3);
+                    const inputQtdNaTabela = document.createElement("input");
+                    inputQtdNaTabela.type = "text"; inputQtdNaTabela.className = "form-control form-control-sm text-center quantidade-item";
+                    inputQtdNaTabela.value = String(qtd).replace('.', ',');
+                    inputQtdNaTabela.dataset.valorAnterior = String(qtd).replace('.', ',');
+                    cellQtd.appendChild(inputQtdNaTabela);
+                    tr.insertCell(4).textContent = formatarMoeda(valorUnitario);
+                    tr.insertCell(5).textContent = formatarMoeda(valorLinha);
+                    const cellBtn = tr.insertCell(6);
+                    const btnRemover = document.createElement("button");
+                    btnRemover.type = "button"; btnRemover.className = "btn btn-outline-danger btn-sm btn-remover-item";
+                    btnRemover.innerHTML = '<i class="bi bi-trash"></i>';
+                    cellBtn.appendChild(btnRemover);
+
+                    const createHiddenInput = (name, value) => {
+                        const input = document.createElement("input");
+                        input.type = "hidden"; input.name = name; input.value = value;
+                        tr.appendChild(input);
+                    };
+
+                    createHiddenInput('valor_unitario', valorUnitario.toFixed(2));
+                    createHiddenInput('totalValor_produto', valorLinha.toFixed(2));
+
+                    recalcularTotaisAPartirDaTabela();
+
+                    if (inputProduto) inputProduto.value = "";
                     if (inputQuantidade) inputQuantidade.value = "";
-                    return;
-                }
-
-                const valorUnitario = produtoSelecionado.valorVenda;
-                const valorLinha = valorUnitario * qtd;
-                const tr = tbody.insertRow();
-                tr.dataset.idProduto = idProduto;
-                
-                tr.insertCell(0).textContent = produtoSelecionado.nome;
-                tr.insertCell(1).textContent = produtoSelecionado.cor || '-';
-                tr.insertCell(2).textContent = produtoSelecionado.largura || '-';
-                const cellQtd = tr.insertCell(3);
-                const inputQtdNaTabela = document.createElement("input");
-                inputQtdNaTabela.type = "text"; inputQtdNaTabela.className = "form-control form-control-sm text-center quantidade-item";
-                inputQtdNaTabela.value = String(qtd).replace('.', ',');
-                inputQtdNaTabela.dataset.valorAnterior = String(qtd).replace('.', ',');
-                cellQtd.appendChild(inputQtdNaTabela);
-                tr.insertCell(4).textContent = formatarMoeda(valorUnitario);
-                tr.insertCell(5).textContent = formatarMoeda(valorLinha);
-                const cellBtn = tr.insertCell(6);
-                const btnRemover = document.createElement("button");
-                btnRemover.type = "button"; btnRemover.className = "btn btn-outline-danger btn-sm btn-remover-item";
-                btnRemover.innerHTML = '<i class="bi bi-trash"></i>';
-                cellBtn.appendChild(btnRemover);
-
-                const createHiddenInput = (name, value) => {
-                    const input = document.createElement("input");
-                    input.type = "hidden"; input.name = name; input.value = value;
-                    tr.appendChild(input);
-                };
-
-                // **AJUSTE CRÍTICO:** Criando os inputs na linha com nomes simples
-                createHiddenInput('valor_unitario', valorUnitario.toFixed(2));
-                createHiddenInput('totalValor_produto', valorLinha.toFixed(2));
-
-                recalcularTotaisAPartirDaTabela();
-
-                if (inputProduto) inputProduto.value = "";
-                if (inputQuantidade) inputQuantidade.value = "";
-                document.getElementById("id_produto_hidden")?.remove();
-                if (resultadoProduto) resultadoProduto.innerHTML = "";
-                produtoSelecionado = null;
-            });
+                    document.getElementById("id_produto_hidden")?.remove();
+                    if (resultadoProduto) resultadoProduto.innerHTML = "";
+                    produtoSelecionado = null;
+                });
         });
     }
 
@@ -268,8 +366,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const idProduto = tr.dataset.idProduto;
             const novaQtd = parseFloat(input.value.replace(',', '.'));
-            
-            // **AJUSTE:** Lendo os valores dos campos com nomes simples
+
             const valorUnitario = parseFloat(tr.querySelector("input[name='valor_unitario']")?.value) || 0;
             const hiddenTotal = tr.querySelector("input[name='totalValor_produto']");
             const cellTotal = tr.cells[5];
@@ -282,21 +379,21 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             fetch("index.php", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: `verificar_quantidade=1&id_produto=${idProduto}&quantidade=${novaQtd}`, })
-            .then(res => res.text()).then(data => {
-                if (data.includes("erro_quantidade")) {
-                    mostrarAlerta("Estoque insuficiente!", "warning");
-                    input.value = "";
-                    if (cellTotal) cellTotal.textContent = formatarMoeda(0);
-                    if (hiddenTotal) hiddenTotal.value = '0.00';
+                .then(res => res.text()).then(data => {
+                    if (data.includes("erro_quantidade")) {
+                        mostrarAlerta("Estoque insuficiente!", "warning");
+                        input.value = "";
+                        if (cellTotal) cellTotal.textContent = formatarMoeda(0);
+                        if (hiddenTotal) hiddenTotal.value = '0.00';
+                        recalcularTotaisAPartirDaTabela();
+                        return;
+                    }
+                    const novoSubtotal = valorUnitario * novaQtd;
+                    if (cellTotal) cellTotal.textContent = formatarMoeda(novoSubtotal);
+                    if (hiddenTotal) hiddenTotal.value = novoSubtotal.toFixed(2);
                     recalcularTotaisAPartirDaTabela();
-                    return;
-                }
-                const novoSubtotal = valorUnitario * novaQtd;
-                if (cellTotal) cellTotal.textContent = formatarMoeda(novoSubtotal);
-                if (hiddenTotal) hiddenTotal.value = novoSubtotal.toFixed(2);
-                recalcularTotaisAPartirDaTabela();
-                input.dataset.valorAnterior = input.value;
-            }).catch(() => { mostrarAlerta("Erro ao verificar estoque!", "danger"); input.value = input.dataset.valorAnterior; });
+                    input.dataset.valorAnterior = input.value;
+                }).catch(() => { mostrarAlerta("Erro ao verificar estoque!", "danger"); input.value = input.dataset.valorAnterior; });
         });
 
         tbody.addEventListener("click", (e) => {
@@ -354,7 +451,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const form = document.createElement("form");
             form.method = "POST";
             form.action = "index.php";
-            
+
             const total = (valorTotal + valorFrete).toFixed(2);
             const frete = valorFrete.toFixed(2);
             const origem = document.getElementById("origem")?.value || "";
@@ -372,12 +469,10 @@ document.addEventListener("DOMContentLoaded", function () {
             tbody.querySelectorAll("tr").forEach((tr, i) => {
                 const idProduto = tr.dataset.idProduto;
                 const quantidade = tr.querySelector("input.quantidade-item")?.value.replace(',', '.') || 0;
-                
-                // **AJUSTE:** Lendo os valores dos inputs com nomes simples
+
                 const valorUnitario = tr.querySelector("input[name='valor_unitario']")?.value || 0;
                 const totalValorProduto = tr.querySelector("input[name='totalValor_produto']")?.value || 0;
 
-                // Monta a string para o envio com os nomes corretos que o backend espera
                 form.innerHTML += `
                     <input type="hidden" name="itens[${i}][id_produto]" value="${idProduto}">
                     <input type="hidden" name="itens[${i}][quantidade]" value="${quantidade}">

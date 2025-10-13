@@ -4552,7 +4552,7 @@ class Controller
         print '<th scope="col">Cliente</th>';
         print '<th scope="col">Data</th>';
         print '<th scope="col">Status</th>';
-        print '<th scope="col">Valor Total</th>';
+        print '<th scope="col">Valor Total (R$)</th>';
         print '<th scope="col">Ações</th>';
         print '</tr>';
         print '</thead>';
@@ -4609,6 +4609,131 @@ class Controller
             </table>
         </div>';
     }
+    // modal de detalhes do pedido
+    public function modalDetalhesPedido($pedidos)
+    {
+        if (empty($pedidos)) return;
+
+        // Agrupar itens por pedido
+        $pedidosAgrupados = [];
+
+        foreach ($pedidos as $pedido) {
+            $id = $pedido->id_pedido;
+
+            if (!isset($pedidosAgrupados[$id])) {
+                $pedidosAgrupados[$id] = [
+                    'dados' => $pedido,
+                    'itens' => [],
+                ];
+            }
+
+            if (!empty($pedido->id_item_pedido)) {
+                // MODIFICADO: Adiciona os novos campos ao array de itens
+                $pedidosAgrupados[$id]['itens'][] = [
+                    'nome_produto' => $pedido->nome_produto,
+                    'nome_cor' => $pedido->nome_cor, // ADICIONADO
+                    'largura' => $pedido->largura,   // ADICIONADO
+                    'quantidade' => $pedido->quantidade,
+                    'valor_unitario' => $pedido->valor_unitario,
+                    'totalValor_produto' => $pedido->totalValor_produto
+                ];
+            }
+        }
+
+        foreach ($pedidosAgrupados as $id => $pedidoAgrupado) {
+            $pedido = $pedidoAgrupado['dados'];
+            $itens = $pedidoAgrupado['itens'];
+
+            print '
+        <div class="modal fade" id="detalhes_pedido' . $pedido->numero_pedido . '" tabindex="-1" aria-labelledby="detalhesPedidoLabel' . $pedido->numero_pedido . '" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title" id="detalhesPedidoLabel' . $pedido->numero_pedido . '">Pedido Nº ' . $pedido->numero_pedido . '</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container">
+
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="text-primary border-bottom pb-1">Informações do Cliente</h6>
+                                </div>
+                                <div class="col-md-6"><strong>Cliente:</strong> ' . htmlspecialchars($pedido->nome_fantasia) . '</div>
+                                <div class="col-md-6"><strong>Data do Pedido:</strong> ' . date('d/m/Y', strtotime($pedido->data_pedido)) . '</div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="text-primary border-bottom pb-1">Dados do Pedido</h6>
+                                </div>
+                                <div class="col-md-6"><strong>Status:</strong> ' . htmlspecialchars($pedido->status_pedido) . '</div>
+                                <div class="col-md-6"><strong>Forma de Pagamento:</strong> ' . htmlspecialchars($pedido->descricao) . '</div>
+                                <div class="col-md-6 mt-2"><strong>Valor Total:</strong> R$ ' . number_format($pedido->valor_total, 2, ',', '.') . '</div>
+                                <div class="col-md-6 mt-2"><strong>Valor do Frete:</strong> R$ ' . number_format($pedido->valor_frete, 2, ',', '.') . '</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6 class="text-primary border-bottom pb-1">Itens do Pedido</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Produto</th>
+                                                    <th>Cor</th>
+                                                    <th class="text-center">Largura (m)</th>
+                                                    <th class="text-center">Quantidade (m)</th>
+                                                    <th class="text-center">Valor Unitario (R$) </th>
+                                                    <th class="text-center">Total Produto (R$) </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>';
+            if (!empty($itens)) {
+                foreach ($itens as $item) {
+                    print '
+                                                <tr>
+                                                    <td>' . htmlspecialchars($item['nome_produto']) . '</td>
+                                                    <td>' . (!empty($item['nome_cor']) ? htmlspecialchars($item['nome_cor']) : '-') . '</td>
+                                                    <td class="text-center">' . (!empty($item['largura']) ? htmlspecialchars($item['largura']) : '-') . '</td>
+                                                    <td class="text-center">' . $item['quantidade'] . '</td>
+                                                    <td class="text-center">' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>
+                                                    <td class="text-center">' . number_format($item['totalValor_produto'], 2, ',', '.') . '</td>
+                                                </tr>';
+                }
+            } else {
+                print '
+                                                <tr>
+                                                    <td colspan="6" class="text-center">Nenhum item encontrado.</td> </tr>';
+            }
+
+            print '
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>';
+        }
+    }
+
+    // Método auxiliar para criar botões
+    private function botao($classe, $target, $icone, $titulo = '')
+    {
+        print '<button class="btn btn-' . $classe . ' btn-sm" data-bs-toggle="modal" data-bs-target="#' . $target . '" title="' . $titulo . '">';
+        print '<i class="bi ' . $icone . '"></i>';
+        print '</button>';
+    }
+
+
     // modal de alterar pedido
     public function modalAlterarPedido($pedidos, $origem)
     {
@@ -4790,128 +4915,6 @@ class Controller
             print '     </div>';
             print '   </div>';
             print '</div>';
-        }
-    }
-    // Método auxiliar para criar botões
-    private function botao($classe, $target, $icone, $titulo = '')
-    {
-        print '<button class="btn btn-' . $classe . ' btn-sm" data-bs-toggle="modal" data-bs-target="#' . $target . '" title="' . $titulo . '">';
-        print '<i class="bi ' . $icone . '"></i>';
-        print '</button>';
-    }
-    // modal de detalhes do pedido
-    public function modalDetalhesPedido($pedidos)
-    {
-        if (empty($pedidos)) return;
-
-        // Agrupar itens por pedido
-        $pedidosAgrupados = [];
-
-        foreach ($pedidos as $pedido) {
-            $id = $pedido->id_pedido;
-
-            if (!isset($pedidosAgrupados[$id])) {
-                $pedidosAgrupados[$id] = [
-                    'dados' => $pedido,
-                    'itens' => [],
-                ];
-            }
-
-            if (!empty($pedido->id_item_pedido)) {
-                // MODIFICADO: Adiciona os novos campos ao array de itens
-                $pedidosAgrupados[$id]['itens'][] = [
-                    'nome_produto' => $pedido->nome_produto,
-                    'nome_cor' => $pedido->nome_cor, // ADICIONADO
-                    'largura' => $pedido->largura,   // ADICIONADO
-                    'quantidade' => $pedido->quantidade,
-                    'valor_unitario' => $pedido->valor_unitario,
-                    'totalValor_produto' => $pedido->totalValor_produto
-                ];
-            }
-        }
-
-        foreach ($pedidosAgrupados as $id => $pedidoAgrupado) {
-            $pedido = $pedidoAgrupado['dados'];
-            $itens = $pedidoAgrupado['itens'];
-
-            print '
-        <div class="modal fade" id="detalhes_pedido' . $pedido->numero_pedido . '" tabindex="-1" aria-labelledby="detalhesPedidoLabel' . $pedido->numero_pedido . '" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header bg-info text-white">
-                        <h5 class="modal-title" id="detalhesPedidoLabel' . $pedido->numero_pedido . '">Pedido Nº ' . $pedido->numero_pedido . '</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="container">
-
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <h6 class="text-primary border-bottom pb-1">Informações do Cliente</h6>
-                                </div>
-                                <div class="col-md-6"><strong>Cliente:</strong> ' . htmlspecialchars($pedido->nome_fantasia) . '</div>
-                                <div class="col-md-6"><strong>Data do Pedido:</strong> ' . date('d/m/Y', strtotime($pedido->data_pedido)) . '</div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <h6 class="text-primary border-bottom pb-1">Dados do Pedido</h6>
-                                </div>
-                                <div class="col-md-6"><strong>Status:</strong> ' . htmlspecialchars($pedido->status_pedido) . '</div>
-                                <div class="col-md-6"><strong>Forma de Pagamento:</strong> ' . htmlspecialchars($pedido->descricao) . '</div>
-                                <div class="col-md-6 mt-2"><strong>Valor Total:</strong> R$ ' . number_format($pedido->valor_total, 2, ',', '.') . '</div>
-                                <div class="col-md-6 mt-2"><strong>Valor do Frete:</strong> R$ ' . number_format($pedido->valor_frete, 2, ',', '.') . '</div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-12">
-                                    <h6 class="text-primary border-bottom pb-1">Itens do Pedido</h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered table-sm align-middle">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th>Produto</th>
-                                                    <th>Cor</th>
-                                                    <th class="text-center">Largura (m)</th>
-                                                    <th class="text-center">Quantidade (m)</th>
-                                                    <th class="text-center">Valor Unitario (R$) </th>
-                                                    <th class="text-center">Total Produto (R$) </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>';
-            if (!empty($itens)) {
-                foreach ($itens as $item) {
-                    print '
-                                                <tr>
-                                                    <td>' . htmlspecialchars($item['nome_produto']) . '</td>
-                                                    <td>' . (!empty($item['nome_cor']) ? htmlspecialchars($item['nome_cor']) : '-') . '</td>
-                                                    <td class="text-center">' . (!empty($item['largura']) ? htmlspecialchars($item['largura']) : '-') . '</td>
-                                                    <td class="text-center">' . $item['quantidade'] . '</td>
-                                                    <td class="text-center">' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>
-                                                    <td class="text-center">' . number_format($item['totalValor_produto'], 2, ',', '.') . '</td>
-                                                </tr>';
-                }
-            } else {
-                print '
-                                                <tr>
-                                                    <td colspan="6" class="text-center">Nenhum item encontrado.</td> </tr>';
-            }
-
-            print '
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                    </div>
-                </div>
-            </div>
-        </div>';
         }
     }
     //metodo de excluir pedido
@@ -5587,12 +5590,10 @@ class Controller
     public function tabelaResumoPedidosPorCliente($resumoPedidosCliente)
     {
         if (empty($resumoPedidosCliente)) return;
-
         print '<div class="table-responsive mt-4">';
         print '<table class="table table-bordered table-striped table-hover align-middle text-center table-sm">';
         print '<thead class="table-primary">';
         print '<tr>';
-        print '<th>#</th>';
         print '<th>Cliente</th>';
         print '<th>Último Pedido</th>';
         print '<th>Total de Pedidos</th>';
@@ -5607,7 +5608,6 @@ class Controller
         $contador = 1;
         foreach ($resumoPedidosCliente as $item) {
             print '<tr>';
-            print '<td>' . $contador++ . '</td>';
             print '<td>' . htmlspecialchars($item->nome_fantasia) . '</td>';
             print '<td>' . date('d/m/Y', strtotime($item->data_ultimo_pedido)) . '</td>';
             print '<td>' . $item->total_pedidos . '</td>';
@@ -6022,7 +6022,6 @@ class Controller
 
         print '</tbody></table></div>';
     }
-
     // metodo de Custo Total por Produto
     public function custoTotal_PorProduto($id_produto)
     {

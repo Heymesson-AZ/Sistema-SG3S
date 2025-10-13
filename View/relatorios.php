@@ -241,17 +241,22 @@
                     </div>
                 </div>
             </div>
-
             <div class="col-md-6 col-lg-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <form method="POST" action="index.php" class="d-flex flex-column h-100">
+                        <form method="POST" action="index.php" id="formulario_consulta_pedido" class="d-flex flex-column h-100">
                             <div class="card-form-content">
                                 <h6 class="card-title">Total de Pedidos por Cliente</h6>
                                 <p class="card-text small text-muted">Quantidade de pedidos e valor total por cliente.</p>
                                 <div class="mb-3">
-                                    <label for="id_cliente_hist" class="form-label">Cliente:</label>
-                                    <?php $this->selectClientes($id_cliente = null); ?>
+                                    <label for="cliente_pedido_consulta" class="form-label">Buscar Cliente</label>
+                                    <div class="position-relative">
+                                        <div class="input-group ">
+                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                            <input type="text" class="form-control" id="cliente_pedido_consulta" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">
+                                            <div id="resultado_busca_cliente_consulta" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary w-100 mt-auto" name="pedidos_por_cliente"><i class="bi bi-people-fill me-1"></i> Gerar</button>
@@ -384,7 +389,7 @@
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                                             <input type="hidden" id="id_fornecedor_hidden" name="id_fornecedor" value="" />
-                                            <input type="text" class="form-control" id="id_fornecedor_produto" placeholder="Digite o nome do fornecedor" autocomplete="off"/>
+                                            <input type="text" class="form-control" id="id_fornecedor_produto" placeholder="Digite o nome do fornecedor" autocomplete="off" />
                                         </div>
                                         <div id="resultado_busca_fornecedor" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>
                                     </div>

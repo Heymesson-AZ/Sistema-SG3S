@@ -648,6 +648,13 @@ if (isset($_POST['cliente_pedido'])) {
     $objController->buscarCliente($cliente);
     exit;
 }
+
+if (isset($_POST['cliente_pedido_consulta'])) {
+    $cliente = strtolower(trim($_POST['cliente_pedido']));
+    $objController->buscarCliente($cliente);
+    exit;
+}
+
 // =====================
 // BUSCA DINÂMICA DO LIMITE DE CREDITO DO CLIENTE
 // =====================
@@ -859,6 +866,7 @@ if (isset($_POST['pedidos_por_cliente'])) {
     $id_cliente = $_POST['id_cliente'];
     $objController->pedidos_Cliente($id_cliente);
 };
+
 // Pedidos por Status
 if (isset($_POST['pedidos_por_status'])) {
     $status = $_POST['status'];

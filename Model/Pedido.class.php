@@ -944,13 +944,15 @@ class Pedido extends Conexao
     // Resumo de Pedidos por Cliente
     public function resumoPedidosPorCliente($id_cliente = null)
     {
+        
+        $this->setIdCliente($id_cliente);
         $sql = "SELECT
                 c.id_cliente,
                 c.nome_fantasia,
                 MAX(p.data_pedido) AS data_ultimo_pedido,
                 COUNT(p.id_pedido) AS total_pedidos,
                 SUM(CASE WHEN p.status_pedido = 'Pendente' THEN 1 ELSE 0 END) AS total_pendente,
-                SUM(CASE WHEN p.status_pedido = 'Em andamento' THEN 1 ELSE 0 END) AS total_em_andamento,
+                SUM(CASE WHEN p.status_pedido = 'Aguardando Pagamento' THEN 1 ELSE 0 END) AS total_em_andamento,
                 SUM(CASE WHEN p.status_pedido = 'Cancelado' THEN 1 ELSE 0 END) AS total_cancelado,
                 SUM(CASE WHEN p.status_pedido = 'Finalizado' THEN 1 ELSE 0 END) AS total_finalizado
             FROM pedido p
@@ -968,13 +970,12 @@ class Pedido extends Conexao
             $query = $bd->prepare($sql);
 
             if (!empty($id_cliente)) {
-                $query->bindParam(':id_cliente', $id_cliente, PDO::PARAM_INT);
+                $query->bindParam(':id_cliente', $this->getIdCliente(), PDO::PARAM_INT);
             }
 
             $query->execute();
             return $query->fetchAll(PDO::FETCH_OBJ);
         } catch (PDOException $e) {
-            error_log("Erro em resumoPedidosPorCliente: " . $e->getMessage());
             return false;
         }
     }
