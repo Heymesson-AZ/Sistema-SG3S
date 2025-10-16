@@ -23,31 +23,29 @@
             <h1 class="display-9">Sistema de Gerenciamento SG3S</h1>
             <p class="lead">Utilize as opções acima para navegar pelo Sistema</p>
         </div>
+        <!-- BOTÕES DE NAVEGAÇÃO ALTERADOS -->
         <div class="row justify-content-center g-3 mt-4">
+            <!-- Botões de Pedido -->
             <div class="col-md-auto">
                 <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modal_pedido">
-                    <i class="bi bi-plus-circle"></i> Novo Pedido</button>
+                    <i class="bi bi-plus-circle"></i> Novo Pedido
+                </button>
             </div>
             <div class="col-md-auto">
                 <button class="btn btn-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#modal_consulta_pedido">
-                    <i class="bi bi-file-earmark-text"></i> Consultar Pedidos</button>
-            </div>
-            <div class="dropdown col-md-auto">
-                <button class="btn btn-primary btn-lg dropdown-toggle" type="button" id="dropdownPagamento" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-credit-card"></i> Forma de Pagamento
+                    <i class="bi bi-file-earmark-text"></i> Consultar Pedidos
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownPagamento">
-                    <li>
-                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modal_cadastrar_pagamento">
-                            <i class="bi bi-plus-circle"></i> Cadastrar
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modal_consultar_forma_pagamento">
-                            <i class="bi bi-file-earmark-text"></i> Consultar
-                        </a>
-                    </li>
-                </ul>
+            </div>
+            <!-- Botões de Forma de Pagamento (separados) -->
+            <div class="col-md-auto">
+                <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modal_cadastrar_pagamento">
+                    <i class="bi bi-credit-card"></i> Cadastrar Pagamento
+                </button>
+            </div>
+            <div class="col-md-auto">
+                <button class="btn btn-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#modal_consultar_forma_pagamento">
+                    <i class="bi bi-search"></i> Consultar Pagamento
+                </button>
             </div>
         </div>
         <!-- Modal de cadastro do pedido -->
@@ -226,7 +224,7 @@
         </div>
         <!-- Modal de Cadastro da Forma de Pagamento -->
         <div class="modal fade" id="modal_cadastrar_pagamento" tabindex="-1" aria-labelledby="modalPagamentoLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-dialog modal-default modal-dialog-centered">
                 <div class="modal-content">
                     <!-- Cabeçalho da modal -->
                     <div class="modal-header">

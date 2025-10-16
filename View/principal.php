@@ -309,16 +309,15 @@
     if (!empty($pedidos) && is_array($pedidos)) {
         $origem = 'principal';
 
-        // Modais que recebem o array completo de pedidos
+        // Modais que ecebem o array completo de pedidos
         $this->modalDetalhesPedido($pedidos);
         $this->modalAlterarPedido($pedidos, $origem);
-
-        // Gera os modais de ação para cada pedido em um único laço
+        // Gera os modais de ação
         foreach ($pedidos as $pedido) {
-            $this->modalExcluirPedido($origem, $pedido->id_pedido, $pedido->numero_pedido, $pedido->nome_fantasia);
-            $this->modalAprovarPedido($origem, $pedido->id_pedido, $pedido->numero_pedido, $pedido->nome_fantasia);
-            $this->modalFinalizarPedido($origem, $pedido->id_pedido, $pedido->numero_pedido, $pedido->nome_fantasia);
-            $this->modalCancelarPedido($origem, $pedido->id_pedido, $pedido->numero_pedido, $pedido->nome_fantasia);
+            $this->modalExcluirPedido($origem, $pedido['id_pedido'], $pedido['numero_pedido'], $pedido['nome_fantasia']);
+            $this->modalAprovarPedido($origem, $pedido['id_pedido'], $pedido['numero_pedido'], $pedido['nome_fantasia']);
+            $this->modalFinalizarPedido($origem, $pedido['id_pedido'], $pedido['numero_pedido'], $pedido['nome_fantasia']);
+            $this->modalCancelarPedido($origem, $pedido['id_pedido'], $pedido['numero_pedido'], $pedido['nome_fantasia']);
         }
     }
     ?>

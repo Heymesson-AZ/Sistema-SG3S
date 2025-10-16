@@ -337,7 +337,7 @@
                         <form method="POST" action="index.php" class="d-flex flex-column h-100">
                             <div class="card-form-content">
                                 <h6 class="card-title">Produtos com Baixo Estoque</h6>
-                                <p class="card-text small text-muted">Lista produtos com estoque abaixo do limite definido ou da quantidade mínima.</p>
+                                <p class="card-text small text-muted">Lista produtos com estoque abaixo do limite de estoque definido ou da quantidade mínima.</p>
                                 <div class="mb-3">
                                     <label for="estoque_limite" class="form-label">Limite de Estoque:</label>
                                     <input type="number" id="estoque_limite" name="estoque_limite" class="form-control" placeholder="Opcional" />

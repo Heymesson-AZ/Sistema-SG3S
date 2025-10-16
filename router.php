@@ -464,7 +464,6 @@ if (isset($_POST['cadastrar_cor_produto'])) {
     $origem = $_POST['origem'] ?? '';
     $objController->cadastrar_CorProduto($nome_cor, $origem);
 }
-
 // ================= CONSULTAR COR DO PRODUTO =================
 if (isset($_POST['consultar_cor_produto'])) {
     $nome_cor = limparTexto($_POST['nome_cor']);
@@ -474,7 +473,7 @@ if (isset($_POST['consultar_cor_produto'])) {
 if (isset($_POST['alterar_cor_produto'])) {
     $id_cor = $_POST['id_cor'];
     $nome_cor = limparTexto($_POST['nome_cor']);
-    $objController->alterar_CorProduto($id_perfil, $nome_perfil);
+    $objController->alterar_CorProduto($id_cor, $nome_cor);
 }
 // ================= EXCLUIR COR DO PRODUTO =================
 if (isset($_POST['excluir_cor_produto'])) {
@@ -654,7 +653,6 @@ if (isset($_POST['cliente_pedido_consulta'])) {
     $objController->buscarCliente($cliente);
     exit;
 }
-
 // =====================
 // BUSCA DINÂMICA DO LIMITE DE CREDITO DO CLIENTE
 // =====================
@@ -664,7 +662,6 @@ if (isset($_POST['verificar_limite'], $_POST['id_cliente'], $_POST['valor_total'
     $objController->verificarLimiteCredito($id_cliente, $valor_totalPedido);
     exit;
 }
-
 // =====================
 // BUSCA DINÂMICA DE PRODUTO PARA PEDIDO
 // =====================

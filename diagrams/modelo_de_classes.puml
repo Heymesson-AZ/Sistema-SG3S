@@ -1,0 +1,275 @@
+@startuml SG3S_Diagrama_Profissional
+
+' ==========================================================
+' CONFIGURAÇÕES DE ESTILO
+' ==========================================================
+left to right direction
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 12
+skinparam dpi 130
+
+skinparam package {
+  BorderColor black
+  FontStyle bold
+}
+
+title Diagrama de Classes Detalhado - SG3S (Model)
+
+' ==========================================================
+' PACOTE: INFRAESTRUTURA
+' ==========================================================
+package "Infraestrutura" #LightGray {
+  class Conexao {
+    - host: string
+    - dbname: string
+    - user: string
+    - password: string
+    - link: PDO
+    --
+    - ambiente(): string
+    - configurarBanco(): void
+    + conectarBanco(): PDO
+  }
+
+  class Auditoria {
+    - id_auditoria: int
+    - tabela: string
+    - id_registro: int
+    - id_usuario: int
+    - acao: string
+    - data_hora: datetime
+    --
+    - executarConsultaAuditoria(...): array
+    + listarEventosDeAuditoria(): array
+    + listarAuditoriasPorUsuario(id: int): array
+    + listarAuditoriasPorAcao(acao: string): array
+    + listarAuditoriasPorPeriodo(inicio: date, fim: date): array
+    + listarAuditoriasPorUsuarioAcao(id: int, acao: string): array
+    + listarAuditoriasPorTabelaPeriodo(...): array
+    + listarAuditoriasPorUsuarioPeriodo(...): array
+    + listarAuditoriasPorUsuarioAcaoPeriodo(...): array
+    + excluirAntigos(): int
+  }
+}
+
+' ==========================================================
+' PACOTE: CADASTRO DE PESSOAS
+' ==========================================================
+package "Cadastro de Pessoas" #LightBlue {
+  class Usuario {
+    - id_usuario: int
+    - nome_usuario: string
+    - email_usuario: string
+    - senha: string
+    - cpf: string
+    - telefone: string
+    - id_perfil: int
+    --
+    + validarLogin(cpf: string, senha: string): array
+    + cadastrarUsuario(...): bool
+    + ConsultarUsuario(nome: string, id_perfil: int): array
+    + alterarUsuario(...): string
+    + excluirUsuario(id_usuario: int): string
+    + alterarSenha(id: int, senha: string): bool
+    + consultarUsuarioCpf(cpf: string): object
+    + validarEmail(email: string): bool
+    + alterarSenhaRecuperacao(email: string, senha: string): bool
+  }
+
+  class Perfil {
+    - id_perfil: int
+    - perfil_usuario: string
+    --
+    - verificarUsoPerfil(id_perfil: int): int
+    + cadastrarPerfil(perfil: string): bool
+    + excluirPerfil(id_perfil: int): bool
+    + alterarPerfil(id: int, perfil: string): bool
+    + consultarPerfil(perfil: string): array
+  }
+
+  class Cliente {
+    - id_cliente: int
+    - nome_representante: string
+    - razao_social: string
+    - nome_fantasia: string
+    - cnpj_cliente: string
+    - email: string
+    - limite_credito: float
+    --
+    + __construct()
+    + consultarCliente(nome: string, razao: string, cnpj: string): array
+    + cadastrarCliente(...): bool
+    + alterarCliente(...): bool
+    + excluirCliente(id_cliente: int): bool
+    + consultarClientePedido(cliente: string): array
+    + verificar_LimiteCredito(id_cliente: int, valor: float): array
+    + verificarCliente(cnpj: string): bool
+    + clienteEmAlgumPedido(id_cliente: int): bool
+  }
+
+  class Fornecedor {
+    - id_fornecedor: int
+    - razao_social_fornecedor: string
+    - cnpj_fornecedor: string
+    - email_fornecedor: string
+    --
+    + __construct()
+    + cadastrarFornecedor(...): bool
+    + alterarFornecedor(...): bool
+    + excluirFornecedor(id: int): bool
+    + consultarFornecedor(razao: string, cnpj: string): array
+    + consultarFornecedorCnpj(cnpj: string): bool
+    + consultarFornecedorDinamico(fornecedor: string): array
+  }
+}
+
+' ==========================================================
+' PACOTE: VENDAS E PEDIDOS
+' ==========================================================
+package "Vendas e Pedidos" #LightGreen {
+  class Pedido {
+    - id_pedido: int
+    - id_cliente: int
+    - id_usuario: int
+    - numero_pedido: string
+    - data_pedido: datetime
+    - status_pedido: string
+    - valor_total: float
+    - id_forma_pagamento: int
+    - valor_frete: float
+    - itens: array
+    - data_finalizacao: date
+    --
+    + consultarPedido(...): array
+    + cadastrarPedido(...): bool
+    + alterarPedido(...): bool
+    + excluirPedido(id: int): bool
+    + aprovarPedido(id: int): array
+    + consultarEstoque(id_produto: int): int
+    + atualizarEstoque(id_produto: int, qtd: int): bool
+    + cancelarPedido(id: int, status: string): bool
+    + finalizarPedido(id: int, status: string): bool
+    --
+    .. Relatórios ..
+    + faturamentoMensal(ano: int, mes: int): array
+    + produtosMaisVendidos(limite: int): array
+    + formasPagamentoMaisUsadas(): array
+    + pedidosRecentes(dias: int): array
+    + clientesQueMaisCompraram(...): array
+    + pedidosPorMes(ano: int, mes: int): array
+    + resumoPedidosPorCliente(id_cliente: int): array
+    + pedidosPorStatus(...): array
+    + pedidosMaiorValor(limite: int): array
+    + produtosNuncaVendidos(): array
+    + variacaoVendasPorProduto(id_produto: int, ano: int): array
+    + lucroBrutoMensal(ano: int, mes: int): array
+    + buscarPedidosPorNumero(numero: string): array
+    + pedidosPendentesOuAguardando(): array
+  }
+}
+
+' ==========================================================
+' PACOTE: PRODUTOS E ITENS
+' ==========================================================
+package "Produtos e Itens" #LightYellow {
+  class Produto {
+    - id_produto: int
+    - nome_produto: string
+    - custo_compra: float
+    - valor_venda: float
+    - quantidade: float
+    - id_fornecedor: int
+    - id_cor: int
+    - id_tipo_produto: int
+    - composicao: string
+    - largura: string
+    - data_compra: date
+    - quantidade_minima: float
+    - ncm_produto: string
+    - img_produto: string
+    --
+    + cadastrarProduto(...): bool
+    + consultarProduto(...): array
+    + alterarProduto(...): bool
+    + produtoEmAlgumPedido(id_produto: int): bool
+    + excluirProduto(id_produto: int): bool
+    + consultarProdutoDinamico(produto: string): array
+    + verificarProduto(...): array
+    + verificarQuantidadeProduto(id_produto: int, qtd: int): bool
+    --
+    .. Relatórios ..
+    + produtosAbaixoDoMinimo(): array
+    + produtosComBaixoEstoque(limite: int): array
+    + custoTotalPorProduto(id_produto: int): array
+    + listarProdutosPorFornecedor(id_fornecedor: int): array
+    + produtosMargem(limite: float, id_produto: int): array
+  }
+
+  class TipoProduto {
+    - id_tipo_produto: int
+    - nome_tipo: string
+    --
+    - verificarUsoTipoProduto(id: int): int
+    + cadastrarTipo(nome: string): bool
+    + excluirTipo(id: int): bool
+    + alterarTipo(id: int, nome: string): bool
+  }
+
+  class Cor {
+    - id_cor: int
+    - nome_cor: string
+    --
+    + cadastrarCor(nome: string): bool
+    + excluirCor(id: int): bool
+    + alterarCor(id: int, nome: string): bool
+  }
+
+  class FormaPagamento {
+    - id_forma_pagamento: int
+    - descricao: string
+    --
+    + cadastrarFormaPagamento(descricao: string): bool
+    + alterarFormaPagamento(id: int, descricao: string): bool
+    + excluirFormaPagamento(id: int): bool
+    + consultarFormaPagamento(descricao: string): array
+  }
+}
+
+' ==========================================================
+' RELACIONAMENTOS ENTRE CLASSES
+' ==========================================================
+
+' --- Herança do Banco ---
+Conexao <|-- Usuario
+Conexao <|-- Produto
+Conexao <|-- Cliente
+Conexao <|-- Fornecedor
+Conexao <|-- Pedido
+Conexao <|-- Perfil
+Conexao <|-- TipoProduto
+Conexao <|-- Cor
+Conexao <|-- FormaPagamento
+Conexao <|-- Auditoria
+
+' --- Auditoria ---
+Auditoria " *" --> "1" Usuario : "registra ação de >"
+
+' --- Pedido ---
+Usuario "1" --> "*" Pedido : "< cria"
+Cliente "1" --> "*" Pedido : "< faz"
+Pedido "1" --> "1" FormaPagamento : "pago com >"
+Pedido "1" o-- "*" Produto : "contém"
+
+' --- Produto ---
+Produto "*" --> "1" TipoProduto : "é do tipo >"
+Produto "*" --> "1" Cor : "tem cor >"
+Fornecedor "1" --> "*" Produto : "< fornece"
+
+' --- Usuário ---
+Usuario "*" --> "1" Perfil : "possui >"
+
+@enduml

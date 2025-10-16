@@ -3073,7 +3073,7 @@ class Controller
 
         print '<div class="mb-3">';
         print '<label for="nome_cor_alterar_' . $id_cor . '" class="form-label">Nome da Cor *</label>';
-        print '<input type="text" class="form-control" id="nome_cor_alterar_' . $id_cor . '" name="alterar_cor_produto" required autocomplete="off" placeholder="Digite o nome da cor" value="' . htmlspecialchars($nome_cor, ENT_QUOTES) . '">';
+        print '<input type="text" class="form-control" id="nome_cor_alterar_' . $id_cor . '" name="nome_cor" required autocomplete="off" placeholder="Digite o nome da cor" value="' . htmlspecialchars($nome_cor, ENT_QUOTES) . '">';
         print '</div>';
 
         print '</fieldset>';
@@ -3090,7 +3090,7 @@ class Controller
         print '</button>';
         print '</div>';
         print '<div class="col-md-6">';
-        print '<button type="submit" form="formulario_cor_alterar_' . $id_cor . '" name="alterar_cor" class="btn btn-primary w-100 py-2">';
+        print '<button type="submit" form="formulario_cor_alterar_' . $id_cor . '" name="alterar_cor_produto" class="btn btn-primary w-100 py-2">';
         print '<i class="bi bi-check-circle"></i> Alterar';
         print '</button>';
         print '</div>';
@@ -3277,7 +3277,7 @@ class Controller
         print '<legend class="float-none w-auto px-2">Dados do Tipo de Produto</legend>';
         print '<div class="mb-3">';
         print '<label for="nome_tipo_alterar_' . $id_tipo_produto . '" class="form-label">Nome do Tipo de Produto *</label>';
-        print '<input type="text" class="form-control" id="nome_tipo_alterar_' . $id_tipo_produto . '" name="nome_tipo_produto" required autocomplete="off" placeholder="Digite o nome do tipo" value="' . htmlspecialchars($nome_tipo, ENT_QUOTES) . '">';
+        print '<input type="text" class="form-control" id="nome_tipo_alterar_' . $id_tipo_produto . '" name="nome_tipo" required autocomplete="off" placeholder="Digite o nome do tipo" value="' . htmlspecialchars($nome_tipo, ENT_QUOTES) . '">';
         print '</div>';
         print '</fieldset>';
         print '</form>';
@@ -3571,7 +3571,7 @@ class Controller
             // Carregar o menu
             $menu = $this->menu();
             // Incluir a view do usuário
-            include_once 'View/cliente.php';
+            include_once 'view/cliente.php';
             // Exibir mensagem de erro
             $this->mostrarMensagemErro("CNPJ inválido");
         } else {
@@ -3594,7 +3594,7 @@ class Controller
                 // Carregar o menu
                 $menu = $this->menu();
                 // Incluir a view do usuário
-                include_once 'View/cliente.php';
+                include_once 'view/cliente.php';
                 // Exibir mensagem de sucesso
                 $this->mostrarMensagemSucesso("Cliente cadastrado com sucesso");
             } else {
@@ -3602,7 +3602,7 @@ class Controller
                 // Carregar o menu
                 $menu = $this->menu();
                 // Incluir a view do usuário
-                include_once 'View/cliente.php';
+                include_once 'view/cliente.php';
                 // Exibir mensagem de erro
                 $this->mostrarMensagemErro("Erro ao cadastrar Cliente");
             }
@@ -3788,7 +3788,7 @@ class Controller
             // Carregar o menu
             $menu = $this->menu();
             // Incluir a view do usuário
-            include_once 'View/cliente.php';
+            include_once 'view/cliente.php';
             // Exibir mensagem de erro
             $this->mostrarMensagemErro("CNPJ inválido");
         } else {
@@ -3812,7 +3812,7 @@ class Controller
                 // Carregar o menu
                 $menu = $this->menu();
                 // Incluir a view do usuário
-                include_once 'View/cliente.php';
+                include_once 'view/cliente.php';
                 // Exibir mensagem de sucesso
                 $this->mostrarMensagemSucesso("Cliente alterado com sucesso");
             } else {
@@ -3820,7 +3820,7 @@ class Controller
                 // Carregar o menu
                 $menu = $this->menu();
                 // Incluir a view do usuário
-                include_once 'View/cliente.php';
+                include_once 'view/cliente.php';
                 // Exibir mensagem de erro
                 $this->mostrarMensagemErro("Erro ao alterar Cliente");
             }
@@ -4073,7 +4073,7 @@ class Controller
             // Carregar o menu
             $menu = $this->menu();
             // Incluir a view do usuário
-            include_once 'View/cliente.php';
+            include_once 'view/cliente.php';
             // Exibir mensagem de erro
             $this->mostrarMensagemErro("Cliente não pode ser excluído, pois possui pedidos associados");
         } else {
@@ -4082,7 +4082,7 @@ class Controller
                 // Carregar o menu
                 $menu = $this->menu();
                 // Incluir a view do usuário
-                include_once 'View/cliente.php';
+                include_once 'view/cliente.php';
                 // Exibir mensagem de sucesso
                 $this->mostrarMensagemSucesso("Cliente excluído com sucesso");
             } else {
@@ -4090,7 +4090,7 @@ class Controller
                 // Carregar o menu
                 $menu = $this->menu();
                 // Incluir a view do usuário
-                include_once 'View/cliente.php';
+                include_once 'view/cliente.php';
                 // Exibir mensagem de erro
                 $this->mostrarMensagemErro("Erro ao excluir Cliente");
             }
@@ -4156,10 +4156,10 @@ class Controller
             // Passa os resultados para a view
             $formas_pagamento = $objFormaPagamento->consultarFormaPagamento($forma_pagamento);
             $this->menu();
-            include_once 'View/pedido.php';
+            include_once 'view/pedido.php';
         } else {
             $this->menu();
-            include_once 'View/pedido.php';
+            include_once 'view/pedido.php';
             $this->mostrarMensagemErro("Forma de pagamento não encontrada");
         }
     }
@@ -4174,7 +4174,7 @@ class Controller
             // Carregar o menu
             $menu = $this->menu();
             // Incluir a view do pedido
-            include_once 'View/pedido.php';
+            include_once 'view/pedido.php';
             // Exibir mensagem de sucesso
             $this->mostrarMensagemSucesso("Forma de pagamento cadastrada com sucesso");
         } else {
@@ -4182,7 +4182,7 @@ class Controller
             // Carregar o menu
             $menu = $this->menu();
             // Incluir a view do pedido
-            include_once 'View/pedido.php';
+            include_once 'view/pedido.php';
             // Exibir mensagem de erro
             $this->mostrarMensagemErro("Erro ao cadastrar Forma de pagamento");
         }
@@ -4198,7 +4198,7 @@ class Controller
             // Carregar o menu
             $menu = $this->menu();
             // Incluir a view do pedido
-            include_once 'View/pedido.php';
+            include_once 'view/pedido.php';
             // Exibir mensagem de sucesso
             $this->mostrarMensagemSucesso("Forma de pagamento alterada com sucesso");
         } else {
@@ -4206,7 +4206,7 @@ class Controller
             // Carregar o menu
             $menu = $this->menu();
             // Incluir a view do pedido
-            include_once 'View/pedido.php';
+            include_once 'view/pedido.php';
             // Exibir mensagem de erro
             $this->mostrarMensagemErro("Erro ao alterar Forma de pagamento");
         }
@@ -4222,7 +4222,7 @@ class Controller
             // Carregar o menu
             $menu = $this->menu();
             // Incluir a view do pedido
-            include_once 'View/pedido.php';
+            include_once 'view/pedido.php';
             // Exibir mensagem de sucesso
             $this->mostrarMensagemSucesso("Forma de pagamento excluída com sucesso");
         } else {
@@ -4230,7 +4230,7 @@ class Controller
             // Carregar o menu
             $menu = $this->menu();
             // Incluir a view do pedido
-            include_once 'View/pedido.php';
+            include_once 'view/pedido.php';
             // Exibir mensagem de erro
             $this->mostrarMensagemErro("Erro ao excluir Forma de pagamento");
         }
@@ -4460,10 +4460,10 @@ class Controller
             $menu = $this->menu();
             if ($origem === 'pedido') {
                 // Incluir a view do pedido
-                include_once 'View/pedido.php';
+                include_once 'view/pedido.php';
             } else {
                 // Incluir a view do pedido
-                include_once 'View/principal.php';
+                include_once 'view/principal.php';
             }
             // Exibir mensagem de sucesso
             $this->mostrarMensagemSucesso("Pedido cadastrado com sucesso");
@@ -4473,10 +4473,10 @@ class Controller
             $menu = $this->menu();
             if ($origem === 'pedido') {
                 // Incluir a view do pedido
-                include_once 'View/pedido.php';
+                include_once 'view/pedido.php';
             } else {
                 // Incluir a view do pedido
-                include_once 'View/principal.php';
+                include_once 'view/principal.php';
             }
             // Exibir mensagem de erro
             $this->mostrarMensagemErro("Erro ao cadastrar Pedido");
@@ -4519,29 +4519,11 @@ class Controller
         }
         exit;
     }
-    // tabela de comnsulta de pedido
+    // tabela de consulta de pedido
     public function tabelaConsultar_Pedido($pedidos)
     {
-        if (empty($pedidos)) return;
-
-        // Agrupar itens por pedido
-        $pedidosAgrupados = [];
-        foreach ($pedidos as $pedido) {
-            $id = $pedido->id_pedido;
-
-            if (!isset($pedidosAgrupados[$id])) {
-                $pedidosAgrupados[$id] = [
-                    'dados' => $pedido,
-                    'itens' => [],
-                ];
-            }
-
-            if (!empty($pedido->id_item_pedido)) {
-                $pedidosAgrupados[$id]['itens'][] = [
-                    'nome_produto' => $pedido->nome_produto,
-                    'quantidade' => $pedido->quantidade,
-                ];
-            }
+        if (empty($pedidos)) {
+            return;
         }
 
         print '<div class="table-responsive mt-4">';
@@ -4558,16 +4540,16 @@ class Controller
         print '</thead>';
         print '<tbody>';
 
-        foreach ($pedidosAgrupados as $id => $pedidoAgrupado) {
-            $pedido = $pedidoAgrupado['dados'];
-            $status = $pedido->status_pedido;
+        // CORREÇÃO: O loop agora itera sobre o array de pedidos já agrupado
+        foreach ($pedidos as $pedido) {
+            $status = $pedido['status_pedido'];
 
             print '<tr>';
-            print '<th scope="row">' . htmlspecialchars($pedido->numero_pedido) . '</th>';
-            print '<td>' . htmlspecialchars($pedido->nome_fantasia) . '</td>';
-            print '<td>' . date('d/m/Y', strtotime($pedido->data_pedido)) . '</td>';
+            print '<th scope="row">' . htmlspecialchars($pedido['numero_pedido']) . '</th>';
+            print '<td>' . htmlspecialchars($pedido['nome_fantasia']) . '</td>';
+            print '<td>' . date('d/m/Y', strtotime($pedido['data_pedido'])) . '</td>';
             print '<td>' . htmlspecialchars($status) . '</td>';
-            print '<td>R$ ' . number_format($pedido->valor_total, 2, ',', '.') . '</td>';
+            print '<td>R$ ' . number_format($pedido['valor_total'], 2, ',', '.') . '</td>';
 
             // Ações
             print '<td><div class="d-flex gap-2 justify-content-center flex-wrap">';
@@ -4576,19 +4558,19 @@ class Controller
                 switch ($status) {
                     case 'Pendente':
                         // Pode alterar, aprovar ou excluir
-                        $this->botao('success', 'aprovar_pedido' . $pedido->numero_pedido, 'bi-check-circle', 'Aprovar Pedido');
-                        $this->botao('warning', 'modal_alterar_pedido_' . $pedido->numero_pedido, 'bi-pencil-square', 'Alterar Pedido');
-                        $this->botao('danger', 'excluir_pedido' . $pedido->numero_pedido, 'bi-trash', 'Excluir Pedido');
+                        $this->botao('success', 'aprovar_pedido' . $pedido['numero_pedido'], 'bi-check-circle', 'Aprovar Pedido');
+                        $this->botao('warning', 'modal_alterar_pedido_' . $pedido['numero_pedido'], 'bi-pencil-square', 'Alterar Pedido');
+                        $this->botao('danger', 'excluir_pedido' . $pedido['numero_pedido'], 'bi-trash', 'Excluir Pedido');
                         break;
 
                     case 'Aprovado':
                         // Pode finalizar o pedido
-                        $this->botao('success', 'finalizar_pedido' . $pedido->numero_pedido, 'bi-check-circle', 'Finalizar Pedido');
+                        $this->botao('success', 'finalizar_pedido' . $pedido['numero_pedido'], 'bi-check-circle', 'Finalizar Pedido');
                         break;
                     case 'Aguardando Pagamento':
                         // Pode cancelar ou finalizar
-                        $this->botao('danger', 'cancelar_pedido' . $pedido->numero_pedido, 'bi-x-circle', 'Cancelar Pedido');
-                        $this->botao('success', 'finalizar_pedido' . $pedido->numero_pedido, 'bi-check-circle', 'Finalizar Pedido');
+                        $this->botao('danger', 'cancelar_pedido' . $pedido['numero_pedido'], 'bi-x-circle', 'Cancelar Pedido');
+                        $this->botao('success', 'finalizar_pedido' . $pedido['numero_pedido'], 'bi-check-circle', 'Finalizar Pedido');
                         break;
                     // Finalizado e Cancelado: apenas visualização
                     default:
@@ -4597,80 +4579,53 @@ class Controller
                 }
             }
             // Botões sempre visíveis: Detalhes e Imprimir
-            $this->botao('info', 'detalhes_pedido' . $pedido->numero_pedido, 'bi-eye', 'Detalhes do Pedido');
-            print '<a class="btn btn-secondary btn-sm" title="Imprimir Pedido" href="index.php?acao=imprimir_pedido&numero_pedido=' . urlencode($pedido->numero_pedido) . '" target="_blank">';
-            print '<i class="bi bi-printer me-1"></i>';
+            // CORREÇÃO: Usar o ID da modal correto
+            print '<button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detalhes_pedido' . htmlspecialchars($pedido['numero_pedido']) . '" title="Detalhes do Pedido"><i class="bi bi-eye"></i></button>';
+
+            print '<a class="btn btn-secondary btn-sm" title="Imprimir Pedido" href="index.php?acao=imprimir_pedido&numero_pedido=' . urlencode($pedido['numero_pedido']) . '" target="_blank">';
+            print '<i class="bi bi-printer"></i>';
             print '</a>';
-            print '</div>
-                    </td>';
+            print '</div></td>';
             print '</tr>';
         }
-        print    '</tbody>
-            </table>
-        </div>';
+        print '</tbody></table></div>';
     }
     // modal de detalhes do pedido
     public function modalDetalhesPedido($pedidos)
     {
         if (empty($pedidos)) return;
 
-        // Agrupar itens por pedido
-        $pedidosAgrupados = [];
-
+        // CORREÇÃO: O loop agora itera sobre o array de pedidos já agrupado
         foreach ($pedidos as $pedido) {
-            $id = $pedido->id_pedido;
-
-            if (!isset($pedidosAgrupados[$id])) {
-                $pedidosAgrupados[$id] = [
-                    'dados' => $pedido,
-                    'itens' => [],
-                ];
-            }
-
-            if (!empty($pedido->id_item_pedido)) {
-                // MODIFICADO: Adiciona os novos campos ao array de itens
-                $pedidosAgrupados[$id]['itens'][] = [
-                    'nome_produto' => $pedido->nome_produto,
-                    'nome_cor' => $pedido->nome_cor, // ADICIONADO
-                    'largura' => $pedido->largura,   // ADICIONADO
-                    'quantidade' => $pedido->quantidade,
-                    'valor_unitario' => $pedido->valor_unitario,
-                    'totalValor_produto' => $pedido->totalValor_produto
-                ];
-            }
-        }
-
-        foreach ($pedidosAgrupados as $id => $pedidoAgrupado) {
-            $pedido = $pedidoAgrupado['dados'];
-            $itens = $pedidoAgrupado['itens'];
+            $itens = $pedido['itens'];
 
             print '
-        <div class="modal fade" id="detalhes_pedido' . $pedido->numero_pedido . '" tabindex="-1" aria-labelledby="detalhesPedidoLabel' . $pedido->numero_pedido . '" aria-hidden="true">
+        <div class="modal fade" id="detalhes_pedido' . htmlspecialchars($pedido['numero_pedido']) . '" tabindex="-1" aria-labelledby="detalhesPedidoLabel' . htmlspecialchars($pedido['numero_pedido']) . '" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header bg-info text-white">
-                        <h5 class="modal-title" id="detalhesPedidoLabel' . $pedido->numero_pedido . '">Pedido Nº ' . $pedido->numero_pedido . '</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        <h5 class="modal-title" id="detalhesPedidoLabel' . htmlspecialchars($pedido['numero_pedido']) . '">Pedido Nº ' . htmlspecialchars($pedido['numero_pedido']) . '</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="container">
+                        <div class="container-fluid">
 
                             <div class="row mb-3">
                                 <div class="col-12">
                                     <h6 class="text-primary border-bottom pb-1">Informações do Cliente</h6>
                                 </div>
-                                <div class="col-md-6"><strong>Cliente:</strong> ' . htmlspecialchars($pedido->nome_fantasia) . '</div>
-                                <div class="col-md-6"><strong>Data do Pedido:</strong> ' . date('d/m/Y', strtotime($pedido->data_pedido)) . '</div>
+                                <div class="col-md-6"><strong>Cliente:</strong> ' . htmlspecialchars($pedido['nome_fantasia']) . '</div>
+                                <div class="col-md-6"><strong>Data do Pedido:</strong> ' . date('d/m/Y', strtotime($pedido['data_pedido'])) . '</div>
                             </div>
 
                             <div class="row mb-3">
                                 <div class="col-12">
                                     <h6 class="text-primary border-bottom pb-1">Dados do Pedido</h6>
                                 </div>
-                                <div class="col-md-6"><strong>Status:</strong> ' . htmlspecialchars($pedido->status_pedido) . '</div>
-                                <div class="col-md-6"><strong>Forma de Pagamento:</strong> ' . htmlspecialchars($pedido->descricao) . '</div>
-                                <div class="col-md-6 mt-2"><strong>Valor Total:</strong> R$ ' . number_format($pedido->valor_total, 2, ',', '.') . '</div>
-                                <div class="col-md-6 mt-2"><strong>Valor do Frete:</strong> R$ ' . number_format($pedido->valor_frete, 2, ',', '.') . '</div>
+                                <div class="col-md-6"><strong>Status:</strong> ' . htmlspecialchars($pedido['status_pedido']) . '</div>
+                                <div class="col-md-6"><strong>Forma de Pagamento:</strong> ' . htmlspecialchars($pedido['descricao_forma_pagamento']) . '</div>
+                                <div class="col-md-6 mt-2"><strong>Valor Total:</strong> R$ ' . number_format($pedido['valor_total'], 2, ',', '.') . '</div>
+                                <div class="col-md-6 mt-2"><strong>Valor do Frete:</strong> R$ ' . number_format($pedido['valor_frete'], 2, ',', '.') . '</div>
                             </div>
 
                             <div class="row">
@@ -4684,8 +4639,8 @@ class Controller
                                                     <th>Cor</th>
                                                     <th class="text-center">Largura (m)</th>
                                                     <th class="text-center">Quantidade (m)</th>
-                                                    <th class="text-center">Valor Unitario (R$) </th>
-                                                    <th class="text-center">Total Produto (R$) </th>
+                                                    <th class="text-end">Valor Unitário (R$)</th>
+                                                    <th class="text-end">Total Produto (R$)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>';
@@ -4695,16 +4650,14 @@ class Controller
                                                 <tr>
                                                     <td>' . htmlspecialchars($item['nome_produto']) . '</td>
                                                     <td>' . (!empty($item['nome_cor']) ? htmlspecialchars($item['nome_cor']) : '-') . '</td>
-                                                    <td class="text-center">' . (!empty($item['largura']) ? htmlspecialchars($item['largura']) : '-') . '</td>
-                                                    <td class="text-center">' . $item['quantidade'] . '</td>
-                                                    <td class="text-center">' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>
-                                                    <td class="text-center">' . number_format($item['totalValor_produto'], 2, ',', '.') . '</td>
+                                                    <td class="text-center">' . (!empty($item['largura']) ? number_format($item['largura'], 2, ',', '.') : '-') . '</td>
+                                                    <td class="text-center">' . number_format($item['quantidade'], 2, ',', '.') . '</td>
+                                                    <td class="text-end">' . number_format($item['valor_unitario'], 2, ',', '.') . '</td>
+                                                    <td class="text-end">' . number_format($item['totalValor_produto'], 2, ',', '.') . '</td>
                                                 </tr>';
                 }
             } else {
-                print '
-                                                <tr>
-                                                    <td colspan="6" class="text-center">Nenhum item encontrado.</td> </tr>';
+                print '<tr><td colspan="6" class="text-center">Nenhum item encontrado para este pedido.</td></tr>';
             }
 
             print '
@@ -4713,7 +4666,6 @@ class Controller
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -4724,7 +4676,6 @@ class Controller
         </div>';
         }
     }
-
     // Método auxiliar para criar botões
     private function botao($classe, $target, $icone, $titulo = '')
     {
@@ -4733,43 +4684,16 @@ class Controller
         print '</button>';
     }
 
-
-    // modal de alterar pedido
     public function modalAlterarPedido($pedidos, $origem)
     {
         if (empty($pedidos)) return;
 
-        // Agrupar itens por pedido
-        $pedidosAgrupados = [];
-
+        // CORREÇÃO: O loop agora itera diretamente sobre o array de pedidos já agrupado.
+        // A lógica anterior de reagrupamento foi removida.
         foreach ($pedidos as $pedido) {
-            $id = $pedido->id_pedido;
-
-            if (!isset($pedidosAgrupados[$id])) {
-                $pedidosAgrupados[$id] = [
-                    'dados' => $pedido,
-                    'itens' => [],
-                ];
-            }
-
-            if (!empty($pedido->id_item_pedido)) {
-                // MODIFICADO: Adiciona os novos campos ao array de itens
-                $pedidosAgrupados[$id]['itens'][] = [
-                    'id_produto'     => $pedido->id_produto,
-                    'nome_produto'   => $pedido->nome_produto,
-                    'nome_cor'       => $pedido->nome_cor,
-                    'largura'        => $pedido->largura,
-                    'quantidade'     => $pedido->quantidade,
-                    'valor_unitario' => $pedido->valor_unitario,
-                ];
-            }
-        }
-
-        foreach ($pedidosAgrupados as $pedido) {
-            $idModal = 'modal_alterar_pedido_' . $pedido['dados']->numero_pedido;
-            $dados   = $pedido['dados'];
+            $idModal = 'modal_alterar_pedido_' . $pedido['numero_pedido'];
             $itens   = $pedido['itens'];
-            $valorFrete = isset($dados->valor_frete) ? $dados->valor_frete : 0;
+            $valorFrete = isset($pedido['valor_frete']) ? $pedido['valor_frete'] : 0;
 
             print '<div class="modal fade modal-alterar-pedido" id="' . $idModal . '" tabindex="-1" aria-labelledby="' . $idModal . '_label" aria-hidden="true">';
             print '   <div class="modal-dialog modal-xl modal-dialog-centered">';
@@ -4778,16 +4702,16 @@ class Controller
             // Cabeçalho
             print '       <div class="modal-header bg-light">';
             print '         <h5 class="modal-title fw-bold" id="' . $idModal . '_label">';
-            print '           <i class="bi bi-pencil-square me-2"></i> Alterar Pedido #' . $dados->numero_pedido;
+            print '           <i class="bi bi-pencil-square me-2"></i> Alterar Pedido #' . htmlspecialchars($pedido['numero_pedido']);
             print '         </h5>';
             print '         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
             print '       </div>';
 
             // Corpo
             print '       <div class="modal-body">';
-            print '         <form action="index.php" method="POST" class="form-alterar-pedido" id="form_' . $dados->numero_pedido . '">';
+            print '         <form action="index.php" method="POST" class="form-alterar-pedido" id="form_' . htmlspecialchars($pedido['numero_pedido']) . '">';
             print '           <input type="hidden" name="origem" value="' . htmlspecialchars($origem) . '">';
-            print '           <input type="hidden" name="id_pedido" value="' . $dados->id_pedido . '">';
+            print '           <input type="hidden" name="id_pedido" value="' . $pedido['id_pedido'] . '">';
             print '           <input type="hidden" name="alterar_pedido" value="1">';
 
             print '           <div class="row g-4">';
@@ -4799,13 +4723,13 @@ class Controller
             print '               <fieldset class="border rounded p-3 mb-4">';
             print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Cliente</legend>';
             print '                 <div class="mb-3 position-relative">';
-            print '                   <label for="cliente_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Cliente</label>';
+            print '                   <label for="cliente_pedido_' . htmlspecialchars($pedido['numero_pedido']) . '" class="form-label">Buscar Cliente</label>';
             print '                   <div class="input-group">';
             print '                     <span class="input-group-text"><i class="bi bi-search"></i></span>';
-            print '                     <input type="text" class="form-control cliente-input" id="cliente_pedido_' . $dados->numero_pedido . '" name="cliente_pedido" value="' . htmlspecialchars($dados->nome_fantasia) . '" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">';
+            print '                     <input type="text" class="form-control cliente-input" id="cliente_pedido_' . htmlspecialchars($pedido['numero_pedido']) . '" name="cliente_pedido" value="' . htmlspecialchars($pedido['nome_fantasia']) . '" placeholder="Nome fantasia, razão social ou CNPJ" autocomplete="off">';
             print '                   </div>';
-            print '                   <div id="resultado_busca_cliente_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
-            print '                   <input type="hidden" class="id-cliente" name="id_cliente" value="' . $dados->id_cliente . '">';
+            print '                   <div id="resultado_busca_cliente_' . htmlspecialchars($pedido['numero_pedido']) . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
+            print '                   <input type="hidden" class="id-cliente" name="id_cliente" value="' . $pedido['id_cliente'] . '">';
             print '                 </div>';
             print '               </fieldset>';
 
@@ -4814,15 +4738,15 @@ class Controller
             print '                 <legend class="float-none w-auto px-3 fw-semibold text-primary">Dados do Pedido</legend>';
             print '                 <div class="row g-3">';
             print '                   <div class="col-md-6">';
-            print '                     <label for="frete_' . $dados->numero_pedido . '" class="form-label">Frete</label>';
-            print '                     <input type="text" class="form-control frete" id="frete_' . $dados->numero_pedido . '" name="valor_frete" value="R$ ' . number_format($valorFrete, 2, ',', '.') . '">';
+            print '                     <label for="frete_' . htmlspecialchars($pedido['numero_pedido']) . '" class="form-label">Frete</label>';
+            print '                     <input type="text" class="form-control frete" id="frete_' . htmlspecialchars($pedido['numero_pedido']) . '" name="valor_frete" value="R$ ' . number_format($valorFrete, 2, ',', '.') . '">';
             print '                   </div>';
             print '                   <div class="col-md-6">';
-            print '                     <label for="valor_total_' . $dados->numero_pedido . '" class="form-label">Valor Total</label>';
-            print '                     <input type="text" class="form-control valor-total" id="valor_total_' . $dados->numero_pedido . '" name="valor_total" readonly value="R$ ' . number_format($dados->valor_total, 2, ',', '.') . '">';
+            print '                     <label for="valor_total_' . htmlspecialchars($pedido['numero_pedido']) . '" class="form-label">Valor Total</label>';
+            print '                     <input type="text" class="form-control valor-total" id="valor_total_' . htmlspecialchars($pedido['numero_pedido']) . '" name="valor_total" readonly value="R$ ' . number_format($pedido['valor_total'], 2, ',', '.') . '">';
             print '                   </div>';
             print '                   <div class="col-12">';
-            $this->selectConsultaForma_Pagamento($dados->id_forma_pagamento);
+            $this->selectConsultaForma_Pagamento($pedido['id_forma_pagamento']);
             print '                   </div>';
             print '                 </div>';
             print '               </fieldset>';
@@ -4837,18 +4761,18 @@ class Controller
             // Busca produto
             print '                 <div class="row g-3 align-items-end mb-3">';
             print '                   <div class="col-md-8 position-relative">';
-            print '                     <label for="produto_pedido_' . $dados->numero_pedido . '" class="form-label">Buscar Produto</label>';
+            print '                     <label for="produto_pedido_' . htmlspecialchars($pedido['numero_pedido']) . '" class="form-label">Buscar Produto</label>';
             print '                     <div class="input-group">';
             print '                       <span class="input-group-text"><i class="bi bi-search"></i></span>';
-            print '                       <input type="text" class="form-control produto-input" id="produto_pedido_' . $dados->numero_pedido . '" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off">';
+            print '                       <input type="text" class="form-control produto-input" id="produto_pedido_' . htmlspecialchars($pedido['numero_pedido']) . '" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off">';
             print '                     </div>';
-            print '                     <div id="resultado_busca_produto_' . $dados->numero_pedido . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
+            print '                     <div id="resultado_busca_produto_' . htmlspecialchars($pedido['numero_pedido']) . '" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>';
             print '                   </div>';
             print '                   <div class="col-md-4">';
-            print '                     <label for="quantidade_' . $dados->numero_pedido . '" class="form-label">Quantidade</label>';
+            print '                     <label for="quantidade_' . htmlspecialchars($pedido['numero_pedido']) . '" class="form-label">Quantidade</label>';
             print '                     <div class="input-group">';
-            print '                       <input type="text" class="form-control quantidade-input" id="quantidade_' . $dados->numero_pedido . '" name="quantidade" min="1" autocomplete="off">';
-            print '                       <button type="button" class="btn btn-outline-primary adicionar-produto" id="adicionar_produto_' . $dados->numero_pedido . '">';
+            print '                       <input type="text" class="form-control quantidade-input" id="quantidade_' . htmlspecialchars($pedido['numero_pedido']) . '" name="quantidade" min="1" autocomplete="off">';
+            print '                       <button type="button" class="btn btn-outline-primary adicionar-produto" id="adicionar_produto_' . htmlspecialchars($pedido['numero_pedido']) . '">';
             print '                         <i class="bi bi-plus"></i>';
             print '                       </button>';
             print '                     </div>';
@@ -4861,7 +4785,6 @@ class Controller
             print '                   <table class="table table-bordered table-striped table-sm align-middle text-center">';
             print '                     <thead class="table-light">';
             print '                       <tr>';
-            // MODIFICADO: Adiciona os cabeçalhos da tabela
             print '                         <th class="text-start">Produto</th>';
             print '                         <th>Cor</th>';
             print '                         <th>Largura (m)</th>';
@@ -4871,12 +4794,11 @@ class Controller
             print '                         <th>Ação</th>';
             print '                       </tr>';
             print '                     </thead>';
-            print '                     <tbody id="tbody_lista_pedido_' . $dados->numero_pedido . '">';
+            print '                     <tbody id="tbody_lista_pedido_' . htmlspecialchars($pedido['numero_pedido']) . '">';
 
             foreach ($itens as $item) {
                 $valorTotalLinha = $item['quantidade'] * $item['valor_unitario'];
                 print '                       <tr data-id-produto="' . $item['id_produto'] . '">';
-                // MODIFICADO: Adiciona as células com os novos dados
                 print '                         <td class="text-start">' . htmlspecialchars($item['nome_produto']) . '</td>';
                 print '                         <td>' . (!empty($item['nome_cor']) ? htmlspecialchars($item['nome_cor']) : '-') . '</td>';
                 print '                         <td>' . (!empty($item['largura']) ? htmlspecialchars($item['largura']) : '-') . '</td>';
@@ -4901,7 +4823,7 @@ class Controller
 
             // Rodapé
             print '           <div class="modal-footer">';
-            print '             <button type="submit" class="btn btn-success salvar-pedido" id="alterar_pedido_' . $dados->numero_pedido . '" disabled>';
+            print '             <button type="submit" class="btn btn-success salvar-pedido" id="alterar_pedido_' . htmlspecialchars($pedido['numero_pedido']) . '" disabled>';
             print '               <i class="bi bi-check-circle me-1"></i> Salvar Alterações';
             print '             </button>';
             print '             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">';
@@ -4917,39 +4839,7 @@ class Controller
             print '</div>';
         }
     }
-    //metodo de excluir pedido
-    public function excluir_Pedido($id_pedido, $origem)
-    {
-        // instancia a classe
-        $objPedido = new Pedido();
 
-        // Invocar o método da classe Pedido para excluir o pedido
-        if ($objPedido->excluirPedido($id_pedido) == true) {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view
-            if ($origem === 'pedido') {
-                include_once 'View/pedido.php';
-            } else {
-                include_once 'View/principal.php';
-            }
-            // Exibir mensagem de sucesso
-            $this->mostrarMensagemSucesso("Pedido excluído com sucesso");
-        } else {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view
-            if ($origem === 'pedido') {
-                include_once 'View/pedido.php';
-            } else {
-                include_once 'View/principal.php';
-            }
-            // Exibir mensagem de erro
-            $this->mostrarMensagemErro("Erro ao excluir Pedido");
-        }
-    }
     // modal de excluir pedido
     public function modalExcluirPedido($origem, $id_pedido, $numero_pedido, $nome_fantasia)
     {
@@ -4977,6 +4867,39 @@ class Controller
         print '</div>';
     }
 
+    //metodo de excluir pedido
+    public function excluir_Pedido($id_pedido, $origem)
+    {
+        // instancia a classe
+        $objPedido = new Pedido();
+
+        // Invocar o método da classe Pedido para excluir o pedido
+        if ($objPedido->excluirPedido($id_pedido) == true) {
+            session_start();
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view
+            if ($origem === 'pedido') {
+                include_once 'view/pedido.php';
+            } else {
+                include_once 'view/principal.php';
+            }
+            // Exibir mensagem de sucesso
+            $this->mostrarMensagemSucesso("Pedido excluído com sucesso");
+        } else {
+            session_start();
+            // Carregar o menu
+            $menu = $this->menu();
+            // Incluir a view
+            if ($origem === 'pedido') {
+                include_once 'view/pedido.php';
+            } else {
+                include_once 'view/principal.php';
+            }
+            // Exibir mensagem de erro
+            $this->mostrarMensagemErro("Erro ao excluir Pedido");
+        }
+    }
 
     // metodo para alterar o pedido
     public function alterar_Pedido(
@@ -5004,10 +4927,10 @@ class Controller
             $menu = $this->menu();
             if ($origem === 'pedido') {
                 // Incluir a view do pedido
-                include_once 'View/pedido.php';
+                include_once 'view/pedido.php';
             } else {
                 // Incluir a view do pedido
-                include_once 'View/principal.php';
+                include_once 'view/principal.php';
             }
             // Exibir mensagem de sucesso
             $this->mostrarMensagemSucesso("Pedido alterado com sucesso");
@@ -5017,10 +4940,10 @@ class Controller
             $menu = $this->menu();
             if ($origem === 'pedido') {
                 // Incluir a view do pedido
-                include_once 'View/pedido.php';
+                include_once 'view/pedido.php';
             } else {
                 // Incluir a view do pedido
-                include_once 'View/principal.php';
+                include_once 'view/principal.php';
             }
             // Exibir mensagem de erro
             $this->mostrarMensagemErro("Erro ao alterar Pedido");
@@ -5077,9 +5000,9 @@ class Controller
         $menu = $this->menu();
 
         if ($origem === 'pedido') {
-            include_once 'View/pedido.php';
+            include_once 'view/pedido.php';
         } else {
-            include_once 'View/principal.php';
+            include_once 'view/principal.php';
         }
 
         // Exibir mensagem de acordo com resultado
@@ -5143,9 +5066,9 @@ class Controller
             $menu = $this->menu();
             // Incluir a view
             if ($origem === 'pedido') {
-                include_once 'View/pedido.php';
+                include_once 'view/pedido.php';
             } else {
-                include_once 'View/principal.php';
+                include_once 'view/principal.php';
             }
             // Exibir mensagem de sucesso
             $this->mostrarMensagemSucesso("Pedido cancelado com sucesso");
@@ -5155,9 +5078,9 @@ class Controller
             $menu = $this->menu();
             // Incluir a view
             if ($origem === 'pedido') {
-                include_once 'View/pedido.php';
+                include_once 'view/pedido.php';
             } else {
-                include_once 'View/principal.php';
+                include_once 'view/principal.php';
             }
             // Exibir mensagem de erro
             $this->mostrarMensagemErro("Erro ao cancelar Pedido");
@@ -5219,11 +5142,11 @@ class Controller
             if ($origem === 'pedido') {
                 // Carregar o menu
                 $menu = $this->menu();
-                include_once 'View/pedido.php';
+                include_once 'view/pedido.php';
             } else {
                 // Carregar o menu
                 $menu = $this->menu();
-                include_once 'View/principal.php';
+                include_once 'view/principal.php';
             }
             // Exibir mensagem de sucesso
             $this->mostrarMensagemSucesso("Pedido finalizado com sucesso");
@@ -5233,9 +5156,9 @@ class Controller
             $menu = $this->menu();
             // Incluir a view
             if ($origem === 'pedido') {
-                include_once 'View/pedido.php';
+                include_once 'view/pedido.php';
             } else {
-                include_once 'View/principal.php';
+                include_once 'view/principal.php';
             }
             // Exibir mensagem de erro
             $this->mostrarMensagemErro("Erro ao finalizar Pedido");
@@ -5257,12 +5180,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Nenhum faturamento encontrado nesse periodo!");
         }
     }
@@ -5360,12 +5283,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao consultar produtos mais vendidos!");
         }
     }
@@ -5417,12 +5340,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("No ano base digitado nao foi finalizado nenhum pedido!");
         }
     }
@@ -5520,12 +5443,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao cosultar quantidade de pedidos por forma de pagamento!");
         }
     }
@@ -5577,12 +5500,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao consultar os pedidos desse cliente!");
         }
     }
@@ -5632,12 +5555,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao consultar pedidos por status!");
         }
     }
@@ -5693,12 +5616,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao consultar pedidos com maior valor!");
         }
     }
@@ -5744,12 +5667,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao consultar produtos nunca vendidos!");
         }
     }
@@ -5795,12 +5718,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Nenhum pedido recente encontrado!");
         }
     }
@@ -5850,12 +5773,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao buscar variacao de vendas por produto");
         }
     }
@@ -5914,12 +5837,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao buscar Lucro bruto de vendas");
         }
     }
@@ -5983,12 +5906,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao buscar produtos com baixo estoque!");
         }
     }
@@ -6032,12 +5955,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao buscar produtos e seus custos!");
         }
     }
@@ -6114,12 +6037,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao lista produtos por fornecedor!");
         }
     }
@@ -6175,12 +6098,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao buscar produtos e suas margens!");;
         }
     }
@@ -6227,12 +6150,12 @@ class Controller
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
         } else {
             // menu
             $menu = $this->menu();
             // view
-            include_once 'View/relatorios.php';
+            include_once 'view/relatorios.php';
             $this->mostrarMensagemErro("Erro ao consultar clientes que mais compraram!");
         }
     }
@@ -6361,6 +6284,192 @@ class Controller
 
     //  AUDITORIA DO SISTEMA
 
+    // =======================================================
+    // MÉTODO De Consultas
+    // =======================================================
+
+    /**
+     * Card 1: Auditorias da semana
+     * @param string Auditorias dos ultimos 7 dias
+     */
+
+    public function listar_Auditorias()
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarEventosDeAuditoria();
+        if ($eventosIndividuais !== false) {
+            // Agrupa os eventos individuais em ações lógicas antes de enviar para a view
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'view/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            include_once 'view/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias!");
+        }
+    }
+    /**
+     * Card 2: Auditorias por Usuário.
+     * @param int $id_usuario O ID do usuário a ser filtrado.
+     */
+    public function listar_AuditoriasPorUsuario($id_usuario)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuario($id_usuario);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'view/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'view/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias para este usuário!");
+        }
+    }
+    /**
+     * Card 3: Auditorias por Ação.
+     * @param string $acao Ação a ser filtrada ('INSERT', 'UPDATE', 'DELETE').
+     */
+    public function listar_AuditoriasPorAcao($acao)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorAcao($acao);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'view/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'view/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias por ação!");
+        }
+    }
+    /**
+     * Card 4: Auditorias por Período.
+     * @param string $data_inicio Data de início do filtro.
+     * @param string $data_fim Data final do filtro.
+     */
+    public function listar_AuditoriasPorPeriodo($data_inicio, $data_fim)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorPeriodo($data_inicio, $data_fim);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'view/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'view/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias por período!");
+        }
+    }
+    /**
+     * Card 5: Auditorias por Usuário e Ação.
+     * @param int $id_usuario ID do usuário.
+     * @param string $acao Ação a ser filtrada.
+     */
+    public function listar_AuditoriasUsuarioAcao($id_usuario, $acao)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuarioAcao($id_usuario, $acao);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'view/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'view/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+        }
+    }
+    /**
+     * Card 6: Auditorias por Tabela e Período.
+     * @param string $tabela Nome da tabela.
+     * @param string $data_inicio Data de início.
+     * @param string $data_fim Data final.
+     */
+    public function listar_AuditoriasTabelaPeriodo($tabela, $data_inicio, $data_fim)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorTabelaPeriodo($tabela, $data_inicio, $data_fim);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'view/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'view/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+        }
+    }
+
+    /**
+     * Card 7: Auditorias por Usuário e Período.
+     * @param int $id_usuario ID do usuário.
+     * @param string $data_inicio Data de início.
+     * @param string $data_fim Data final.
+     */
+    public function listar_AuditoriasUsuarioPeriodo($id_usuario, $data_inicio, $data_fim)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuarioPeriodo($id_usuario, $data_inicio, $data_fim);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'view/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'view/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+        }
+    }
+
+    /**
+     * Card 8: Auditorias por Usuário, Ação e Período.
+     * @param int $id_usuario ID do usuário.
+     * @param string $acao Ação a ser filtrada.
+     * @param string $data_inicio Data de início.
+     * @param string $data_fim Data final.
+     */
+    public function listar_AuditoriasUsuarioAcaoPeriodo($id_usuario, $acao, $data_inicio, $data_fim)
+    {
+        $objAuditoria = new Auditoria();
+        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuarioAcaoPeriodo($id_usuario, $acao, $data_inicio, $data_fim);
+
+        if ($eventosIndividuais !== false) {
+            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
+            $dadosParaView = $eventosAgrupados;
+            $menu = $this->menu();
+            include_once 'view/auditoria.php';
+        } else {
+            $menu = $this->menu();
+            $dadosParaView = [];
+            include_once 'view/auditoria.php';
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+        }
+    }
+
+    // HELPERS PARA MONTAR A TABELA DINAMICA DE AUDITORIA
+    // a montagem e masma para os metodos de consulta de audtoria
 
     // funcao de mascara para cpf
     private function aplicarMascaraCPF($cpf)
@@ -6380,19 +6489,19 @@ class Controller
     {
         $dicionario = [
             'cliente' => 'Cliente',
-            'telefone_Cliente' => 'Telefone do Cliente',
+            'telefone_cliente' => 'Telefone do Cliente',
             'endereco' => 'Endereço do Cliente',
             'inscricao_Estadual' => 'Inscrição Estadual',
             'fornecedor' => 'Fornecedor',
-            'telefone_Fornecedor' => 'Telefone do Fornecedor',
+            'telefone_fornecedor' => 'Telefone do Fornecedor',
             'produto' => 'Produto',
             'pedido' => 'Pedido',
-            'item_Pedido' => 'Item do Pedido',
+            'item_pedido' => 'Item do Pedido',
             'usuario' => 'Usuário',
-            'perfil_Usuario' => 'Perfil de Usuário',
-            'forma_Pagamento' => 'Forma de Pagamento',
+            'perfil_usuario' => 'Perfil de Usuário',
+            'forma_pagamento' => 'Forma de Pagamento',
             'cor' => 'Cor',
-            'tipo_Produto' => 'Tipo de Produto',
+            'tipo_produto' => 'Tipo de Produto',
         ];
         return $dicionario[$nomeTecnico] ?? $nomeTecnico;
     }
@@ -6429,7 +6538,7 @@ class Controller
             'ncm_produto' => 'NCM',
             'quantidade_minima' => 'Qtde. Mínima',
             'img_produto' => 'Imagem',
-            'id_cor' => 'Cor',
+            'id_cor' => 'Cor do Produto',
             'id_tipo_produto' => 'Tipo de Produto',
             'id_fornecedor' => 'Fornecedor',
             'nome_cor' => 'Cor',
@@ -6482,193 +6591,11 @@ class Controller
         }
         return htmlspecialchars($valor);
     }
-    // =======================================================
-    // MÉTODO De Consultas
-    // =======================================================
-    public function listar_Auditorias()
-    {
-        $objAuditoria = new Auditoria();
-        $eventosIndividuais = $objAuditoria->listarEventosDeAuditoria();
-        if ($eventosIndividuais !== false) {
-            // Agrupa os eventos individuais em ações lógicas antes de enviar para a view
-            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
-            $dadosParaView = $eventosAgrupados;
-            $menu = $this->menu();
-            include_once 'View/auditoria.php';
-        } else {
-            $menu = $this->menu();
-            include_once 'View/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias!");
-        }
-    }
 
-    /**
-     * Card 2: Auditorias por Usuário.
-     * @param int $id_usuario O ID do usuário a ser filtrado.
-     */
-    public function listar_AuditoriasPorUsuario($id_usuario)
-    {
-        $objAuditoria = new Auditoria();
-        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuario($id_usuario);
-
-        if ($eventosIndividuais !== false) {
-            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
-            $dadosParaView = $eventosAgrupados;
-            $menu = $this->menu();
-            include_once 'View/auditoria.php';
-        } else {
-            $menu = $this->menu();
-            $dadosParaView = [];
-            include_once 'View/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias para este usuário!");
-        }
-    }
-
-    /**
-     * Card 3: Auditorias por Ação.
-     * @param string $acao Ação a ser filtrada ('INSERT', 'UPDATE', 'DELETE').
-     */
-    public function listar_AuditoriasPorAcao($acao)
-    {
-        $objAuditoria = new Auditoria();
-        $eventosIndividuais = $objAuditoria->listarAuditoriasPorAcao($acao);
-
-        if ($eventosIndividuais !== false) {
-            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
-            $dadosParaView = $eventosAgrupados;
-            $menu = $this->menu();
-            include_once 'View/auditoria.php';
-        } else {
-            $menu = $this->menu();
-            $dadosParaView = [];
-            include_once 'View/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias por ação!");
-        }
-    }
-
-    /**
-     * Card 4: Auditorias por Período.
-     * @param string $data_inicio Data de início do filtro.
-     * @param string $data_fim Data final do filtro.
-     */
-    public function listar_AuditoriasPorPeriodo($data_inicio, $data_fim)
-    {
-        $objAuditoria = new Auditoria();
-        $eventosIndividuais = $objAuditoria->listarAuditoriasPorPeriodo($data_inicio, $data_fim);
-
-        if ($eventosIndividuais !== false) {
-            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
-            $dadosParaView = $eventosAgrupados;
-            $menu = $this->menu();
-            include_once 'View/auditoria.php';
-        } else {
-            $menu = $this->menu();
-            $dadosParaView = [];
-            include_once 'View/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias por período!");
-        }
-    }
-
-    /**
-     * Card 5: Auditorias por Usuário e Ação.
-     * @param int $id_usuario ID do usuário.
-     * @param string $acao Ação a ser filtrada.
-     */
-    public function listar_AuditoriasUsuarioAcao($id_usuario, $acao)
-    {
-        $objAuditoria = new Auditoria();
-        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuarioAcao($id_usuario, $acao);
-
-        if ($eventosIndividuais !== false) {
-            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
-            $dadosParaView = $eventosAgrupados;
-            $menu = $this->menu();
-            include_once 'View/auditoria.php';
-        } else {
-            $menu = $this->menu();
-            $dadosParaView = [];
-            include_once 'View/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
-        }
-    }
-
-    /**
-     * Card 6: Auditorias por Tabela e Período.
-     * @param string $tabela Nome da tabela.
-     * @param string $data_inicio Data de início.
-     * @param string $data_fim Data final.
-     */
-    public function listar_AuditoriasTabelaPeriodo($tabela, $data_inicio, $data_fim)
-    {
-        $objAuditoria = new Auditoria();
-        $eventosIndividuais = $objAuditoria->listarAuditoriasPorTabelaPeriodo($tabela, $data_inicio, $data_fim);
-
-        if ($eventosIndividuais !== false) {
-            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
-            $dadosParaView = $eventosAgrupados;
-            $menu = $this->menu();
-            include_once 'View/auditoria.php';
-        } else {
-            $menu = $this->menu();
-            $dadosParaView = [];
-            include_once 'View/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
-        }
-    }
-
-    /**
-     * Card 7: Auditorias por Usuário e Período.
-     * @param int $id_usuario ID do usuário.
-     * @param string $data_inicio Data de início.
-     * @param string $data_fim Data final.
-     */
-    public function listar_AuditoriasUsuarioPeriodo($id_usuario, $data_inicio, $data_fim)
-    {
-        $objAuditoria = new Auditoria();
-        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuarioPeriodo($id_usuario, $data_inicio, $data_fim);
-
-        if ($eventosIndividuais !== false) {
-            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
-            $dadosParaView = $eventosAgrupados;
-            $menu = $this->menu();
-            include_once 'View/auditoria.php';
-        } else {
-            $menu = $this->menu();
-            $dadosParaView = [];
-            include_once 'View/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
-        }
-    }
-
-    /**
-     * Card 8: Auditorias por Usuário, Ação e Período.
-     * @param int $id_usuario ID do usuário.
-     * @param string $acao Ação a ser filtrada.
-     * @param string $data_inicio Data de início.
-     * @param string $data_fim Data final.
-     */
-    public function listar_AuditoriasUsuarioAcaoPeriodo($id_usuario, $acao, $data_inicio, $data_fim)
-    {
-        $objAuditoria = new Auditoria();
-        $eventosIndividuais = $objAuditoria->listarAuditoriasPorUsuarioAcaoPeriodo($id_usuario, $acao, $data_inicio, $data_fim);
-
-        if ($eventosIndividuais !== false) {
-            $eventosAgrupados = $this->agruparEventosPorAcaoLogica($eventosIndividuais);
-            $dadosParaView = $eventosAgrupados;
-            $menu = $this->menu();
-            include_once 'View/auditoria.php';
-        } else {
-            $menu = $this->menu();
-            $dadosParaView = [];
-            include_once 'View/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
-        }
-    }
 
     // =======================================================
-    // MÉTODO 2: AGRUPADOR DE EVENTOS
+    // MÉTODO 1: AGRUPADOR DE EVENTOS
     // =======================================================
-
     private function agruparEventosPorAcaoLogica($eventos)
     {
         if (empty($eventos)) {
@@ -6703,7 +6630,7 @@ class Controller
         return $grupos;
     }
     // =======================================================
-    // MÉTODO 3: IDENTIFICADOR DE EVENTO PRINCIPAL (NOVO)
+    // MÉTODO 2: IDENTIFICADOR DE EVENTO PRINCIPAL
     // =======================================================
     /**
      * Dentro de um grupo de eventos, identifica qual é o "principal".
@@ -6724,9 +6651,8 @@ class Controller
         return $grupo[0];
     }
     // =======================================================
-    // MÉTODO 4: RENDERIZADOR DA LINHA DO TEMPO (ATUALIZADO)
+    // MÉTODO 3: RENDERIZADOR DA LINHA DO TEMPO
     // =======================================================
-
     public function renderizarTabelaDeAuditoria($gruposDeEventos)
     {
         if (empty($gruposDeEventos)) {
@@ -6799,7 +6725,7 @@ class Controller
         echo $html . $modals;
     }
     // =======================================================
-    // MÉTODO 5: GERADOR DE MODAL
+    // MÉTODO 4: GERADOR DE MODAL
     // =======================================================
     private function gerarModalDetalhesImersivo($idModal, $grupo)
     {
@@ -6837,7 +6763,7 @@ class Controller
         return $modal;
     }
     // =======================================================
-    // MÉTODO 6: RENDERIZADOR DOS DETALHES DO GRUPO
+    // MÉTODO 5: RENDERIZADOR DOS DETALHES DO GRUPO
     // =======================================================
     private function renderizarDetalhesDoGrupo($grupo)
     {
@@ -6904,7 +6830,7 @@ class Controller
         return $html;
     }
     // =======================================================
-    // MÉTODO 7: HELPER DE INFORMAÇÕES DA AÇÃO
+    // MÉTODO 6: HELPER DE INFORMAÇÕES DA AÇÃO
     // =======================================================
     private function obterInfoAcao($acao)
     {
@@ -6915,15 +6841,6 @@ class Controller
         ];
         return $map[$acao] ?? ['nome' => $acao, 'classe_css' => 'bg-secondary', 'icone' => 'bi-question-circle-fill'];
     }
-
-
-
-
-
-
-
-
-
 
 
 

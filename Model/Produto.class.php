@@ -591,10 +591,10 @@ class Produto extends Conexao
         try {
             // Base da query
             $sql = "SELECT
-                    nome_produto,
-                    quantidade,
-                    quantidade_minima,
-                    (quantidade_minima - quantidade) AS falta
+                    p.nome_produto,
+                    p.quantidade,
+                    p.quantidade_minima,
+                    (p.quantidade_minima - p.quantidade) AS falta
                     FROM produto p
                     WHERE p.quantidade < p.quantidade_minima";
 
@@ -603,12 +603,7 @@ class Produto extends Conexao
 
             // Se limite foi informado, adiciona condição
             if (!empty($limite)) {
-                $condicoes[] = "quantidade <= :limite";
-            }
-
-            // Se houver condições adicionais, concatena
-            if (count($condicoes) > 0) {
-                $sql .= " AND " . implode(" AND ", $condicoes);
+                $condicoes[] = "p.quantidade_minima <= :limite";
             }
 
             // Ordenação

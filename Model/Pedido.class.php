@@ -122,14 +122,14 @@ class Pedido extends Conexao
         $data_pedido,
         $id_forma_pagamento
     ) {
-        // Atribuindo aos atributos internos (caso precise em outros métodos)
+        // Atribuições
         $this->setNumeroPedido($numero_pedido);
         $this->setIdCliente($id_cliente);
         $this->setStatusPedido($status_pedido);
         $this->setDataPedido($data_pedido);
         $this->setIdFormaPagamento($id_forma_pagamento);
 
-        // Monta a query base
+        // Monta a query
         $sql = "SELECT
                 p.id_pedido,
                 p.numero_pedido,
@@ -137,36 +137,28 @@ class Pedido extends Conexao
                 p.status_pedido,
                 p.valor_total,
                 p.valor_frete,
-
-                -- Cliente
                 c.id_cliente,
                 c.nome_fantasia,
-
-                -- Forma de pagamento
-                fp.id_forma_pagamento,
-                fp.descricao,
-
-                -- Itens do pedido
+                p.id_forma_pagamento,
+                p.descricao_forma_pagamento,
                 ip.id_item_pedido,
                 ip.id_produto,
-                pr.nome_produto,
-                pr.largura,
-                co.nome_cor,
+                ip.nome_produto,
+                ip.nome_cor,
+                ip.nome_tipo_produto,
+                prod.largura,
                 ip.quantidade,
                 ip.valor_unitario,
                 ip.totalValor_produto
-
                 FROM pedido p
                 LEFT JOIN cliente c ON p.id_cliente = c.id_cliente
-                LEFT JOIN forma_pagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
                 LEFT JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
-                LEFT JOIN produto pr ON ip.id_produto = pr.id_produto
-                LEFT JOIN cor co ON pr.id_cor = co.id_cor
+                LEFT JOIN produto prod ON ip.id_produto = prod.id_produto
                 WHERE 1=1";
 
-        // Aplica os filtros dinamicamente
+        // Filtros dinâmicos
         if (!empty($this->getNumeroPedido())) {
-            $sql .= " AND p.numero_pedido LIKE :numero_pedido";
+            $sql .= " AND p.numero_pedido LIKE CONCAT('%', :numero_pedido, '%')";
         }
         if (!empty($this->getIdCliente())) {
             $sql .= " AND p.id_cliente = :id_cliente";
@@ -174,25 +166,22 @@ class Pedido extends Conexao
         if (!empty($this->getStatusPedido())) {
             $sql .= " AND p.status_pedido = :status_pedido";
         }
-        // filtro de data
         if (!empty($this->getDataPedido())) {
-            // Compara apenas a parte da data, ignorando a hora
             $sql .= " AND DATE(p.data_pedido) = :data_pedido";
         }
         if (!empty($this->getIdFormaPagamento())) {
             $sql .= " AND p.id_forma_pagamento = :id_forma_pagamento";
         }
-        // Sempre por último!
-        $sql .= " ORDER BY p.numero_pedido DESC";
 
-        // Executa a query
+        $sql .= " ORDER BY p.id_pedido DESC, ip.id_item_pedido ASC";
+
         try {
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);
 
             // Bind dinâmico
             if (!empty($this->getNumeroPedido())) {
-                $query->bindValue(':numero_pedido', '%' . $this->getNumeroPedido() . '%', PDO::PARAM_STR);
+                $query->bindValue(':numero_pedido', $this->getNumeroPedido(), PDO::PARAM_STR);
             }
             if (!empty($this->getIdCliente())) {
                 $query->bindValue(':id_cliente', $this->getIdCliente(), PDO::PARAM_INT);
@@ -208,7 +197,46 @@ class Pedido extends Conexao
             }
 
             $query->execute();
-            return $query->fetchAll(PDO::FETCH_OBJ);
+            $resultados = $query->fetchAll(PDO::FETCH_ASSOC);
+
+            // Agrupar os resultados
+            $pedidosAgrupados = [];
+            foreach ($resultados as $linha) {
+                $idPedido = $linha['id_pedido'];
+                if (!isset($pedidosAgrupados[$idPedido])) {
+                    $pedidosAgrupados[$idPedido] = [
+                        'id_pedido' => $idPedido,
+                        'numero_pedido' => $linha['numero_pedido'],
+                        'data_pedido' => $linha['data_pedido'],
+                        'status_pedido' => $linha['status_pedido'],
+                        'valor_total' => $linha['valor_total'],
+                        'valor_frete' => $linha['valor_frete'],
+                        'id_cliente' => $linha['id_cliente'],
+                        'nome_fantasia' => $linha['nome_fantasia'],
+                        'id_forma_pagamento' => $linha['id_forma_pagamento'],
+                        'descricao_forma_pagamento' => $linha['descricao_forma_pagamento'],
+                        'itens' => []
+                    ];
+                }
+
+                // Adiciona o item ao pedido correspondente, se houver item
+                if ($linha['id_item_pedido']) {
+                    $pedidosAgrupados[$idPedido]['itens'][] = [
+                        'id_item_pedido' => $linha['id_item_pedido'],
+                        'id_produto' => $linha['id_produto'],
+                        'nome_produto' => $linha['nome_produto'],
+                        'nome_cor' => $linha['nome_cor'],
+                        'nome_tipo_produto' => $linha['nome_tipo_produto'],
+                        'largura' => $linha['largura'], // ADICIONADO: inclui a largura nos dados do item
+                        'quantidade' => $linha['quantidade'],
+                        'valor_unitario' => $linha['valor_unitario'],
+                        'totalValor_produto' => $linha['totalValor_produto']
+                    ];
+                }
+            }
+
+            return array_values($pedidosAgrupados); // Retorna um array indexado numericamente
+
         } catch (PDOException $e) {
             error_log("Erro ao consultar pedidos: " . $e->getMessage());
             return false;
@@ -231,31 +259,23 @@ class Pedido extends Conexao
         $this->setValorFrete($valor_frete);
         $this->setItens($itens);
 
-        // Define o fuso horário para 'America/Sao_Paulo', que é o Fuso Horário de Brasília
+        // Fuso Horário de Brasília
         $fusoHorarioBrasil = new DateTimeZone('America/Sao_Paulo');
-
-        // Cria um objeto DateTime para a data e hora atual, aplicando o fuso horário de Brasília
         $dataHoraBrasil = new DateTime('now', $fusoHorarioBrasil);
-
-        // Formata a data no formato desejado ("Y-m-d H:i:s")
         $dataFormatada = $dataHoraBrasil->format("Y-m-d H:i:s");
-
-        // Define a data no seu servidor
         $this->setDataPedido($dataFormatada);
 
-        // Validar usuário logado
+        // Validações
         if (!isset($_SESSION['id_usuario']) || empty($_SESSION['id_usuario'])) {
             throw new Exception("Usuário não logado. Não é possível cadastrar pedido.");
         }
         $this->setIdUsuario(intval($_SESSION['id_usuario']));
 
-        // Validar status
         $statusValidos = ['Pendente', 'Aguardando Pagamento', 'Finalizado', 'Cancelado'];
         if (!in_array($status_pedido, $statusValidos)) {
             throw new Exception("Status de pedido inválido.");
         }
 
-        // Validar itens
         if (!is_array($this->itens) || count($this->itens) === 0) {
             throw new Exception("Nenhum item válido para o pedido.");
         }
@@ -264,20 +284,31 @@ class Pedido extends Conexao
             $bd = $this->conectarBanco();
             $bd->beginTransaction();
 
-            // 🔹 Obter o próximo ID do AUTO_INCREMENT
-            $proximoId = $bd->query("SELECT AUTO_INCREMENT
-                                    FROM information_schema.tables
-                                    WHERE table_name = 'pedido'
-                                    AND table_schema = DATABASE()")->fetchColumn();
+            // ========================================================================
+            // BUSCAR A DESCRIÇÃO DA FORMA DE PAGAMENTO
+            // ========================================================================
+            $sql_pagamento = "SELECT descricao FROM forma_pagamento WHERE id_forma_pagamento = :id_forma_pagamento LIMIT 1";
+            $query_pagamento = $bd->prepare($sql_pagamento);
+            $query_pagamento->bindValue(':id_forma_pagamento', $this->getIdFormaPagamento(), PDO::PARAM_INT);
+            $query_pagamento->execute();
+            $descricao_pagamento = $query_pagamento->fetchColumn();
 
-            // 🔹 Gerar número do pedido
+            if ($descricao_pagamento === false) {
+                throw new Exception("Forma de pagamento inválida ou não encontrada.");
+            }
+
+            // Gerar número do pedido
+            $proximoId = $bd->query("SELECT AUTO_INCREMENT FROM information_schema.tables WHERE table_name = 'pedido' AND table_schema = DATABASE()")->fetchColumn();
             $numero_pedido_gerado = str_pad($proximoId, 6, "0", STR_PAD_LEFT);
             $this->setNumeroPedido($numero_pedido_gerado);
 
-            // 🔹 Inserir pedido
+            // ========================================================================
+            // 2. AJUSTE: INSERIR O PEDIDO COM A DESCRIÇÃO DO PAGAMENTO
+            // ========================================================================
             $sql = "INSERT INTO pedido
-            (id_cliente, id_usuario, data_pedido, status_pedido, valor_total, id_forma_pagamento, valor_frete, numero_pedido)
-            VALUES (:id_cliente, :id_usuario, :data_pedido, :status_pedido, :valor_total, :id_forma_pagamento, :valor_frete, :numero_pedido)";
+                (id_cliente, id_usuario, data_pedido, status_pedido, valor_total, id_forma_pagamento, descricao_forma_pagamento, valor_frete, numero_pedido)
+                VALUES (:id_cliente, :id_usuario, :data_pedido, :status_pedido, :valor_total, :id_forma_pagamento, :descricao_forma_pagamento, :valor_frete, :numero_pedido)"; // << MODIFICADO
+
             $query = $bd->prepare($sql);
             $query->bindValue(':id_cliente', $this->getIdCliente(), PDO::PARAM_INT);
             $query->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
@@ -285,37 +316,57 @@ class Pedido extends Conexao
             $query->bindValue(':status_pedido', $this->getStatusPedido(), PDO::PARAM_STR);
             $query->bindValue(':valor_total', (float)$this->getValorTotal());
             $query->bindValue(':id_forma_pagamento', $this->getIdFormaPagamento(), PDO::PARAM_INT);
+            $query->bindValue(':descricao_forma_pagamento', $descricao_pagamento, PDO::PARAM_STR); // << NOVO
             $query->bindValue(':valor_frete', (float)$this->getValorFrete());
             $query->bindValue(':numero_pedido', $this->getNumeroPedido(), PDO::PARAM_STR);
             $query->execute();
 
-            // 🔹 Recuperar ID realmente inserido
             $id_pedido = $bd->lastInsertId();
 
-            // 🔹 Inserir itens do pedido
+            // ========================================================================
+            // CONSULTAS PARA BUSCAR DADOS COMPLETOS DOS PRODUTOS
+            // ========================================================================
+            $sql_busca_produto = "SELECT
+                                p.nome_produto, p.custo_compra, p.id_cor, p.id_tipo_produto,
+                                c.nome_cor,
+                                tp.nome_tipo
+                                FROM produto p
+                                LEFT JOIN cor c ON p.id_cor = c.id_cor
+                                LEFT JOIN tipo_produto tp ON p.id_tipo_produto = tp.id_tipo_produto
+                                WHERE p.id_produto = :id_produto LIMIT 1";
+            $query_busca_produto = $bd->prepare($sql_busca_produto);
+
+            // Preparar o insert do item_pedido uma vez, fora do loop
+            $sql_item = "INSERT INTO item_pedido
+                    (id_pedido, id_produto, id_cor, id_tipo_produto, nome_produto, nome_cor, nome_tipo_produto, quantidade, valor_unitario, totalValor_produto, custo_compra)
+                    VALUES (:id_pedido, :id_produto, :id_cor, :id_tipo_produto, :nome_produto, :nome_cor, :nome_tipo_produto, :quantidade, :valor_unitario, :totalValor_produto, :custo_compra)"; // << MODIFICADO
+            $query_item = $bd->prepare($sql_item);
+
+
+            // Inserir itens do pedido
             foreach ($this->itens as $item) {
                 $id_produto = (int)$item['id_produto'];
-                $quantidade = (float)$item['quantidade'];
-                $valor_unitario = (float)$item['valor_unitario'];
-                $totalValor_produto = (float)$item['totalValor_produto'];
 
-                // Buscar custo de compra
-                $custo_compra = $bd->query(" SELECT custo_compra
-                    FROM produto
-                    WHERE id_produto = $id_produto
-                    LIMIT 1")->fetchColumn();
-                $custo_compra = $custo_compra !== false ? (float)$custo_compra : 0.0;
+                // Buscar todos os dados "fotografáveis" do produto
+                $query_busca_produto->bindValue(':id_produto', $id_produto, PDO::PARAM_INT);
+                $query_busca_produto->execute();
+                $dados_produto = $query_busca_produto->fetch(PDO::FETCH_ASSOC);
 
-                $sql_item = "INSERT INTO item_pedido
-                (id_pedido, id_produto, quantidade, valor_unitario, totalValor_produto, custo_compra)
-                VALUES (:id_pedido, :id_produto, :quantidade, :valor_unitario, :totalValor_produto, :custo_compra)";
-                $query_item = $bd->prepare($sql_item);
+                if ($dados_produto === false) {
+                    throw new Exception("Produto com ID $id_produto não encontrado.");
+                }
+
                 $query_item->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
                 $query_item->bindValue(':id_produto', $id_produto, PDO::PARAM_INT);
-                $query_item->bindValue(':quantidade', $quantidade);
-                $query_item->bindValue(':valor_unitario', $valor_unitario);
-                $query_item->bindValue(':totalValor_produto', $totalValor_produto);
-                $query_item->bindValue(':custo_compra', $custo_compra);
+                $query_item->bindValue(':id_cor', $dados_produto['id_cor'], PDO::PARAM_INT);
+                $query_item->bindValue(':id_tipo_produto', $dados_produto['id_tipo_produto'], PDO::PARAM_INT);
+                $query_item->bindValue(':nome_produto', $dados_produto['nome_produto'], PDO::PARAM_STR);
+                $query_item->bindValue(':nome_cor', $dados_produto['nome_cor'], PDO::PARAM_STR);
+                $query_item->bindValue(':nome_tipo_produto', $dados_produto['nome_tipo'], PDO::PARAM_STR);
+                $query_item->bindValue(':quantidade', (float)$item['quantidade']);
+                $query_item->bindValue(':valor_unitario', (float)$item['valor_unitario']);
+                $query_item->bindValue(':totalValor_produto', (float)$item['totalValor_produto']);
+                $query_item->bindValue(':custo_compra', (float)$dados_produto['custo_compra']);
                 $query_item->execute();
             }
             $bd->commit();
@@ -323,6 +374,8 @@ class Pedido extends Conexao
         } catch (PDOException | Exception $e) {
             if ($bd->inTransaction()) $bd->rollBack();
             error_log("Erro ao cadastrar pedido: " . $e->getMessage());
+            // Em um ambiente de produção, você poderia retornar uma mensagem mais genérica.
+            // echo "Ocorreu um erro ao processar seu pedido. Tente novamente mais tarde.";
             echo "Erro: " . $e->getMessage();
             return false;
         }
@@ -350,7 +403,7 @@ class Pedido extends Conexao
         try {
             $bd = $this->conectarBanco();
 
-            // 🔹 Verifica status do pedido
+            // Verifica status do pedido
             $sqlStatus = "SELECT status_pedido FROM pedido WHERE id_pedido = :id_pedido";
             $queryStatus = $bd->prepare($sqlStatus);
             $queryStatus->bindValue(':id_pedido', $this->getIdPedido(), PDO::PARAM_INT);
@@ -364,31 +417,47 @@ class Pedido extends Conexao
 
             $bd->beginTransaction();
 
-            // 🔹 Atualiza dados do pedido
+            // ========================================================================
+            // BUSCAR A DESCRIÇÃO DA FORMA DE PAGAMENTO
+            // ========================================================================
+            $sql_pagamento = "SELECT descricao FROM forma_pagamento WHERE id_forma_pagamento = :id_forma_pagamento LIMIT 1";
+            $query_pagamento = $bd->prepare($sql_pagamento);
+            $query_pagamento->bindValue(':id_forma_pagamento', $this->getIdFormaPagamento(), PDO::PARAM_INT);
+            $query_pagamento->execute();
+            $descricao_pagamento = $query_pagamento->fetchColumn();
+
+            if ($descricao_pagamento === false) {
+                throw new Exception("Forma de pagamento inválida ou não encontrada.");
+            }
+
+            // ========================================================================
+            // ATUALIZAR O PEDIDO COM A DESCRIÇÃO DO PAGAMENTO
+            // ========================================================================
             $sql = "UPDATE pedido
-            SET id_cliente = :id_cliente,
-                valor_total = :valor_total,
-                id_forma_pagamento = :id_forma_pagamento,
-                valor_frete = :valor_frete
-            WHERE id_pedido = :id_pedido";
+                SET id_cliente = :id_cliente,
+                    valor_total = :valor_total,
+                    id_forma_pagamento = :id_forma_pagamento,
+                    descricao_forma_pagamento = :descricao_forma_pagamento, -- << NOVO
+                    valor_frete = :valor_frete
+                WHERE id_pedido = :id_pedido";
             $query = $bd->prepare($sql);
             $query->bindValue(':id_cliente', $this->getIdCliente(), PDO::PARAM_INT);
             $query->bindValue(':valor_total', (float)$this->getValorTotal());
             $query->bindValue(':id_forma_pagamento', $this->getIdFormaPagamento(), PDO::PARAM_INT);
+            $query->bindValue(':descricao_forma_pagamento', $descricao_pagamento, PDO::PARAM_STR); // << NOVO
             $query->bindValue(':valor_frete', (float)$this->getValorFrete());
             $query->bindValue(':id_pedido', $this->getIdPedido(), PDO::PARAM_INT);
             $query->execute();
 
-            // 🔹 Atualiza itens do pedido
+            // 🔹 Lógica para atualizar itens (excluir, alterar, inserir)
             $sqlItensAtuais = "SELECT id_produto FROM item_pedido WHERE id_pedido = :id_pedido";
             $queryItens = $bd->prepare($sqlItensAtuais);
             $queryItens->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
             $queryItens->execute();
             $produtosAtuais = $queryItens->fetchAll(PDO::FETCH_COLUMN);
-
             $produtosNovos = array_map(fn($i) => (int)$i['id_produto'], $this->itens);
 
-            // Excluir itens removidos
+            // Excluir itens que foram removidos
             foreach ($produtosAtuais as $produtoAntigo) {
                 if (!in_array($produtoAntigo, $produtosNovos)) {
                     $sqlDelete = "DELETE FROM item_pedido WHERE id_pedido = :id_pedido AND id_produto = :id_produto";
@@ -399,43 +468,66 @@ class Pedido extends Conexao
                 }
             }
 
+            // ========================================================================
+            // PREPARAR CONSULTAS FORA DO LOOP PARA EFICIÊNCIA
+            // ========================================================================
+
+            // Consulta para buscar todos os dados de um NOVO produto
+            $sql_busca_produto = "SELECT p.nome_produto, p.custo_compra, p.id_cor, p.id_tipo_produto, c.nome_cor, tp.nome_tipo AS nome_tipo_produto
+                                FROM produto p
+                                LEFT JOIN cor c ON p.id_cor = c.id_cor
+                                LEFT JOIN tipo_produto tp ON p.id_tipo_produto = tp.id_tipo_produto
+                                WHERE p.id_produto = :id_produto LIMIT 1";
+            $query_busca_produto = $bd->prepare($sql_busca_produto);
+
+            // Consulta para INSERIR um novo item
+            $sql_insert_item = "INSERT INTO item_pedido (id_pedido, id_produto, id_cor, id_tipo_produto, nome_produto, nome_cor, nome_tipo_produto, quantidade, valor_unitario, totalValor_produto, custo_compra)
+                            VALUES (:id_pedido, :id_produto, :id_cor, :id_tipo_produto, :nome_produto, :nome_cor, :nome_tipo_produto, :quantidade, :valor_unitario, :totalValor_produto, :custo_compra)";
+            $query_insert_item = $bd->prepare($sql_insert_item);
+
+            // Consulta para ATUALIZAR um item existente
+            $sql_update_item = "UPDATE item_pedido SET quantidade = :quantidade, valor_unitario = :valor_unitario, totalValor_produto = :totalValor_produto, custo_compra = :custo_compra
+                            WHERE id_pedido = :id_pedido AND id_produto = :id_produto";
+            $query_update_item = $bd->prepare($sql_update_item);
+
             // Inserir ou atualizar itens
             foreach ($this->itens as $item) {
                 $id_produto = (int)$item['id_produto'];
-                $quantidade = (float)$item['quantidade'];
-                $valor_unitario = (float)$item['valor_unitario'];
-                $totalValor_produto = (float)$item['totalValor_produto'];
 
-                // Buscar custo_compra
+                // Apenas o custo de compra é sempre re-buscado, pois pode ter sido atualizado
                 $custo_compra = (float)$bd->query("SELECT custo_compra FROM produto WHERE id_produto = $id_produto LIMIT 1")->fetchColumn();
 
                 if (in_array($id_produto, $produtosAtuais)) {
-                    $sqlUpdate = "UPDATE item_pedido
-                    SET quantidade = :quantidade,
-                        valor_unitario = :valor_unitario,
-                        totalValor_produto = :totalValor_produto,
-                        custo_compra = :custo_compra
-                    WHERE id_pedido = :id_pedido AND id_produto = :id_produto";
-                    $queryUpdate = $bd->prepare($sqlUpdate);
-                    $queryUpdate->bindValue(':quantidade', $quantidade);
-                    $queryUpdate->bindValue(':valor_unitario', $valor_unitario);
-                    $queryUpdate->bindValue(':totalValor_produto', $totalValor_produto);
-                    $queryUpdate->bindValue(':custo_compra', $custo_compra);
-                    $queryUpdate->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
-                    $queryUpdate->bindValue(':id_produto', $id_produto, PDO::PARAM_INT);
-                    $queryUpdate->execute();
+                    // Bloco para ATUALIZAR item existente
+                    $query_update_item->bindValue(':quantidade', (float)$item['quantidade']);
+                    $query_update_item->bindValue(':valor_unitario', (float)$item['valor_unitario']);
+                    $query_update_item->bindValue(':totalValor_produto', (float)$item['totalValor_produto']);
+                    $query_update_item->bindValue(':custo_compra', $custo_compra);
+                    $query_update_item->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
+                    $query_update_item->bindValue(':id_produto', $id_produto, PDO::PARAM_INT);
+                    $query_update_item->execute();
                 } else {
-                    $sqlInsert = "INSERT INTO item_pedido
-                    (id_pedido, id_produto, quantidade, valor_unitario, totalValor_produto, custo_compra)
-                    VALUES (:id_pedido, :id_produto, :quantidade, :valor_unitario, :totalValor_produto, :custo_compra)";
-                    $queryInsert = $bd->prepare($sqlInsert);
-                    $queryInsert->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
-                    $queryInsert->bindValue(':id_produto', $id_produto, PDO::PARAM_INT);
-                    $queryInsert->bindValue(':quantidade', $quantidade);
-                    $queryInsert->bindValue(':valor_unitario', $valor_unitario);
-                    $queryInsert->bindValue(':totalValor_produto', $totalValor_produto);
-                    $queryInsert->bindValue(':custo_compra', $custo_compra);
-                    $queryInsert->execute();
+                    // Bloco para INSERIR novo item: busca todos os dados para a "fotografia"
+                    $query_busca_produto->bindValue(':id_produto', $id_produto, PDO::PARAM_INT);
+                    $query_busca_produto->execute();
+                    $dados_produto = $query_busca_produto->fetch(PDO::FETCH_ASSOC);
+
+                    if ($dados_produto === false) {
+                        throw new Exception("Produto com ID $id_produto não encontrado ao tentar adicioná-lo.");
+                    }
+
+                    $query_insert_item->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
+                    $query_insert_item->bindValue(':id_produto', $id_produto, PDO::PARAM_INT);
+                    $query_insert_item->bindValue(':id_cor', $dados_produto['id_cor'], PDO::PARAM_INT);
+                    $query_insert_item->bindValue(':id_tipo_produto', $dados_produto['id_tipo_produto'], PDO::PARAM_INT);
+                    $query_insert_item->bindValue(':nome_produto', $dados_produto['nome_produto'], PDO::PARAM_STR);
+                    $query_insert_item->bindValue(':nome_cor', $dados_produto['nome_cor'], PDO::PARAM_STR);
+                    $query_insert_item->bindValue(':nome_tipo_produto', $dados_produto['nome_tipo_produto'], PDO::PARAM_STR);
+                    $query_insert_item->bindValue(':quantidade', (float)$item['quantidade']);
+                    $query_insert_item->bindValue(':valor_unitario', (float)$item['valor_unitario']);
+                    $query_insert_item->bindValue(':totalValor_produto', (float)$item['totalValor_produto']);
+                    $query_insert_item->bindValue(':custo_compra', (float)$dados_produto['custo_compra']);
+                    $query_insert_item->execute();
                 }
             }
             $bd->commit();
@@ -944,7 +1036,7 @@ class Pedido extends Conexao
     // Resumo de Pedidos por Cliente
     public function resumoPedidosPorCliente($id_cliente = null)
     {
-        
+
         $this->setIdCliente($id_cliente);
         $sql = "SELECT
                 c.id_cliente,
