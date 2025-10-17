@@ -414,8 +414,8 @@ if (isset($_POST['verificar_produto'])) {
     $id_cor           = limparTexto($_POST['id_cor']);
     $largura      = limparNumero($_POST['largura']);
     $id_fornecedor = $_POST['id_fornecedor'];
-
-    $objController->verificar_Produto($nome_produto, $id_cor, $largura, $id_fornecedor);
+    $id_tipo_produto = $_POST['id_tipo_produto'];
+    $objController->verificar_Produto($nome_produto, $id_cor, $largura, $id_fornecedor, $id_tipo_produto);
 }
 // ================= EXCLUIR PRODUTO =================
 if (isset($_POST['excluir_produto'])) {

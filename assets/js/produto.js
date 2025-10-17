@@ -1,4 +1,24 @@
 $(document).ready(function () {
+  // =======================================================
+  // FUNÇÕES UTILITÁRIAS
+  // =======================================================
+
+  /**
+   * Função Debounce: Atraso na execução de uma função para evitar chamadas excessivas.
+   * Útil para eventos como 'input' ou 'resize'.
+   * @param {Function} func A função a ser executada após o atraso.
+   * @param {number} delay O tempo de espera em milissegundos.
+   * @returns {Function} Uma nova função com o comportamento de debounce.
+   */
+  function debounce(func, delay = 400) {
+    let timeoutId;
+    return function (...args) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func.apply(this, args);
+      }, delay);
+    };
+  }
 
   // Variável para guardar o estado do formulário principal
   let estadoFormVerificar = {};
@@ -44,7 +64,7 @@ $(document).ready(function () {
   }
 
   // ===========================
-  // MÁSCARAS DE CAMPOS
+  // MÁSCARAS DE CAMPOS (Mantido como estava)
   // ===========================
   $(".cnpj").mask("00.000.000/0000-00", { reverse: true });
   $(".dinheiro").mask("R$ 000.000.000,00", { reverse: true });
@@ -69,7 +89,7 @@ $(document).ready(function () {
   aplicarMascaraDecimal("input[name='largura'], input[name='quantidade'], input[name='quantidade_minima']");
 
   // ===========================
-  // VALIDAÇÃO DE CNPJ
+  // VALIDAÇÃO DE CNPJ (Mantido como estava)
   // ===========================
   $(".cnpj").on("blur", function () {
     const cnpj = $(this).val();
@@ -97,7 +117,7 @@ $(document).ready(function () {
   }
 
   // ===========================
-  // VALIDAÇÃO DE IMAGENS
+  // VALIDAÇÃO DE IMAGENS (Mantido como estava)
   // ===========================
   $("input[type='file'][accept^='image/']").on("change", function () {
     const file = this.files[0];
@@ -148,36 +168,50 @@ $(document).ready(function () {
     }
   }
 
-  // ===========================
-  // FUNÇÃO GENÉRICA DE BUSCA
-  // ===========================
+
+  // ==========================================================
+  // FUNÇÃO GENÉRICA DE BUSCA OTIMIZADA
+  // ==========================================================
   function inicializarBusca(input, hidden, resultado, bodyKey, itemClass, alertMsg) {
-    function buscar(termo) {
-      if (!termo) { resultado.innerHTML = ""; return; }
+    const buscar = (termo) => {
+      if (!termo) {
+        resultado.innerHTML = "";
+        return;
+      }
       ativarSpinner(input);
       fetch("index.php", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `${bodyKey}=${encodeURIComponent(termo)}`
+        body: `${bodyKey}=${encodeURIComponent(termo)}`,
       })
-        .then(res => res.ok ? res.text() : Promise.reject())
-        .then(data => {
+        .then((res) => (res.ok ? res.text() : Promise.reject()))
+        .then((data) => {
           resultado.innerHTML = data;
-          resultado.querySelectorAll(`.${itemClass}`).forEach(item => {
-            item.addEventListener("click", function () {
-              input.value = this.dataset.nome;
-              hidden.value = this.dataset.id;
-              resultado.innerHTML = "";
-            });
-          });
         })
         .catch(() => mostrarAlerta(`Erro ao buscar ${bodyKey}.`))
         .finally(() => desativarSpinner(input));
-    }
+    };
+
+    // **NOVO**: Cria uma versão "debounced" da função de busca
+    const debouncedBuscar = debounce(buscar);
+
+    // Evento de digitação agora usa a versão com debounce
     input.addEventListener("input", () => {
-      hidden.value = "";
-      buscar(input.value.trim());
+      hidden.value = ""; // Limpa o ID selecionado ao digitar
+      debouncedBuscar(input.value.trim());
     });
+
+    // **NOVO**: Delegação de Eventos para os resultados
+    resultado.addEventListener("click", function (event) {
+      const item = event.target.closest(`.${itemClass}`);
+      if (item) {
+        input.value = item.dataset.nome;
+        hidden.value = item.dataset.id;
+        resultado.innerHTML = ""; // Limpa os resultados após a seleção
+      }
+    });
+
+    // Validação no submit do formulário (mantida)
     input.closest("form").addEventListener("submit", function (e) {
       if (input.value.trim() !== "" && !hidden.value && input.required) {
         e.preventDefault();
@@ -187,7 +221,7 @@ $(document).ready(function () {
   }
 
   // =======================================================
-  // CADASTRO RÁPIDO COM GERENCIAMENTO DE ESTADO (VERSÃO FINAL)
+  // CADASTRO RÁPIDO COM GERENCIAMENTO DE ESTADO (Mantido como estava)
   // =======================================================
   function configurarSubmitAjaxParaModal(formId, modalId, targetInputId, targetHiddenId) {
     const form = document.getElementById(formId);
@@ -245,8 +279,9 @@ $(document).ready(function () {
     });
   }
 
+
   // ===========================
-  // INICIALIZAÇÃO E EVENTOS
+  // INICIALIZAÇÃO E EVENTOS (Mantido como estava)
   // ===========================
 
   // -- Fornecedor --

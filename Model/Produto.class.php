@@ -482,12 +482,13 @@ class Produto extends Conexao
             return false;
         }
     }
-    public function verificarProduto($nome_produto, $id_cor, $largura, $id_fornecedor)
+    public function verificarProduto($nome_produto, $id_cor, $largura, $id_fornecedor, $id_tipo_produto)
     {
         $this->setNomeProduto($nome_produto);
         $this->setIdCor($id_cor);
         $this->setLargura($largura);
         $this->setIdFornecedor($id_fornecedor);
+        $this->setIdTipoProduto($id_tipo_produto);
 
         $sqlProduto = "SELECT id_produto
                         FROM produto
@@ -495,9 +496,11 @@ class Produto extends Conexao
                         AND id_cor = :id_cor
                         AND largura = :largura
                         AND id_fornecedor = :id_fornecedor
+                        AND id_tipo_produto = :id_tipo_produto
                         LIMIT 1";
         $sqlFornecedor = "SELECT razao_social FROM fornecedor WHERE id_fornecedor = :id_fornecedor LIMIT 1";
         $sqlCor        = "SELECT nome_cor FROM cor WHERE id_cor = :id_cor LIMIT 1";
+        $sqlTipo  = "SELECT nome_tipo FROM tipo_produto WHERE id_tipo_produto = :id_tipo_produto LIMIT 1";
         try {
             $bd = $this->conectarBanco();
 
@@ -507,6 +510,7 @@ class Produto extends Conexao
             $query->bindValue(':id_cor', $this->getIdCor(), PDO::PARAM_INT);
             $query->bindValue(':largura', $this->getLargura(), PDO::PARAM_STR);
             $query->bindValue(':id_fornecedor', $this->getIdFornecedor(), PDO::PARAM_INT);
+            $query->bindValue(':id_tipo_produto', $this->getIdTipoProduto(), PDO::PARAM_INT);
             $query->execute();
 
             $produto = $query->fetch(PDO::FETCH_ASSOC);
@@ -526,10 +530,18 @@ class Produto extends Conexao
             $queryCor->bindValue(':id_cor', $this->getIdCor(), PDO::PARAM_INT);
             $queryCor->execute();
             $cor = $queryCor->fetch(PDO::FETCH_ASSOC);
+
+            // 3) Buscar nome da cor
+            $queryTipoP = $bd->prepare($sqlTipo);
+            $queryTipoP->bindValue(':id_tipo_produto', $this->getIdTipoProduto(), PDO::PARAM_INT);
+            $queryTipoP->execute();
+            $tipo = $queryTipoP->fetch(PDO::FETCH_ASSOC);
+
             return [
                 'existe'     => false,
                 'nome_cor'   => $cor['nome_cor'] ?? null,
-                'fornecedor' => $fornecedor['razao_social'] ?? null
+                'fornecedor' => $fornecedor['razao_social'] ?? null,
+                'nome_tipo'  => $tipo['nome_tipo'] ?? null,
             ];
         } catch (PDOException $e) {
             return ['existe' => false, 'erro' => $e->getMessage()];

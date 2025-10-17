@@ -2141,10 +2141,10 @@ class Controller
     // PRODUTO
 
     // verficar produto
-    public function verificar_Produto($nome_produto, $id_cor, $largura, $id_fornecedor)
+    public function verificar_Produto($nome_produto, $id_cor, $largura, $id_fornecedor, $id_tipo_produto)
     {
         $objproduto = new Produto();
-        $produto_cad = $objproduto->verificarProduto($nome_produto, $id_cor, $largura, $id_fornecedor);
+        $produto_cad = $objproduto->verificarProduto($nome_produto, $id_cor, $largura, $id_fornecedor, $id_tipo_produto);
 
         session_start();
         $menu = $this->menu();
@@ -2160,7 +2160,9 @@ class Controller
                 'largura'      => $largura,
                 'fornecedor'   => $produto_cad['fornecedor'],
                 'id_fornecedor' => $id_fornecedor,
-                'id_cor'       => $id_cor
+                'id_cor'       => $id_cor,
+                'tipo_produto' => $produto_cad['nome_tipo'],
+                'id_tipo_produto'=> $id_tipo_produto
             ];
             include_once 'view/produto.php';
         }
@@ -2366,7 +2368,7 @@ class Controller
         // Nome
         print '                  <div class="col-md-6">';
         print '                    <label for="nome_produto" class="form-label">Nome *</label>';
-        print '                    <input type="text" class="form-control" id="nome_produto" name="nome_produto" value="' . $_SESSION['produto_cadastro']['nome_produto'] . '" required placeholder="Digite o nome do produto">';
+        print '                    <input type="text" class="form-control" id="nome_produto" name="nome_produto"readonly value="' . $_SESSION['produto_cadastro']['nome_produto'] . '" required placeholder="Digite o nome do produto">';
         print '                  </div>';
 
         // Tipo com botão +
@@ -2374,8 +2376,8 @@ class Controller
         print '                    <label for="tipo_produto" class="form-label">Tipo *</label>';
         print '                    <div class="input-group">';
         print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
-        print '                      <input type="hidden" id="id_tipo_hidden" name="id_tipo_produto" value="" />';
-        print '                      <input type="text" class="form-control" id="tipo_produto" placeholder="Digite o tipo de produto" disabled autocomplete="off" required/>';
+        print '                      <input type="hidden" id="id_tipo_hidden_cadastro" name="id_tipo_produto" value="' . $_SESSION['produto_cadastro']['id_tipo_produto'] . '" />';
+        print '                      <input type="text" class="form-control" id="tipo_produto" placeholder="Digite o tipo de produto" readonly autocomplete="off" required value="' . $_SESSION['produto_cadastro']['tipo_produto'] . '"/>';
         print '                      <div id="resultado_busca_tipo" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
         print '                    </div>';
         print '                  </div>';
@@ -2384,11 +2386,9 @@ class Controller
         print '                  <div class="col-md-4">';
         print '                    <label for="cor" class="form-label">Cor *</label>';
         print '                    <div class="input-group">';
-        print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
         print '                      <input type="hidden" id="id_cor_hidden_cadastro" name="id_cor" value="' . $_SESSION['produto_cadastro']['id_cor'] . '"/>';
-        print '                      <input type="text" class="form-control" id="cor_cadastro" placeholder="Digite a cor" autocomplete="off" required disabled value="' . $_SESSION['produto_cadastro']['cor'] . '"/>';
+        print '                      <input type="text" class="form-control" id="cor_cadastro" placeholder="Digite a cor" autocomplete="off" required readonly value="' . $_SESSION['produto_cadastro']['cor'] . '"/>';
         print '                      <div id="resultado_busca_cor_cadastro" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
-
         print '                    </div>';
         print '                  </div>';
 
@@ -2406,7 +2406,7 @@ class Controller
 
         print '                  <div class="col-md-4">';
         print '                    <label for="largura" class="form-label">Largura (m) *</label>';
-        print '                    <input type="text" class="form-control" id="largura" name="largura" value="' . $_SESSION['produto_cadastro']['largura'] . '" required placeholder="Digite a largura" autocomplete="off">';
+        print '                    <input type="text" class="form-control" id="largura" readonly name="largura" value="' . $_SESSION['produto_cadastro']['largura'] . '" required placeholder="Digite a largura" autocomplete="off">';
         print '                  </div>';
 
         print '                  <div class="col-md-4">';
@@ -2447,8 +2447,8 @@ class Controller
         print '                    <div class="position-relative">';
         print '                      <div class="input-group">';
         print '                        <span class="input-group-text"><i class="bi bi-search"></i></span>';
-        print '                        <input type="hidden" id="id_fornecedor_hidden_cadastro" name="id_fornecedor" disabled value="' . $_SESSION['produto_cadastro']['id_fornecedor'] . '"/>';
-        print '                        <input type="text" class="form-control" id="id_fornecedor_produto_cadastro" placeholder="Digite o nome do fornecedor" autocomplete="off" value="' . $_SESSION['produto_cadastro']['fornecedor'] . '"/>';
+        print '                        <input type="hidden" id="id_fornecedor_hidden_cadastro" name="id_fornecedor" value="' . $_SESSION['produto_cadastro']['id_fornecedor'] . '"/>';
+        print '                        <input type="text" class="form-control" id="id_fornecedor_produto_cadastro" readonly placeholder="Digite o nome do fornecedor" autocomplete="off" value="' . $_SESSION['produto_cadastro']['fornecedor'] . '"/>';
         print '                      </div>';
         print '                      <div id="resultado_busca_fornecedor_cadastro" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>';
         print '                    </div>';
@@ -2568,11 +2568,9 @@ class Controller
         print '                  <div class="col-md-4">';
         print '                    <label for="tipo_produto' . $id_produto . '" class="form-label">Tipo *</label>';
         print '                    <div class="input-group">';
-        print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
         print '                      <input type="hidden" id="id_tipo_hidden' . $id_produto . '" name="id_tipo_produto"  value="' . $id_tipo_produto . '"/>';
         print '                      <input type="text" class="form-control" id="tipo_produto' . $id_produto . '" disabled placeholder="Digite o tipo de produto" autocomplete="off" required value="' . $tipo_produto . '"/> ';
         print '                      <div id="resultado_busca_tipo' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
-        print '                      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_tipo_produto"><i class="bi bi-plus-lg"></i></button>';
         print '                    </div>';
         print '                  </div>';
 
@@ -2580,11 +2578,9 @@ class Controller
         print '                  <div class="col-md-4">';
         print '                    <label for="cor' . $id_produto . '" class="form-label">Cor *</label>';
         print '                    <div class="input-group">';
-        print '                      <span class="input-group-text"><i class="bi bi-search"></i></span>';
         print '                      <input type="hidden" id="id_cor_hidden' . $id_produto . '" name="id_cor" value="' . $id_cor . '"/>';
         print '                      <input type="text" class="form-control" id="cor' . $id_produto . '" placeholder="Digite a cor" autocomplete="off" required value="' . $cor . '" disabled/>';
         print '                      <div id="resultado_busca_cor' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
-        print '                      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_cor"><i class="bi bi-plus-lg"></i></button>';
         print '                    </div>';
         print '                  </div>';
 
@@ -2602,7 +2598,7 @@ class Controller
 
         print '                  <div class="col-md-4">';
         print '                    <label for="largura' . $id_produto . '" class="form-label">Largura (m) *</label>';
-        print '                    <input type="text" class="form-control" id="largura' . $id_produto . '" name="largura" value="' . $largura . '" required placeholder="Digite a largura" autocomplete="off">';
+        print '                    <input type="text" class="form-control" id="largura' . $id_produto . '" disabled name="largura" value="' . $largura . '" required placeholder="Digite a largura" autocomplete="off">';
         print '                  </div>';
 
         print '                  <div class="col-md-4">';
@@ -6656,7 +6652,6 @@ class Controller
     public function renderizarTabelaDeAuditoria($gruposDeEventos)
     {
         if (empty($gruposDeEventos)) {
-            echo '<div class="alert alert-info mt-4">Nenhuma atividade registrada nos últimos 7 dias.</div>';
             return;
         }
 

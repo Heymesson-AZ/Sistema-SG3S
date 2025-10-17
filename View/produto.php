@@ -107,17 +107,17 @@
                                                 <input type="hidden" id="id_cor_hidden" name="id_cor" value="" />
                                                 <input type="text" class="form-control" id="cor" placeholder="Digite a cor" autocomplete="off" required />
                                                 <button type="button" class="btn btn-outline-primary btn-abrir-cadastro-rapido" data-bs-toggle="modal" data-bs-target="#modal_cor"><i class="bi bi-plus-lg"></i></button>
-                                                <div id="resultado_busca_cor" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto;"></div>
+                                                <div id="resultado_busca_cor"  class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <label for="id_fornecedor_produto" class="form-label">Fornecedor</label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                                             <input type="hidden" id="id_fornecedor_hidden_verificar" name="id_fornecedor" value="" />
-                                            <input type="text" class="form-control" id="id_fornecedor_produto_verificar" placeholder="Digite o fornecedor" autocomplete="off" />
-                                            <div id="resultado_busca_fornecedor_verificar" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>
+                                            <input type="text" class="form-control" id="id_fornecedor_produto_verificar" placeholder="Digite o fornecedor" autocomplete="off" required />
+                                            <div id="resultado_busca_fornecedor_verificar"  class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>
                                         </div>
                                     </div>
                                 </div>
