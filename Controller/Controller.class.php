@@ -644,40 +644,84 @@ class Controller
             return false;
         }
     }
-    // funcao de recuperar senha
+    /**
+     * Método principal para o processo de recuperação de senha.
+     *
+     * @param string $email O e-mail fornecido pelo usuário.
+     */
     public function recuperarSenha($email)
     {
+        // Instancia o objeto de usuário (Model)
         $objUsuario = new Usuario();
-        //valida e-mail
-        $objUsuario->validarEmail($email);
-        //verifica se o e-mail existe
-        if ($objUsuario->validarEmail($email) == false) {
-            $this->mostrarMensagemErro("E-mail não cadastrado!");
+        //Verifica se o email consta no sistema
+        $emailExiste = $objUsuario->validarEmail($email);
+        // Se o e-mail não foi encontrado no banco de dados
+        if ($emailExiste == false) {
+            // Define a mensagem de erro
+            $this->mostrarMensagemErro("Usuário não encontrado!");
             include_once 'recuperarSenha.php';
             exit();
         }
-        //gera senha temporária de 8 dígitos
-        $senha = random_int(1, 9) . str_pad(random_int(0, 9999999), 6, '0', STR_PAD_LEFT);
-        $objUsuario->alterarSenhaRecuperacao($email, $senha);
-        //verifica se a senha foi alterada
-        if ($objUsuario->alterarSenhaRecuperacao($email, $senha) == false) {
-            $this->mostrarMensagemErro("Erro ao alterar senha!");
+        //ALTERAÇÃO: Gerar a nova senha segura.
+        $novaSenha = $this->gerarNovaSenha();
+        // Chamamos o método para alterar a senha no banco e guardamos o resultado.
+        $alterouSenha = $objUsuario->alterarSenhaRecuperacao($email, $novaSenha);
+        if ($alterouSenha == false) {
+            $this->mostrarMensagemErro("Erro ao tentar alterar a senha no banco de dados.");
             include_once 'recuperarSenha.php';
             exit();
         }
-        //verifica se o e-mail foi enviado
-        $this->enviarEmailRecuperacao($email, $senha);
-        if ($this->enviarEmailRecuperacao($email, $senha) == false) {
-            $this->mostrarMensagemErro("Erro ao enviar e-mail!");
+        $enviouEmail = $this->enviarEmailRecuperacao($email, $novaSenha);
+        if ($enviouEmail == false) {
+            $this->mostrarMensagemErro("Erro ao enviar o e-mail de recuperação. Tente novamente.");
             include_once 'recuperarSenha.php';
             exit();
         } else {
-            //mostra a mensagem de sucesso
-            $this->mostrarMensagemSucesso("Senha enviada para o e-mail cadastrado!");
-            //redireciona para a página de login
+            $this->mostrarMensagemSucesso("Uma nova senha foi enviada para o e-mail cadastrado!");
             include_once 'login.php';
             exit();
         }
+    }
+
+    /**
+     * Gera uma senha aleatória segura de 12 caracteres.
+     * Contém: 1 Letra Maiúscula, 2 Minúsculas, 1 Símbolo, 8 Números.
+     *
+     * @return string A senha embaralhada.
+     */
+    private function gerarNovaSenha()
+    {
+        // 1. Definir os conjuntos de caracteres
+        $letrasMaiusculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $letrasMinusculas = 'abcdefghijklmnopqrstuvwxyz';
+        $numeros = '0123456789';
+        // Você pode ajustar quais símbolos são permitidos
+        $simbolos = '!@#$%^&*()_+-=[]{}|';
+
+        // 2. Gerar as partes obrigatórias
+
+        // 3 Letras (1 maiúscula, 2 minúsculas)
+        // Pega 1 caractere aleatório da string de maiúsculas
+        $parteLetras = $letrasMaiusculas[random_int(0, strlen($letrasMaiusculas) - 1)];
+        // Pega 2 caracteres aleatórios da string de minúsculas
+        $parteLetras .= substr(str_shuffle($letrasMinusculas), 0, 2);
+
+        // 1 Símbolo
+        $parteSimbolo = $simbolos[random_int(0, strlen($simbolos) - 1)];
+
+        // 8 Números (para completar 12 caracteres: 3 + 1 + 8 = 12)
+        $parteNumeros = '';
+        for ($i = 0; $i < 8; $i++) {
+            $parteNumeros .= $numeros[random_int(0, 9)];
+        }
+
+        // 3. Juntar todas as partes
+        $senhaJunta = $parteLetras . $parteSimbolo . $parteNumeros;
+
+        // 4. Embaralhar a string final para que os tipos de caracteres fiquem misturados
+        $senhaFinal = str_shuffle($senhaJunta);
+
+        return $senhaFinal;
     }
     // verificar se o usuario ja existe
     public function consultarUsuario_Cpf($cpf)
@@ -957,11 +1001,20 @@ class Controller
         $perfil_usuario_logado = $_SESSION['perfil'];
 
         foreach ($resultado as $valor) {
-            $nomeUsuario = explode(" ", htmlspecialchars($valor->nome_usuario, ENT_QUOTES, 'UTF-8'))[0];
+            // 1. Limpa e quebra o nome em partes (APENAS UMA VEZ)
+            $nomeCompleto = htmlspecialchars($valor->nome_usuario, ENT_QUOTES, 'UTF-8');
+            $partesNome = explode(" ", $nomeCompleto);
+
+            // 2. Pega o primeiro nome
+            $primeironome = $partesNome[0];
+
+            $sobrenome = $partesNome[1];
+
             $perfil_usuario_linha = $valor->perfil_usuario; // Perfil do usuário na linha atual
 
             print '<tr>';
-            print '<td>' . $nomeUsuario . '</td>';
+            // Adiciona um espaço entre o nome e o sobrenome
+            print '<td>' . $primeironome . ' ' . $sobrenome . '</td>';
             print '<td>' . htmlspecialchars($valor->email, ENT_QUOTES, 'UTF-8') . '</td>';
             print '<td>' . $this->aplicarMascaraTelefone($valor->telefone) . '</td>';
             print '<td>' . htmlspecialchars($perfil_usuario_linha, ENT_QUOTES, 'UTF-8') . '</td>';
@@ -1047,12 +1100,9 @@ class Controller
         value="' . htmlspecialchars($nome_usuario, ENT_QUOTES, 'UTF-8') . '">';
         print '</div>';
 
-        // A lógica aqui está correta: o select de perfil só aparece se o usuário que está sendo editado
-        // NÃO for o usuário logado, impedindo que alguém altere o próprio perfil.
+        // Oculta o select de perfil se for o próprio usuário (ele não pode mudar o próprio perfil)
         if ($id_usuario != $_SESSION['id_usuario']) {
             print '<div class="col-md-6">';
-            // PONTO DE ATENÇÃO: A função select_perfilUsuario pode precisar ser ajustada
-            // para que um 'Administrador' não possa promover outro usuário a 'Administrador Master'.
             $this->select_perfilUsuario($id_perfil);
             print '</div>';
         }
@@ -1072,13 +1122,22 @@ class Controller
         value="' . htmlspecialchars($email, ENT_QUOTES, 'UTF-8') . '">';
         print '</div>';
 
+
+        // --- MUDANÇA AQUI ---
+        // Define se o campo CPF será readonly
+        // Será readonly APENAS se o ID do usuário da modal for o mesmo do usuário logado
+        $cpf_readonly = ($id_usuario == $_SESSION['id_usuario']) ? 'readonly' : '';
+
         print '<div class="col-md-6">';
         print '<label for="cpf_usuario_alterar" class="form-label">CPF *</label>';
+        // Adiciona a variável $cpf_readonly ao input
         print '<input type="text" class="form-control" id="cpf_usuario_alterar" name="cpf"
-        required autocomplete="off" placeholder="000.000.000-00"
+        required ' . $cpf_readonly . ' autocomplete="off" placeholder="000.000.000-00"
         pattern="\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}" title="Formato esperado: XXX.XXX.XXX-XX"
         value="' . htmlspecialchars($cpf, ENT_QUOTES, 'UTF-8') . '">';
         print '</div>';
+        // --- FIM DA MUDANÇA ---
+
 
         print '</div>'; // fecha row
         print '</fieldset>';
@@ -1174,26 +1233,26 @@ class Controller
         print '          <div class="alert alert-secondary text-center fw-bold mb-4">' . $nome_usuario . '</div>';
 
         // Campo senha
-        print '          <div class="mb-3">';
-        print '            <label for="senha' . $id_usuario . '" class="form-label">Nova senha*</label>';
-        print '            <div class="input-group">';
-        print '              <input type="password" class="form-control form-control-lg" id="senha' . $id_usuario . '" name="senha" required>';
-        print '              <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(' . $id_usuario . ', false)">';
-        print '                <i class="fas fa-eye" id="toggleSenhaIcon' . $id_usuario . '"></i>';
-        print '              </span>';
-        print '            </div>';
-        print '          </div>';
+        print '           <div class="mb-3">';
+        print '             <label for="senha' . $id_usuario . '" class="form-label">Nova senha*</label>';
+        print '             <div class="input-group">';
+        print '               <input type="password" class="form-control form-control-lg" id="senha' . $id_usuario . '" name="senha" required minlength="12" placeholder="Mínimo 12 caracteres" title="A senha deve ter pelo menos 12 caracteres." autocomplete="new-password">';
+        print '               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(' . $id_usuario . ', false)">';
+        print '                 <i class="fas fa-eye" id="toggleSenhaIcon' . $id_usuario . '"></i>';
+        print '               </span>';
+        print '             </div>';
+        print '           </div>';
 
         // Confirmar senha
-        print '          <div class="mb-4">';
-        print '            <label for="confSenha' . $id_usuario . '" class="form-label">Confirmar nova senha*</label>';
-        print '            <div class="input-group">';
-        print '              <input type="password" class="form-control form-control-lg" id="confSenha' . $id_usuario . '" name="confSenha" required>';
-        print '              <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(' . $id_usuario . ', true)">';
-        print '                <i class="fas fa-eye" id="toggleConfSenhaIcon' . $id_usuario . '"></i>';
-        print '              </span>';
-        print '            </div>';
-        print '          </div>';
+        print '           <div class="mb-4">';
+        print '             <label for="confSenha' . $id_usuario . '" class="form-label">Confirmar nova senha*</label>';
+        print '             <div class="input-group">';
+        print '               <input type="password" class="form-control form-control-lg" id="confSenha' . $id_usuario . '" name="confSenha" required minlength="12" placeholder="Repita a nova senha" title="As senhas devem ser idênticas." autocomplete="new-password" oninput="this.setCustomValidity(this.value != document.getElementById(\'senha' . $id_usuario . '\').value ? \'As senhas não coincidem.\' : \'\')">';
+        print '               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(' . $id_usuario . ', true)">';
+        print '                 <i class="fas fa-eye" id="toggleConfSenhaIcon' . $id_usuario . '"></i>';
+        print '               </span>';
+        print '             </div>';
+        print '           </div>';
 
         // Botões
         print '          <input type="hidden" name="id_usuario" value="' . $id_usuario . '">';
@@ -2162,7 +2221,7 @@ class Controller
                 'id_fornecedor' => $id_fornecedor,
                 'id_cor'       => $id_cor,
                 'tipo_produto' => $produto_cad['nome_tipo'],
-                'id_tipo_produto'=> $id_tipo_produto
+                'id_tipo_produto' => $id_tipo_produto
             ];
             include_once 'view/produto.php';
         }
@@ -2368,7 +2427,7 @@ class Controller
         // Nome
         print '                  <div class="col-md-6">';
         print '                    <label for="nome_produto" class="form-label">Nome *</label>';
-        print '                    <input type="text" class="form-control" id="nome_produto" name="nome_produto"readonly value="' . $_SESSION['produto_cadastro']['nome_produto'] . '" required placeholder="Digite o nome do produto">';
+        print '                    <input type="text" class="form-control" id="nome_produto" name="nome_produto" readonly value="' . $_SESSION['produto_cadastro']['nome_produto'] . '" required placeholder="Digite o nome do produto">';
         print '                  </div>';
 
         // Tipo com botão +
@@ -2501,10 +2560,7 @@ class Controller
         print '});';
         print '</script>';
     }
-
-    // ========================
     // Modal de Alteração Produto
-    // ========================
     public function modalAlterarProduto(
         $id_produto,
         $nome_produto,
@@ -2569,7 +2625,7 @@ class Controller
         print '                    <label for="tipo_produto' . $id_produto . '" class="form-label">Tipo *</label>';
         print '                    <div class="input-group">';
         print '                      <input type="hidden" id="id_tipo_hidden' . $id_produto . '" name="id_tipo_produto"  value="' . $id_tipo_produto . '"/>';
-        print '                      <input type="text" class="form-control" id="tipo_produto' . $id_produto . '" disabled placeholder="Digite o tipo de produto" autocomplete="off" required value="' . $tipo_produto . '"/> ';
+        print '                      <input type="text" class="form-control" id="tipo_produto' . $id_produto . '" readonly placeholder="Digite o tipo de produto" autocomplete="off" required value="' . $tipo_produto . '"/> ';
         print '                      <div id="resultado_busca_tipo' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
         print '                    </div>';
         print '                  </div>';
@@ -2579,7 +2635,7 @@ class Controller
         print '                    <label for="cor' . $id_produto . '" class="form-label">Cor *</label>';
         print '                    <div class="input-group">';
         print '                      <input type="hidden" id="id_cor_hidden' . $id_produto . '" name="id_cor" value="' . $id_cor . '"/>';
-        print '                      <input type="text" class="form-control" id="cor' . $id_produto . '" placeholder="Digite a cor" autocomplete="off" required value="' . $cor . '" disabled/>';
+        print '                      <input type="text" class="form-control" id="cor' . $id_produto . '" placeholder="Digite a cor" autocomplete="off" required value="' . $cor . '" readonly />';
         print '                      <div id="resultado_busca_cor' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto; z-index:1050;"></div>';
         print '                    </div>';
         print '                  </div>';
@@ -2598,7 +2654,7 @@ class Controller
 
         print '                  <div class="col-md-4">';
         print '                    <label for="largura' . $id_produto . '" class="form-label">Largura (m) *</label>';
-        print '                    <input type="text" class="form-control" id="largura' . $id_produto . '" disabled name="largura" value="' . $largura . '" required placeholder="Digite a largura" autocomplete="off">';
+        print '                    <input type="text" class="form-control" id="largura' . $id_produto . '" readonly name="largura" value="' . $largura . '" required placeholder="Digite a largura" autocomplete="off">';
         print '                  </div>';
 
         print '                  <div class="col-md-4">';
@@ -2625,7 +2681,7 @@ class Controller
 
         print '                  <div class="col-md-4">';
         print '                    <label for="data_compra' . $id_produto . '" class="form-label">Data Compra *</label>';
-        print '                    <input type="date" class="form-control" id="data_compra' . $id_produto . '" name="data_compra" required autocomplete="off" value="' . date("Y-m-d", strtotime($data_compra)) . '">';
+        print '                    <input type="date" class="form-control" id="data_compra' . $id_produto . '" name="data_compra"  readonly required autocomplete="off" value="' . date("Y-m-d", strtotime($data_compra)) . '">';
         print '                  </div>';
 
         // NCM e Fornecedor
@@ -2640,7 +2696,7 @@ class Controller
         print '                      <div class="input-group">';
         print '                        <span class="input-group-text"><i class="bi bi-search"></i></span>';
         print '                        <input type="hidden" id="id_fornecedor_hidden' . $id_produto . '" name="id_fornecedor" value="' . $id_fornecedor . '"/>';
-        print '                        <input type="text" class="form-control" id="id_fornecedor_produto' . $id_produto . '"  disabled placeholder="Digite o nome do fornecedor" autocomplete="off" value="' . $fornecedor . '"/>';
+        print '                        <input type="text" class="form-control" id="id_fornecedor_produto' . $id_produto . '"  readonly placeholder="Digite o nome do fornecedor" autocomplete="off" value="' . $fornecedor . '"/>';
         print '                      </div>';
         print '                      <div id="resultado_busca_fornecedor' . $id_produto . '" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>';
         print '                    </div>';
@@ -2693,7 +2749,6 @@ class Controller
         });
         </script>';
     }
-
     // modal de excluir produto
     public function modalExcluirProduto($id_produto, $nome_produto)
     {
@@ -6836,8 +6891,6 @@ class Controller
         ];
         return $map[$acao] ?? ['nome' => $acao, 'classe_css' => 'bg-secondary', 'icone' => 'bi-question-circle-fill'];
     }
-
-
 
     //  Charts
     public function dashboardDados()

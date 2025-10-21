@@ -163,8 +163,11 @@ class Usuario extends Conexao
             $sql .= " AND u.nome_usuario LIKE :nome_usuario";
         }
         if (!empty($this->getIdPerfil())) {
-            $sql .= " AND p.id_perfil = :id_perfil";
+            $sql .= " AND p.id_perfil = :id_perfil ";
         }
+
+        $sql .= " ORDER BY p.id_perfil";
+
         // Executa a query
         try {
             // Conectar com o banco
@@ -187,118 +190,259 @@ class Usuario extends Conexao
             return false;
         }
     }
-    /**
-     * Altera os dados de um usuário no banco de dados.
-     * Impede a alteração de perfil do único administrador do sistema.
-     */
+    // metodo para alterar usuario
     public function alterarUsuario($id_usuario, $nome_usuario, $email, $id_perfil, $cpf, $telefone)
     {
+        // 1. Define as propriedades do objeto com os dados recebidos
         $this->setIdUsuario($id_usuario);
         $this->setNomeUsuario($nome_usuario);
         $this->setEmailUsuario($email);
-        $this->setIdPerfil($id_perfil);
+        $this->setIdPerfil($id_perfil); // NOVO perfil (do formulário)
         $this->setTelefone($telefone);
-        $this->setCpf($cpf);
+        $this->setCpf($cpf); // NOVO cpf (do formulário)
 
         try {
             $bd = $this->conectarBanco();
 
-            // --- LÓGICA DE VALIDAÇÃO ---
+            // IDs para facilitar a leitura
+            $id_usuario_logado = $_SESSION['id_usuario'];
+            $id_usuario_alvo = $this->getIdUsuario(); // ID do usuário a ser editado
 
-            // Supondo que o ID do perfil de administrador seja 1
-            $id_perfil_admin = 1;
+            // --- Definição dos Nomes dos Perfis ---
+            $PERFIL_MASTER = 'Administrador Master';
+            $PERFIL_ADMIN = 'Administrador';
 
-            // 1. Buscar o perfil ATUAL do usuário que está sendo editado
-            $sqlPerfilAtual = "SELECT id_perfil FROM usuario WHERE id_usuario = :id_usuario";
-            $qPerfilAtual = $bd->prepare($sqlPerfilAtual);
-            $qPerfilAtual->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
-            $qPerfilAtual->execute();
-            $perfilAtual = $qPerfilAtual->fetch(PDO::FETCH_ASSOC);
+            // 2. Buscar dados do usuário LOGADO e do ALVO (quem está sendo editado)
+            // Precisamos do NOME do perfil, ID do perfil ATUAL e CPF ATUAL do alvo
+            $sqlPerfis = "SELECT
+                            u.id_usuario,
+                            u.id_perfil,
+                            u.cpf,
+                            p.perfil_usuario
+                        FROM usuario u
+                        JOIN perfil_usuario p ON u.id_perfil = p.id_perfil
+                        WHERE u.id_usuario = :id_usuario_logado OR u.id_usuario = :id_usuario_alvo";
 
-            $usuarioEditadoEAdmin = ($perfilAtual && $perfilAtual['id_perfil'] == $id_perfil_admin);
-            $novoPerfilNaoEAdmin = ($this->getIdPerfil() != $id_perfil_admin);
+            $qPerfis = $bd->prepare($sqlPerfis);
+            $qPerfis->bindValue(':id_usuario_logado', $id_usuario_logado, PDO::PARAM_INT);
+            $qPerfis->bindValue(':id_usuario_alvo', $id_usuario_alvo, PDO::PARAM_INT);
+            $qPerfis->execute();
 
-            // 2. Se o usuário a ser editado é um admin e o novo perfil não é,
-            //    precisamos verificar se ele é o último.
-            if ($usuarioEditadoEAdmin && $novoPerfilNaoEAdmin) {
-                $sqlCount = "SELECT COUNT(*) AS total FROM usuario WHERE id_perfil = :id_perfil_admin";
-                $qCount = $bd->prepare($sqlCount);
-                $qCount->bindValue(':id_perfil_admin', $id_perfil_admin, PDO::PARAM_INT);
-                $qCount->execute();
-                $totalAdmin = (int)$qCount->fetch(PDO::FETCH_ASSOC)['total'];
+            $perfisEncontrados = $qPerfis->fetchAll(PDO::FETCH_ASSOC);
 
-                // 3. Se o total de administradores for 1 ou menos, bloqueia a alteração.
-                if ($totalAdmin <= 1) {
-                    return "Não é permitido alterar o perfil do único administrador do sistema.";
+            $perfil_nome_logado = null;
+            $perfil_nome_alvo = null;
+            $id_perfil_atual_alvo = null; // O ID do perfil que o alvo TEM AGORA
+            $cpf_atual_alvo = null;       // O CPF que o alvo TEM AGORA
+
+            foreach ($perfisEncontrados as $p) {
+                if ($p['id_usuario'] == $id_usuario_logado) {
+                    $perfil_nome_logado = $p['nome_perfil'];
+                }
+                if ($p['id_usuario'] == $id_usuario_alvo) {
+                    $perfil_nome_alvo = $p['nome_perfil'];
+                    $id_perfil_atual_alvo = $p['id_perfil'];
+                    $cpf_atual_alvo = $p['cpf'];
                 }
             }
 
-            // --- FIM DA LÓGICA DE VALIDAÇÃO ---
+            if (!$perfil_nome_logado || !$perfil_nome_alvo) {
+                return "Erro: Usuário logado ou usuário alvo não encontrado no sistema.";
+            }
 
-            $sql = "UPDATE usuario
-                SET nome_usuario = :nome,
-                    email = :email,
-                    cpf = :cpf,
-                    telefone = :telefone,
-                    id_perfil = :id_perfil
-                WHERE id_usuario = :id_usuario";
+            // --- 3. Definição de Variáveis de Estado ---
+            $eh_auto_edicao = ($id_usuario_logado == $id_usuario_alvo);
+            $id_perfil_novo = $this->getIdPerfil();
+            $cpf_novo = $this->getCpf();
+
+            $perfil_esta_mudando = ($id_perfil_novo != $id_perfil_atual_alvo);
+            $cpf_esta_mudando = ($cpf_novo != $cpf_atual_alvo);
+
+
+            // --- 4. LÓGICA DE VALIDAÇÃO - REGRA "ÚLTIMO MASTER" (Mais específica) ---
+            // Esta regra tem prioridade sobre as outras.
+            if ($perfil_nome_alvo == $PERFIL_MASTER) {
+
+                // Vamos contar quantos "Master" existem
+                $sqlCount = "SELECT COUNT(u.id_usuario) AS total
+                            FROM usuario u
+                            JOIN perfil_usuario p ON u.id_perfil = p.id_perfil
+                            WHERE p.perfil_usuario = :master";
+
+                $qCount = $bd->prepare($sqlCount);
+                $qCount->bindValue(':master', $PERFIL_MASTER, PDO::PARAM_STR);
+                $qCount->execute();
+                $totalMaster = (int)$qCount->fetch(PDO::FETCH_ASSOC)['total'];
+
+                // Se o alvo é o único Master...
+                if ($totalMaster <= 1) {
+
+                    // REGRA 1: "Nao se pode mudar o perfil dele"
+                    if ($perfil_esta_mudando) {
+                        return "Erro: Não é permitido alterar o perfil do único Administrador Master do sistema.";
+                    }
+
+                    // REGRA 2: "bloquear a acao de mudanças de ... cpf" (se for auto-edição)
+                    if ($eh_auto_edicao && $cpf_esta_mudando) {
+                        return "Erro: O único Administrador Master não pode alterar o próprio CPF.";
+                    }
+                }
+            }
+
+            // --- 5. LÓGICA DE VALIDAÇÃO - PERMISSÕES GERAIS ---
+
+            // Esta variável vai guardar o ID de perfil que DEVE ser salvo no banco.
+            // Por padrão, é o novo (vindo do form).
+            $id_perfil_a_salvar = $id_perfil_novo;
+
+            // REGRA DE AUTO-EDIÇÃO: "nenhum usuario pode alterar seu proprio perfil"
+            if ($eh_auto_edicao) {
+                if ($perfil_esta_mudando) {
+                    return "Erro: Você não pode alterar seu próprio perfil de usuário.";
+                }
+                // Se não está mudando o perfil, pode salvar os outros dados.
+                // Forçamos o ID de perfil a ser o ID antigo, garantindo que não mude.
+                $id_perfil_a_salvar = $id_perfil_atual_alvo;
+                // (A lógica do CPF do "Último Master" já foi tratada acima)
+            }
+            // REGRA DO ADMIN: "O administrador... nao os dados do Master"
+            else if ($perfil_nome_logado == $PERFIL_ADMIN && $perfil_nome_alvo == $PERFIL_MASTER) {
+                return "Erro: Um Administrador não pode alterar os dados de um Administrador Master.";
+            }
+            // REGRA DO MASTER: "So o Administrador Master pode alterar qualquero dado"
+            else if ($perfil_nome_logado == $PERFIL_MASTER) {
+                // Master pode. Segue o fluxo. $id_perfil_a_salvar continua sendo $id_perfil_novo.
+            }
+            // REGRA DO ADMIN (continuação): Editando outros (que não são Master)
+            else if ($perfil_nome_logado == $PERFIL_ADMIN && $perfil_nome_alvo != $PERFIL_MASTER) {
+                // Admin pode editar não-Masters. Segue o fluxo.
+            }
+            // REGRA PADRÃO: Outros usuários não podem editar ninguém
+            else {
+                return "Erro: Você não tem permissão para alterar os dados de outros usuários.";
+            }
+
+
+            // --- 6. EXECUÇÃO DO UPDATE ---
+
+            $sql = "UPDATE usuario SET
+                        nome_usuario = :nome,
+                        email = :email,
+                        cpf = :cpf,
+                        telefone = :telefone,
+                        id_perfil = :id_perfil
+                        WHERE id_usuario = :id_usuario";
 
             $q = $bd->prepare($sql);
-            $q->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
+            $q->bindValue(':id_usuario', $id_usuario_alvo, PDO::PARAM_INT);
             $q->bindValue(':nome', $this->getNomeUsuario(), PDO::PARAM_STR);
             $q->bindValue(':email', $this->getEmailUsuario(), PDO::PARAM_STR);
             $q->bindValue(':cpf', $this->getCpf(), PDO::PARAM_STR);
             $q->bindValue(':telefone', $this->getTelefone(), PDO::PARAM_STR);
-            $q->bindValue(':id_perfil', $this->getIdPerfil(), PDO::PARAM_INT);
+            $q->bindValue(':id_perfil', $id_perfil_a_salvar, PDO::PARAM_INT);
             $q->execute();
-
-            return true;
+            return true; // Sucesso
         } catch (PDOException $e) {
             return "Erro ao alterar usuário: " . $e->getMessage();
         }
     }
-    /**
-     * Exclui um usuário do banco de dados.
-     * Impede a exclusão do único administrador do sistema.
-     */
+    // metodo para excluir usuario
     public function excluirUsuario($id_usuario)
     {
+        // 1. Define o ID do usuário-alvo
         $this->setIdUsuario($id_usuario);
 
         try {
             $bd = $this->conectarBanco();
 
-            // --- LÓGICA DE VALIDAÇÃO ---
+            // --- 2. COLETA DE DADOS ESSENCIAIS ---
+            $id_usuario_logado = $_SESSION['id_usuario'];
+            $id_usuario_alvo = $this->getIdUsuario();
 
-            // Supondo que o ID do perfil de administrador seja 1 e o nome seja 'administrador'
-            $id_perfil_admin = 1;
+            // --- Definição dos Nomes dos Perfis ---
+            $PERFIL_MASTER = 'Administrador Master';
+            $PERFIL_ADMIN = 'Administrador';
 
-            // 1. Verificar se o usuário a ser excluído é um administrador
-            $sqlPerfil = "SELECT id_perfil FROM usuario WHERE id_usuario = :id_usuario";
-            $qPerfil = $bd->prepare($sqlPerfil);
-            $qPerfil->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);
-            $qPerfil->execute();
+            // REGRA 1: AUTO-EXCLUSÃO
+            // Ninguém pode se auto-excluir.
+            if ($id_usuario_logado == $id_usuario_alvo) {
+                return "Erro: Você não pode excluir seu próprio usuário.";
+            }
 
-            $usuario = $qPerfil->fetch(PDO::FETCH_ASSOC);
-            $is_admin = ($usuario && $usuario['id_perfil'] == $id_perfil_admin);
+            // --- 3. BUSCAR PERFIS (LOGADO E ALVO) ---
+            $sqlPerfis = "SELECT u.id_usuario, p.nome_perfil
+                    FROM usuario u
+                    JOIN perfil p ON u.id_perfil = p.id_perfil
+                    WHERE u.id_usuario = :id_usuario_logado OR u.id_usuario = :id_usuario_alvo";
 
-            // 2. Se for um administrador, verificar se ele é o único
-            if ($is_admin) {
-                $sqlCount = "SELECT COUNT(*) AS total FROM usuario WHERE id_perfil = :id_perfil_admin";
-                $qCount = $bd->prepare($sqlCount);
-                $qCount->bindValue(':id_perfil_admin', $id_perfil_admin, PDO::PARAM_INT);
-                $qCount->execute();
-                $totalAdmin = (int)$qCount->fetch(PDO::FETCH_ASSOC)['total'];
+            $qPerfis = $bd->prepare($sqlPerfis);
+            $qPerfis->bindValue(':id_usuario_logado', $id_usuario_logado, PDO::PARAM_INT);
+            $qPerfis->bindValue(':id_usuario_alvo', $id_usuario_alvo, PDO::PARAM_INT);
+            $qPerfis->execute();
 
-                // 3. Se for o único administrador, bloquear a exclusão
-                if ($totalAdmin <= 1) {
-                    return "Não é permitido excluir o único administrador do sistema.";
+            $perfisEncontrados = $qPerfis->fetchAll(PDO::FETCH_ASSOC);
+
+            $perfil_nome_logado = null;
+            $perfil_nome_alvo = null;
+
+            foreach ($perfisEncontrados as $p) {
+                if ($p['id_usuario'] == $id_usuario_logado) {
+                    $perfil_nome_logado = $p['nome_perfil'];
+                }
+                if ($p['id_usuario'] == $id_usuario_alvo) {
+                    $perfil_nome_alvo = $p['nome_perfil'];
                 }
             }
 
-            // --- FIM DA LÓGICA DE VALIDAÇÃO ---
+            if (!$perfil_nome_logado || !$perfil_nome_alvo) {
+                return "Erro: Usuário logado ou usuário alvo não encontrado no sistema.";
+            }
 
-            // Se passou na validação, prosseguir com a exclusão
+            // --- 4. LÓGICA DE VALIDAÇÃO DE EXCLUSÃO ---
+
+            // REGRA 2: PROTEÇÃO "ÚLTIMO MASTER"
+            // Se o alvo é um Master, verificar se ele é o único
+            if ($perfil_nome_alvo == $PERFIL_MASTER) {
+
+                $sqlCount = "SELECT COUNT(u.id_usuario) AS total
+                            FROM usuario u
+                            JOIN perfil p ON u.id_perfil = p.id_perfil
+                            WHERE p.nome_perfil = :master";
+
+                $qCount = $bd->prepare($sqlCount);
+                $qCount->bindValue(':master', $PERFIL_MASTER, PDO::PARAM_STR);
+                $qCount->execute();
+                $totalMaster = (int)$qCount->fetch(PDO::FETCH_ASSOC)['total'];
+
+                // Se for o único, bloqueia a exclusão
+                if ($totalMaster <= 1) {
+                    return "Erro: Não é permitido excluir o único Administrador Master do sistema.";
+                }
+            }
+
+            // REGRA 3: HIERARQUIA (Admin não pode excluir Master)
+            if ($perfil_nome_logado == $PERFIL_ADMIN && $perfil_nome_alvo == $PERFIL_MASTER) {
+                return "Erro: Um Administrador não pode excluir um Administrador Master.";
+            }
+
+            // REGRA 4: PERMISSÃO MASTER (Pode excluir qualquer um, exceto as regras acima)
+            else if ($perfil_nome_logado == $PERFIL_MASTER) {
+                // Master pode. Segue para o DELETE.
+            }
+
+            // REGRA 4: PERMISSÃO ADMIN (Pode excluir não-Masters)
+            else if ($perfil_nome_logado == $PERFIL_ADMIN && $perfil_nome_alvo != $PERFIL_MASTER) {
+                // Admin pode. Segue para o DELETE.
+            }
+
+            // REGRA 5: PADRÃO (Outros perfis não podem excluir)
+            else {
+                return "Erro: Você não tem permissão para excluir usuários.";
+            }
+
+            // --- 5. EXECUÇÃO DA EXCLUSÃO ---
+            // Se passou em todas as validações, prosseguir com a exclusão
+
             $sql = "DELETE FROM usuario WHERE id_usuario = :id_usuario";
             $q = $bd->prepare($sql);
             $q->bindValue(':id_usuario', $this->getIdUsuario(), PDO::PARAM_INT);

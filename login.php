@@ -22,9 +22,8 @@
       <!-- Logo + título -->
       <img src="assets/img/logo.jpg" alt="Logo SG3S" class="tam_img rounded-circle shadow" />
       <h4 class="fw-bold text-white mt-3">SG3S - Sistema de Gerenciamento</h4>
-
       <!-- Cartão de login -->
-      <div class="card login-card shadow-lg p-4 border-0 rounded-4 mt-4" style="max-width: 420px; width: 100%;">
+      <div class="card login-card shadow-lg p-4 border-0 rounded-4 mt-4" style="max-width: 500px; width: 100%;">
         <form action="index.php" method="POST" autocomplete="off">
           <!-- Usuário -->
           <div class="mb-3 text-start">
@@ -41,16 +40,21 @@
             <label for="senha" class="form-label">Senha</label>
             <div class="input-group">
               <span class="input-group-text bg-white"><i class="fas fa-lock text-primary"></i></span>
-              <input type="password" id="senha" name="senha" class="form-control" placeholder="Digite sua senha"
-                required pattern=".{6,}" title="A senha deve ter pelo menos 6 caracteres" />
+              <input type="password"
+                id="senha"
+                name="senha"
+                class="form-control"
+                placeholder="Digite sua senha (mínimo 12 caracteres)"
+                required
+                minlength="12"
+                autocomplete="current-password"
+                title="A senha deve ter pelo menos 12 caracteres."/>
               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha()">
                 <i class="fas fa-eye" id="toggleSenhaIcon"></i>
               </span>
             </div>
           </div>
-
           <button type="submit" name="login" class="btn btn-primary w-100 rounded-pill">Entrar</button>
-
           <div class="text-center mt-3">
             <a href="recuperarSenha.php" class="text-decoration-none small text-muted link-info">Esqueci minha senha</a>
           </div>
