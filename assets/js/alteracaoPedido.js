@@ -206,7 +206,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let timeoutCliente = null;
     let timeoutProduto = null;
-    const DEBOUNCE_DELAY = 500;
+    const DEBOUNCE_DELAY = 800;
 
     if (clienteInput) {
       clienteInput.addEventListener("input", (e) => {

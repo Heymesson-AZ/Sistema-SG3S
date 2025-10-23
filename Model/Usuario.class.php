@@ -237,10 +237,10 @@ class Usuario extends Conexao
 
             foreach ($perfisEncontrados as $p) {
                 if ($p['id_usuario'] == $id_usuario_logado) {
-                    $perfil_nome_logado = $p['nome_perfil'];
+                    $perfil_nome_logado = $p['perfil_usuario'];
                 }
                 if ($p['id_usuario'] == $id_usuario_alvo) {
-                    $perfil_nome_alvo = $p['nome_perfil'];
+                    $perfil_nome_alvo = $p['perfil_usuario'];
                     $id_perfil_atual_alvo = $p['id_perfil'];
                     $cpf_atual_alvo = $p['cpf'];
                 }

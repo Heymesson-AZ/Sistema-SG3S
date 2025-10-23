@@ -88,7 +88,7 @@ class Cliente extends Conexao
         $this->setCnpjCliente($cnpj_cliente);
 
         // Query base com GROUP_CONCAT para agrupar telefones
-        $sql = "SELECT 
+        $sql = "SELECT
                 cl.id_cliente,
                 cl.nome_representante,
                 cl.razao_social,
@@ -162,7 +162,7 @@ class Cliente extends Conexao
             $query->execute();
             return $query->fetchAll(PDO::FETCH_OBJ);
         } catch (PDOException $e) {
-            error_log("Erro ao consultar clientes: " . $e->getMessage());
+            print("Erro ao consultar clientes: " . $e->getMessage());
             return false;
         }
     }
@@ -263,7 +263,7 @@ class Cliente extends Conexao
             return true;
         } catch (Exception $e) {
             $this->pdo->rollBack();
-            error_log("Erro ao cadastrar cliente: " . $e->getMessage());
+            print("Erro ao cadastrar cliente: " . $e->getMessage());
             return false;
         }
     }
@@ -386,7 +386,7 @@ class Cliente extends Conexao
             $query->execute();
 
             // --- Atualizar endereço ---
-            $sqlEndereco = "UPDATE endereco 
+            $sqlEndereco = "UPDATE endereco
                         SET cidade = :cidade,
                             estado = :estado,
                             bairro = :bairro,

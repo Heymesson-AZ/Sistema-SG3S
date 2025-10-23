@@ -445,7 +445,6 @@ if (isset($_POST['alterar_tipo_produto'])) {
     $nome_tipo = limparTexto($_POST['nome_tipo']);
     $objController->alterar_TipoProduto($id_tipo_produto, $nome_tipo);
 }
-
 // ================= EXCLUIR TIPO DO PRODUTO =================
 if (isset($_POST['excluir_tipo_produto'])) {
     $id_tipo_produto = $_POST['id_tipo_produto'];

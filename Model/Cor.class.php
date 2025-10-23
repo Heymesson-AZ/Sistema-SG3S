@@ -117,7 +117,7 @@ class Cor extends Conexao
             $query = $bd->prepare($sql);
             if ($nome_cor !== null) {
                 $nome_cor = "%" . $nome_cor . "%";
-                $query->bindParam(':nome_cor', $nome_cor, PDO::PARAM_STR);
+                $query->bindParam(':nome_cor', $this->getNomeCor(), PDO::PARAM_STR);
             }
             $query->execute();
             return $query->fetchAll(PDO::FETCH_OBJ);

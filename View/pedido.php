@@ -39,7 +39,7 @@
             <!-- Botões de Forma de Pagamento (separados) -->
             <div class="col-md-auto">
                 <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modal_cadastrar_pagamento">
-                    <i class="bi bi-credit-card"></i> Cadastrar Pagamento
+                    <i class="bi bi-plus-circle"></i> Cadastrar Pagamento
                 </button>
             </div>
             <div class="col-md-auto">

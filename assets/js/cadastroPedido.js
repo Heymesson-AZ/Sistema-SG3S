@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let produtoSelecionado = null;
     let timeoutCliente = null;
     let timeoutProduto = null;
-    const DEBOUNCE_DELAY = 500;
+    const DEBOUNCE_DELAY = 800;
 
     // ===========================
     // SELETORES DO DOM - MODAL DE CADASTRO DE PEDIDO
