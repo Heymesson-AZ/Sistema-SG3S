@@ -112,15 +112,18 @@ class Cor extends Conexao
         }
 
         $sql .= " ORDER BY nome_cor ASC";
+
         try {
             $bd = $this->conectarBanco();
             $query = $bd->prepare($sql);
             if ($nome_cor !== null) {
-                $nome_cor = "%" . $nome_cor . "%";
-                $query->bindParam(':nome_cor', $this->getNomeCor(), PDO::PARAM_STR);
+                $nomeCor = "%" . $nome_cor . "%";
+                $query->bindParam(':nome_cor', $nomeCor, PDO::PARAM_STR);
             }
+
             $query->execute();
             return $query->fetchAll(PDO::FETCH_OBJ);
+
         } catch (PDOException $e) {
             print "Erro ao consultar cor: " . $e->getMessage();
             return false;

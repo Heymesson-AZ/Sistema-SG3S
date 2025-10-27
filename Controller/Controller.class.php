@@ -3718,7 +3718,7 @@ class Controller
 
         print '                   <div class="col-md-6">';
         print '                     <label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>';
-        print '                     <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" maxlength="14" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" autocomplete="off">';
+        print '                     <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" maxlength="15" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" autocomplete="off">';
         print '                   </div>';
 
         print '                   <div class="col-md-6">';
@@ -3970,7 +3970,7 @@ class Controller
         print '                   <div class="col-md-6">';
         print '                     <label for="inscricao_estadual_' . $id_cliente . '" class="form-label">Inscrição Estadual</label>';
         // CORREÇÃO: Adicionado htmlspecialchars
-        print '                     <input type="text" class="form-control" id="inscricao_estadual_' . $id_cliente . '" name="inscricao_estadual" maxlength="20" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" autocomplete="off" value="' . htmlspecialchars($inscricao_estadual) . '">';
+        print '                     <input type="text" class="form-control" id="inscricao_estadual_' . $id_cliente . '" name="inscricao_estadual" maxlength="15" placeholder="Digite a inscrição estadual" pattern="^[A-Za-z0-9]{3,20}$" autocomplete="off" value="' . htmlspecialchars($inscricao_estadual) . '">';
         print '                   </div>';
 
         print '                   <div class="col-md-6">';
@@ -4436,7 +4436,6 @@ class Controller
             $selected = ($forma->id_forma_pagamento == $id_forma_pagamento) ? 'selected' : '';
             print "<option value=\"{$forma->id_forma_pagamento}\" $selected>{$forma->descricao}</option>";
         }
-
         print '</select>';
     }
 
@@ -6563,7 +6562,7 @@ class Controller
     }
 
     // HELPERS PARA MONTAR A TABELA DINAMICA DE AUDITORIA
-    // a montagem e masma para os metodos de consulta de audtoria
+    // a montagem e masma para os metodos de consulta de auditoria
 
     // funcao de mascara para cpf
     private function aplicarMascaraCPF($cpf)
@@ -6585,7 +6584,7 @@ class Controller
             'cliente' => 'Cliente',
             'telefone_cliente' => 'Telefone do Cliente',
             'endereco' => 'Endereço do Cliente',
-            'inscricao_Estadual' => 'Inscrição Estadual',
+            'inscricao_estadual' => 'Inscrição Estadual',
             'fornecedor' => 'Fornecedor',
             'telefone_fornecedor' => 'Telefone do Fornecedor',
             'produto' => 'Produto',
@@ -6934,7 +6933,6 @@ class Controller
         ];
         return $map[$acao] ?? ['nome' => $acao, 'classe_css' => 'bg-secondary', 'icone' => 'bi-question-circle-fill'];
     }
-
     //  Charts
     public function dashboardDados()
     {
