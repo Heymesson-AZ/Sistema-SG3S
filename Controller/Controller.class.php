@@ -3459,6 +3459,7 @@ class Controller
         return preg_replace("/^(\d{5})(\d{3})$/", "$1-$2", $cep);
     }
     // tabela de consulta de cliente
+    // tabela de consulta de cliente
     public function tabelaConsultarCliente($cliente)
     {
         if (empty($cliente)) return;
@@ -3469,11 +3470,16 @@ class Controller
         print '<tr>';
         print '<th scope="col">Representante</th>';
         print '<th scope="col">Nome Fantasia</th>';
-        print '<th scope="col">E-mail</th>';
+        // print '<th scope="col">E-mail</th>'; // REMOVIDO
         print '<th scope="col">Limite de Crédito</th>';
 
+        // Lógica condicional para colunas
         if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
             print '<th scope="col">Ações</th>';
+        } else {
+            // Colunas de telefone para outros perfis
+            print '<th scope="col">Celular</th>';
+            print '<th scope="col">Fixo</th>';
         }
 
         print '</tr>';
@@ -3483,27 +3489,57 @@ class Controller
         foreach ($cliente as $valor) {
             // Formata limite de crédito
             $limite = number_format($valor->limite_credito, 2, ',', '.');
+
+            // *** LÓGICA DE TRATAMENTO DE TELEFONE (copiada da sua modal) ***
+            $celular = [];
+            $fixo    = [];
+            if (!empty($valor->telefones)) {
+                $lista = explode(',', $valor->telefones);
+                foreach ($lista as $t) {
+                    $partes = explode(':', $t, 3);
+                    if (count($partes) === 3) {
+                        $tipo   = strtolower(trim($partes[1]));
+                        $numero = $this->aplicarMascaraTelefone(trim($partes[2]));
+                        if ($tipo === 'celular') {
+                            $celular[] = $numero;
+                        } elseif ($tipo === 'fixo') {
+                            $fixo[] = $numero;
+                        }
+                    }
+                }
+            }
+
             // Monta a linha da tabela
             print '<tr>';
             print '<td>' . htmlspecialchars($valor->nome_representante) . '</td>';
             print '<td>' . htmlspecialchars($valor->nome_fantasia) . '</td>';
-            print '<td>' . htmlspecialchars($valor->email) . '</td>';
+            // print '<td>' . htmlspecialchars($valor->email) . '</td>'; // REMOVIDO
             print '<td>R$ ' . $limite . '</td>';
 
+            // Lógica condicional para células
             if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
+                // Célula de Ações para Admins
                 print '<td>';
                 print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
                 print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_cliente' . $valor->id_cliente . '">
-                <i class="bi bi-pencil-square"></i>
-              </button>';
+                        <i class="bi bi-pencil-square"></i>
+                      </button>';
                 print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_cliente' . $valor->id_cliente . '">
-                <i class="bi bi-trash"></i>
-              </button>';
+                        <i class="bi bi-trash"></i>
+                      </button>';
                 print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_cliente' . $valor->id_cliente . '">
-                <i class="bi bi-eye"></i>
-              </button>';
+                        <i class="bi bi-eye"></i>
+                      </button>';
                 print '</div>';
                 print '</td>';
+            } else {
+                // Células de Telefone para outros perfis
+                // Mostra o primeiro telefone encontrado ou um traço
+                $celular_str = !empty($celular) ? htmlspecialchars($celular[0]) : '<span class="text-muted">—</span>';
+                $fixo_str    = !empty($fixo)    ? htmlspecialchars($fixo[0])    : '<span class="text-muted">—</span>';
+
+                print '<td>' . $celular_str . '</td>';
+                print '<td>' . $fixo_str . '</td>';
             }
 
             print '</tr>';
@@ -6369,12 +6405,6 @@ class Controller
     }
 
 
-
-
-
-
-
-
     //  AUDITORIA DO SISTEMA
 
     // =======================================================
@@ -6685,7 +6715,6 @@ class Controller
         return htmlspecialchars($valor);
     }
 
-
     // =======================================================
     // MÉTODO 1: AGRUPADOR DE EVENTOS
     // =======================================================
@@ -6933,6 +6962,16 @@ class Controller
         ];
         return $map[$acao] ?? ['nome' => $acao, 'classe_css' => 'bg-secondary', 'icone' => 'bi-question-circle-fill'];
     }
+
+
+
+
+
+
+
+
+
+
     //  Charts
     public function dashboardDados()
     {

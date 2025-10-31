@@ -358,8 +358,15 @@ class Usuario extends Conexao
             return "Erro ao alterar usuário: " . $e->getMessage();
         }
     }
-
-    // metodo para excluir usuario
+    /**
+     * Exclui um usuário com base nas regras de permissão.
+     *
+     * REGRAS DE EXCLUSÃO:
+     * 1. Ninguém pode se auto-excluir.
+     * 2. O último Administrador Master não pode ser excluído (por ninguém).
+     * 3. Administrador não pode excluir um Administrador Master.
+     * 4. Perfis comuns não podem excluir ninguém.
+     */
     public function excluirUsuario($id_usuario)
     {
         // 1. Define o ID do usuário-alvo
@@ -372,21 +379,21 @@ class Usuario extends Conexao
             $id_usuario_logado = $_SESSION['id_usuario'];
             $id_usuario_alvo = $this->getIdUsuario();
 
-            // --- Definição dos Nomes dos Perfis ---
+            // --- Definição dos Nomes dos Perfis (consistente com alterarUsuario) ---
             $PERFIL_MASTER = 'Administrador Master';
             $PERFIL_ADMIN = 'Administrador';
 
             // REGRA 1: AUTO-EXCLUSÃO
-            // Ninguém pode se auto-excluir.
             if ($id_usuario_logado == $id_usuario_alvo) {
                 return "Erro: Você não pode excluir seu próprio usuário.";
             }
 
             // --- 3. BUSCAR PERFIS (LOGADO E ALVO) ---
-            $sqlPerfis = "SELECT u.id_usuario, p.nome_perfil
-                    FROM usuario u
-                    JOIN perfil p ON u.id_perfil = p.id_perfil
-                    WHERE u.id_usuario = :id_usuario_logado OR u.id_usuario = :id_usuario_alvo";
+            // CORRIGIDO: Query usa "perfil_usuario" (tabela e coluna)
+            $sqlPerfis = "SELECT u.id_usuario, p.perfil_usuario
+                            FROM usuario u
+                            JOIN perfil_usuario p ON u.id_perfil = p.id_perfil
+                            WHERE u.id_usuario = :id_usuario_logado OR u.id_usuario = :id_usuario_alvo";
 
             $qPerfis = $bd->prepare($sqlPerfis);
             $qPerfis->bindValue(':id_usuario_logado', $id_usuario_logado, PDO::PARAM_INT);
@@ -400,15 +407,21 @@ class Usuario extends Conexao
 
             foreach ($perfisEncontrados as $p) {
                 if ($p['id_usuario'] == $id_usuario_logado) {
-                    $perfil_nome_logado = $p['nome_perfil'];
+                    // CORRIGIDO: Usa a coluna "perfil_usuario"
+                    $perfil_nome_logado = $p['perfil_usuario'];
                 }
                 if ($p['id_usuario'] == $id_usuario_alvo) {
-                    $perfil_nome_alvo = $p['nome_perfil'];
+                    // CORRIGIDO: Usa a coluna "perfil_usuario"
+                    $perfil_nome_alvo = $p['perfil_usuario'];
                 }
             }
 
             if (!$perfil_nome_logado || !$perfil_nome_alvo) {
-                return "Erro: Usuário logado ou usuário alvo não encontrado no sistema.";
+                // Checagem de segurança
+                if ($id_usuario_alvo == $id_usuario_logado) {
+                    return "Erro: Você não pode excluir seu próprio usuário.";
+                }
+                return "Erro: Usuário alvo não encontrado no sistema.";
             }
 
             // --- 4. LÓGICA DE VALIDAÇÃO DE EXCLUSÃO ---
@@ -417,44 +430,46 @@ class Usuario extends Conexao
             // Se o alvo é um Master, verificar se ele é o único
             if ($perfil_nome_alvo == $PERFIL_MASTER) {
 
-                $sqlCount = "SELECT COUNT(u.id_usuario) AS total
-                            FROM usuario u
-                            JOIN perfil p ON u.id_perfil = p.id_perfil
-                            WHERE p.nome_perfil = :master";
+                // CORRIGIDO: Query usa "perfil_usuario" (tabela e coluna)
+                $sqlCount = "SELECT COUNT(u.id_usuario)
+                                FROM usuario u
+                                JOIN perfil_usuario p ON u.id_perfil = p.id_perfil
+                                WHERE p.perfil_usuario = :master";
 
                 $qCount = $bd->prepare($sqlCount);
                 $qCount->bindValue(':master', $PERFIL_MASTER, PDO::PARAM_STR);
                 $qCount->execute();
-                $totalMaster = (int)$qCount->fetch(PDO::FETCH_ASSOC)['total'];
 
-                // Se for o único, bloqueia a exclusão
+                // CORRIGIDO: Usa fetchColumn() para consistência
+                $totalMaster = (int)$qCount->fetchColumn();
+
                 if ($totalMaster <= 1) {
                     return "Erro: Não é permitido excluir o único Administrador Master do sistema.";
                 }
             }
 
-            // REGRA 3: HIERARQUIA (Admin não pode excluir Master)
-            if ($perfil_nome_logado == $PERFIL_ADMIN && $perfil_nome_alvo == $PERFIL_MASTER) {
-                return "Erro: Um Administrador não pode excluir um Administrador Master.";
-            }
+            // REGRA 3, 4, 5: HIERARQUIA E PERMISSÕES
 
-            // REGRA 4: PERMISSÃO MASTER (Pode excluir qualquer um, exceto as regras acima)
-            else if ($perfil_nome_logado == $PERFIL_MASTER) {
-                // Master pode. Segue para o DELETE.
+            // É um Master?
+            if ($perfil_nome_logado == $PERFIL_MASTER) {
+                // Master pode excluir (regra do último master já foi checada acima)
+                // Segue para o DELETE
             }
-
-            // REGRA 4: PERMISSÃO ADMIN (Pode excluir não-Masters)
-            else if ($perfil_nome_logado == $PERFIL_ADMIN && $perfil_nome_alvo != $PERFIL_MASTER) {
-                // Admin pode. Segue para o DELETE.
+            // É um Admin?
+            else if ($perfil_nome_logado == $PERFIL_ADMIN) {
+                // Admin pode excluir, EXCETO um Master
+                if ($perfil_nome_alvo == $PERFIL_MASTER) {
+                    return "Erro: Um Administrador não pode excluir um Administrador Master.";
+                }
+                // Se não for master, segue para o DELETE
             }
-
-            // REGRA 5: PADRÃO (Outros perfis não podem excluir)
+            // É qualquer outro perfil?
             else {
                 return "Erro: Você não tem permissão para excluir usuários.";
             }
 
             // --- 5. EXECUÇÃO DA EXCLUSÃO ---
-            // Se passou em todas as validações, prosseguir com a exclusão
+            // Se passou em todas as validações, prosseguir
 
             $sql = "DELETE FROM usuario WHERE id_usuario = :id_usuario";
             $q = $bd->prepare($sql);
@@ -463,10 +478,9 @@ class Usuario extends Conexao
 
             return true;
         } catch (PDOException $e) {
-            return "No momento não e possível excluir esse usuario, pois possui registros de Auditoria";
+            return "Erro: Não é possível excluir este usuário, pois ele possui registros associados no sistema (como auditorias, pedidos, etc.).";
         }
     }
-
     // metodo para altera a senha do usuario
     public function alterarSenha($id_usuario, $senha)
     {
