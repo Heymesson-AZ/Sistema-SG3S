@@ -24,8 +24,7 @@
       <h4 class="fw-bold text-white mt-3">SG3S - Sistema de Gerenciamento</h4>
       <!-- Cartão de login -->
       <div class="card login-card shadow-lg p-4 border-0 rounded-4 mt-4" style="max-width: 500px; width: 100%;">
-        <form action="index.php" method="POST" autocomplete="off">
-          <!-- Usuário -->
+        <form action="index.php" method="POST" autocomplete="off" id="loginForm">
           <div class="mb-3 text-start">
             <label for="cpf" class="form-label">Usuário</label>
             <div class="input-group">
@@ -35,7 +34,6 @@
             </div>
           </div>
 
-          <!-- Senha -->
           <div class="mb-3 text-start">
             <label for="senha" class="form-label">Senha</label>
             <div class="input-group">
@@ -48,12 +46,17 @@
                 required
                 minlength="12"
                 autocomplete="current-password"
-                title="A senha deve ter pelo menos 12 caracteres."/>
+                title="A senha deve ter pelo menos 12 caracteres." />
               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha()">
                 <i class="fas fa-eye" id="toggleSenhaIcon"></i>
               </span>
             </div>
           </div>
+          <br>
+          <div class="mb-3 d-flex justify-content-center">
+            <div class="g-recaptcha" data-sitekey="6LdgIPwrAAAAALE8-aI4jtCwV49iNjYmaHBHI8wq"></div>
+          </div>
+
           <button type="submit" name="login" class="btn btn-primary w-100 rounded-pill">Entrar</button>
           <div class="text-center mt-3">
             <a href="recuperarSenha.php" class="text-decoration-none small text-muted link-info">Esqueci minha senha</a>
@@ -74,4 +77,5 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <script src="assets/js/login.js"></script>
