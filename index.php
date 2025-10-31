@@ -10,13 +10,14 @@ include_once "autoload.php";
 // Carregamento manual do .env
 $env = parse_ini_file(__DIR__ . '/.env', false, INI_SCANNER_RAW) ?: [];
 foreach ($env as $key => $value) {
+    // REVISÃO: Bom uso do trim para limpar aspas do .env
     $value = trim($value, "\"'");
     putenv("$key=$value");
     $_ENV[$key] = $value;
     $_SERVER[$key] = $value;
 }
 
-// Configuração de exibição de erros
+// Configuração de exibição de erros baseada no ambiente
 if (getenv('APP_ENV') === 'development') {
     ini_set('display_errors', 1);
     error_reporting(E_ALL);
@@ -27,8 +28,11 @@ if (getenv('APP_ENV') === 'development') {
 }
 
 // --- INSTANCIA O CONTROLLER NO INÍCIO ---
-// Agora $objController está disponível para todo o script
 $objController = new Controller();
+
+// --- ROTAS DE AÇÃO (POST) ---
+// Estrutura tratar os POSTs primeiro.
+
 // 1. Recuperar senha
 if (isset($_POST['recuperar_senha'])) {
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
@@ -41,11 +45,10 @@ if (isset($_POST['recuperar_senha'])) {
     exit();
 }
 
-// 1. Chave secreta
+// 1. Chave secreta do reCAPTCHA
 $recaptchaSecret = getenv('RECAPTCHA_SECRET_KEY');
 
 if (!$recaptchaSecret) {
-    // CORRIGIDO: Usando o método do controller
     $objController->mostrarMensagemErro("Erro: Chave secreta do reCAPTCHA não configurada no ambiente.");
     exit();
 }
@@ -54,7 +57,7 @@ if (!$recaptchaSecret) {
 if (isset($_POST['login'])) {
 
     // --- INÍCIO DA VALIDAÇÃO RECAPTCHA ---
-
+    // REVISÃO: Correto validar o reCAPTCHA antes de qualquer outra coisa.
     if (isset($_POST['g-recaptcha-response']) && !empty($_POST['g-recaptcha-response'])) {
 
         $gRecaptchaResponse = $_POST['g-recaptcha-response'];
@@ -82,19 +85,19 @@ if (isset($_POST['login'])) {
         if (!$responseData || !$responseData->success) {
             $objController->mostrarMensagemErro("Erro: Falha na verificação do reCAPTCHA. Tente novamente.");
             exit();
-            header("Location: login.php");
         }
     } else {
         $objController->mostrarMensagemErro("Erro: Por favor, marque a caixa 'Não sou um robô'.");
         exit();
-        header("Location: login.php");
     }
+    // --- FIM DA VALIDAÇÃO RECAPTCHA ---
+
+    //O script só chega aqui se o reCAPTCHA for válido.
 
     $cpf = isset($_POST['cpf']) ? trim($_POST['cpf']) : '';
     $senha = isset($_POST['senha']) ? trim($_POST['senha']) : '';
 
     if (empty($cpf) || empty($senha)) {
-        // CORRIGIDO: Usando o método do controller
         $objController->mostrarMensagemErro("Erro: CPF e Senha são obrigatórios.");
         exit();
     }
@@ -102,16 +105,15 @@ if (isset($_POST['login'])) {
     $cpfLimpo = preg_replace('/[^0-9]/', '', $cpf);
 
     if (strlen($cpfLimpo) != 11) {
-        // CORRIGIDO: Usando o método do controller
         $objController->mostrarMensagemErro("Erro: Formato de CPF inválido.");
         exit();
     }
 
-    // Agora validamos o usuário (o $objController já foi criado lá em cima)
+    // Agora validamos o usuário
     $objController->validar($cpfLimpo, $senha);
     exit();
 }
 
-// Se nenhuma ação POST foi tratada, verifica a sessão e carrega o roteador
+// REVISÃO: Lógica correta para carregar o restante da aplicação.
 $objController->validarSessao();
 include_once "router.php";
