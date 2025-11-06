@@ -29,7 +29,7 @@ if (getenv('APP_ENV') === 'development') {
 $objController = new Controller();
 
 
-// 1. Chave secreta (precisamos dela antes de qualquer ação POST)
+// 1. Chave secreta
 $recaptchaSecret = getenv('RECAPTCHA_SECRET_KEY');
 if (!$recaptchaSecret) {
     $objController->mostrarMensagemErro("Erro: Chave secreta do reCAPTCHA não configurada no ambiente.");
@@ -37,8 +37,8 @@ if (!$recaptchaSecret) {
 }
 // 2. Função para validar o reCAPTCHA
 function validarRecaptcha($secret, $controller) {
+    //
     if (isset($_POST['g-recaptcha-response']) && !empty($_POST['g-recaptcha-response'])) {
-
         $gRecaptchaResponse = $_POST['g-recaptcha-response'];
         $remoteIp = $_SERVER['REMOTE_ADDR'];
         $verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
@@ -64,7 +64,7 @@ function validarRecaptcha($secret, $controller) {
             exit();
         }
     } else {
-        $controller->mostrarMensagemErro("Erro: Por favor, marque a caixa 'Não sou um robô'.");
+        $controller->mostrarMensagemErro("Por favor, marque a caixa 'Não sou um robô'");
         exit();
     }
 }
