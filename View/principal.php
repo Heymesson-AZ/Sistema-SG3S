@@ -159,10 +159,12 @@
                                     <fieldset class="border rounded p-3 mb-4">
                                         <legend class="float-none w-auto px-3 fw-semibold text-primary">Dados do Pedido</legend>
                                         <div class="row g-3">
+                                            <?php if ($this->temPermissao(['Administrador', 'Administrador Master'])) : ?>
                                             <div class="col-md-6">
                                                 <label for="frete" class="form-label">Frete</label>
                                                 <input type="text" class="form-control frete" id="frete" name="frete" placeholder="R$ 0,00" autocomplete="off">
                                             </div>
+                                            <?php endif; ?>
                                             <div class="col-md-6">
                                                 <label for="valor_total" class="form-label">Valor Total</label>
                                                 <input type="text" class="form-control" id="valor_total" name="valor_total" placeholder="R$ 0,00" readonly>
