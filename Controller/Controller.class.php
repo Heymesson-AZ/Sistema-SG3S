@@ -746,7 +746,9 @@ class Controller
             include_once 'view/usuario.php';
         }
     }
-    // modal de cadastro de usuario
+    /**
+     * Gera a modal para Cadastro de novo usuário.
+     */
     public function modal_cadastroUsuario()
     {
         print '<div class="modal fade" id="modal_usuario" tabindex="-1" aria-labelledby="modalUsuarioLabel" aria-hidden="true">';
@@ -761,7 +763,8 @@ class Controller
 
         // Corpo da modal
         print '<div class="modal-body">';
-        print '<form action="index.php" method="POST" id="formulario_usuario">';
+        // Adicionado 'novalidate' para desativar a validação nativa do HTML5
+        print '<form action="index.php" method="POST" id="formulario_usuario" novalidate>';
         print '<input type="hidden" name="origem" value="usuario">';
         print '<div class="row g-2">';
 
@@ -774,9 +777,9 @@ class Controller
         print '<div class="col-md-6">';
         print '<label for="nome_usuario" class="form-label">Nome *</label>';
         print '<input type="text" class="form-control" name="nome_usuario" id="nome_usuario"
-                required autocomplete="off" placeholder="Digite o nome completo"
-                pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$"
-                title="Somente letras e espaços são permitidos">';
+                    required autocomplete="off" placeholder="Digite o nome completo"
+                    pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$"
+                    title="Somente letras e espaços são permitidos">';
         print '</div>';
 
         print '<div class="col-md-6">';
@@ -786,19 +789,19 @@ class Controller
         print '<div class="col-md-6">';
         print '<label for="telefone" class="form-label">Telefone *</label>';
         print '<input type="tel" class="form-control" id="telefone" name="telefone"
-                required autocomplete="off" placeholder="(00) 00000-0000"
-                pattern="\(\d{2}\) \d{4,5}-\d{4}" title="Formato esperado: (XX) XXXXX-XXXX">';
+                    required autocomplete="off" placeholder="(00) 00000-0000"
+                    pattern="\(\d{2}\) \d{4,5}-\d{4}" title="Formato esperado: (XX) XXXXX-XXXX">';
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="email_usuario" class="form-label">Email *</label>';
         print '<input type="email" class="form-control" id="email_usuario" name="email_usuario"
-                required autocomplete="off" placeholder="exemplo@dominio.com">';
+                    required autocomplete="off" placeholder="exemplo@dominio.com">';
         print '</div>';
 
         print '<div class="col-md-6">';
         print '<label for="cpf_usuario" class="form-label">CPF *</label>';
-        print '<input type="text" class="form-control" id="cpf" name="cpf" value="' . $_SESSION['cpf_cadastro'] . '"
+        print '<input type="text" class="form-control" id="cpf" name="cpf" value="' . ($_SESSION['cpf_cadastro'] ?? '') . '"
                     required autocomplete="off" placeholder="000.000.000-00"
                     pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" title="Formato esperado: XXX.XXX.XXX-XX">';
         print '</div>';
@@ -807,46 +810,47 @@ class Controller
         print '</fieldset>';
         print '</div>'; // fecha col-md-12
 
-        // Seção Senha (AJUSTADA)
+        // --- SEÇÃO SENHA AJUSTADA ---
         print '<div class="col-md-12">';
         print '<fieldset class="border border-black p-1 mb-4">';
         print '<legend class="float-none w-auto px-2">Segurança</legend>';
         print '<div class="row g-2">';
 
-        // --- INÍCIO DA ALTERAÇÃO ---
+        // --- CAMPO SENHA AJUSTADO ---
         print '<div class="col-md-6">';
         print '<label for="senha_cadastro" class="form-label">Senha *</label>';
         print '<div class="input-group">';
         print '<input type="password" class="form-control" id="senha_cadastro" name="senha"
-                required autocomplete="new-password" placeholder="Mínimo 12 caracteres"
-                minlength="12"
-                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+]).{12,}$"
-                title="A senha deve ter no mínimo 12 caracteres, uma maiúscula, uma minúscula e um símbolo (ex: !@#$).">';
+                    required autocomplete="new-password" placeholder="Mínimo 12 caracteres"
+                    minlength="12">';
+        // Atributos 'pattern' e 'title' removidos
         print '<span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(\'_cadastro\', false)">';
         print '<i class="fas fa-eye" id="toggleSenhaIcon_cadastro"></i>';
         print '</span>';
         print '</div>'; // fecha input-group
+        // O feedback do JS será inserido aqui dinamicamente
         print '</div>';
 
+        // --- CAMPO CONFIRMAR SENHA AJUSTADO ---
         print '<div class="col-md-6">';
         print '<label for="confSenha_cadastro" class="form-label">Confirme a Senha *</label>';
         print '<div class="input-group">';
         print '<input type="password" class="form-control" id="confSenha_cadastro" name="confSenha"
-                required autocomplete="new-password" placeholder="Repita a nova senha"
-                minlength="12" title="As senhas devem ser idênticas."
-                oninput="this.setCustomValidity(this.value != document.getElementById(\'senha_cadastro\').value ? \'As senhas não coincidem.\' : \'\')">';
+                    required autocomplete="new-password" placeholder="Repita a nova senha"
+                    minlength="12">';
+        // Atributos 'oninput' e 'title' removidos
         print '<span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(\'_cadastro\', true)">';
         print '<i class="fas fa-eye" id="toggleConfSenhaIcon_cadastro"></i>';
         print '</span>';
         print '</div>'; // fecha input-group
+        // O feedback do JS será inserido aqui dinamicamente
         print '</div>';
-        // --- FIM DA ALTERAÇÃO ---
 
         print '</div>'; // fecha row
         print '</fieldset>';
         print '</div>'; // fecha col-md-12
 
-        print '</div>'; // fecha .row g-2 (era g-4, corrigi para g-2 conforme seu layout)
+        print '</div>'; // fecha .row g-2
         print '</div>'; // fecha .modal-body
 
         // Rodapé da modal com botões
@@ -871,16 +875,14 @@ class Controller
         print '</div>'; // fecha modal-dialog
         print '</div>'; // fecha modal
 
-        // Script para abrir a modal automaticamente
+        // Script para abrir a modal automaticamente (se necessário)
         print '<script>';
-        print '  document.addEventListener("DOMContentLoaded", function() {';
-        print '    const modalUsuario = document.getElementById("modal_usuario");';
-        // o getOrCreateInstance é usado para garantir que a instância da modal seja criada ou recuperada
-        print '    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalUsuario);';
-        // Exibe a modal
-        print '    modalInstance.show();';
-        print '  });';
-        print '</script>';
+        print '     document.addEventListener("DOMContentLoaded", function() {';
+        print '     const modalUsuario = document.getElementById("modal_usuario");';
+        print '     const modalInstance = bootstrap.Modal.getOrCreateInstance(modalUsuario);';
+        print '     modalInstance.show();';
+        print '     });';
+        print ' </script>';
     }
     // cadastrar usuario
     public function cadastrar_Usuario($nome_usuario, $email_usuario, $senhaHash, $id_perfil, $telefone, $cpf)
@@ -936,70 +938,78 @@ class Controller
             $this->mostrarMensagemErro("Erro ao alterar a senha do usuario");
         }
     }
-    // modal de alterar senha
+    /**
+     * Gera a modal para Alterar Senha de um usuário específico.
+     */
     public function modalAlterarSenha($id_usuario, $nome_usuario)
     {
         print '<div class="modal fade" id="alterar_senha' . $id_usuario . '" tabindex="-1" aria-labelledby="alterarSenhaLabel' . $id_usuario . '" aria-hidden="true">';
-        print '  <div class="modal-dialog modal-dialog-centered">';
-        print '    <div class="modal-content rounded-3 shadow-sm">';
+        print '   <div class="modal-dialog modal-dialog-centered">';
+        print '     <div class="modal-content rounded-3 shadow-sm">';
 
         // Cabeçalho
-        print '      <div class="modal-header bg-primary text-white">';
-        print '        <h5 class="modal-title" id="alterarSenhaLabel' . $id_usuario . '"><i class="bi bi-lock-fill me-2"></i>Alterar Senha</h5>';
-        print '        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>';
-        print '      </div>';
+        print '       <div class="modal-header bg-primary text-white">';
+        print '         <h5 class="modal-title" id="alterarSenhaLabel' . $id_usuario . '"><i class="bi bi-lock-fill me-2"></i>Alterar Senha</h5>';
+        print '         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>';
+        print '       </div>';
 
         // Corpo
-        print '      <div class="modal-body px-4 py-4">';
-        print '        <form action="index.php" method="post">';
+        print '       <div class="modal-body px-4 py-4">';
+        // Adicionado 'novalidate' para desativar a validação nativa do HTML5
+        print '         <form action="index.php" method="post" novalidate>';
 
-        print '          <h6 class="text-muted text-uppercase mb-3">Nova senha para:</h6>';
-        print '          <div class="alert alert-secondary text-center fw-bold mb-4">' . $nome_usuario . '</div>';
+        print '           <h6 class="text-muted text-uppercase mb-3">Nova senha para:</h6>';
+        print '           <div class="alert alert-secondary text-center fw-bold mb-4">' . $nome_usuario . '</div>';
 
-        // Campo senha
+        // --- CAMPO SENHA AJUSTADO ---
         print '           <div class="mb-3">';
         print '             <label for="senha' . $id_usuario . '" class="form-label">Nova senha*</label>';
         print '             <div class="input-group">';
-        print '     <input type="password" class="form-control form-control-lg" id="senha' . $id_usuario . '" name="senha"
-                    required
-                    minlength="12"
-                    placeholder="Mínimo 12 caracteres"
-                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+]).{12,}$"
-                    title="A senha deve ter no mínimo 12 caracteres, uma maiúscula, uma minúscula e um símbolo (ex: !@#$%)."
-                    autocomplete="new-password">';
+        print '               <input type="password" class="form-control form-control-lg" id="senha' . $id_usuario . '" name="senha"
+                                required
+                                minlength="12"
+                                placeholder="Mínimo 12 caracteres"
+                                autocomplete="new-password">';
+        // Atributos 'pattern' e 'title' removidos
         print '               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(' . $id_usuario . ', false)">';
         print '                 <i class="fas fa-eye" id="toggleSenhaIcon' . $id_usuario . '"></i>';
         print '               </span>';
         print '             </div>';
+        // O feedback do JS será inserido aqui dinamicamente
         print '           </div>';
 
-        // Confirmar senha
+        // --- CAMPO CONFIRMAR SENHA AJUSTADO ---
         print '           <div class="mb-4">';
         print '             <label for="confSenha' . $id_usuario . '" class="form-label">Confirmar nova senha*</label>';
         print '             <div class="input-group">';
-        print '               <input type="password" class="form-control form-control-lg" id="confSenha' . $id_usuario . '" name="confSenha" required minlength="12" placeholder="Repita a nova senha" title="As senhas devem ser idênticas." autocomplete="new-password" oninput="this.setCustomValidity(this.value != document.getElementById(\'senha' . $id_usuario . '\').value ? \'As senhas não coincidem.\' : \'\')">';
+        print '               <input type="password" class="form-control form-control-lg" id="confSenha' . $id_usuario . '" name="confSenha" 
+                                required 
+                                minlength="12" 
+                                placeholder="Repita a nova senha" 
+                                autocomplete="new-password">';
+        // Atributos 'oninput' e 'title' removidos
         print '               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(' . $id_usuario . ', true)">';
         print '                 <i class="fas fa-eye" id="toggleConfSenhaIcon' . $id_usuario . '"></i>';
         print '               </span>';
         print '             </div>';
+        // O feedback do JS será inserido aqui dinamicamente
         print '           </div>';
 
         // Botões
-        print '          <input type="hidden" name="id_usuario" value="' . $id_usuario . '">';
-        print '          <div class="d-grid gap-2 d-md-flex justify-content-md-center">';
-        print '            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">';
-        print '              <i class="bi bi-x-circle me-1"></i>Fechar';
-        print '            </button>';
-        print '            <button type="submit" name="alterar_senha" class="btn btn-primary px-4">';
-        print '              <i class="bi bi-check-circle me-1"></i>Alterar';
-        print '            </button>';
-        print '          </div>';
+        print '           <input type="hidden" name="id_usuario" value="' . $id_usuario . '">';
+        print '           <div class="d-grid gap-2 d-md-flex justify-content-md-center">';
+        print '             <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">';
+        print '               <i class="bi bi-x-circle me-1"></i>Fechar';
+        print '             </button>';
+        print '             <button type="submit" name="alterar_senha" class="btn btn-primary px-4">';
+        print '               <i class="bi bi-check-circle me-1"></i>Alterar';
+        print '             </button>';
+        print '           </div>';
 
-        print '        </form>';
-        print '      </div>'; // modal-body
-
-        print '    </div>'; // modal-content
-        print '  </div>';   // modal-dialog
+        print '         </form>';
+        print '       </div>'; // modal-body
+        print '     </div>'; // modal-content
+        print '   </div>';   // modal-dialog
         print '</div>';     // modal
     }
     // consultar usuario

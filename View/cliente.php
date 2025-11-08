@@ -115,7 +115,7 @@
         <!-- Tabela de Clientes  -->
         <div class="container-fluid">
             <div class="row justify-content-center mt-4">
-                <div class="col-md-12">
+                <div class="col-md-9">
                     <!-- tabela de produtos -->
                     <?php $this->tabelaConsultarCliente($cliente); ?>
                 </div>
