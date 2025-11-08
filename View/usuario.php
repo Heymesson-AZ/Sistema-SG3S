@@ -233,7 +233,6 @@
                 $this->modalAlterarSenha(
                     $valor->id_usuario,
                     $valor->nome_usuario,
-                    $valor->senha
                 );
             };
             ?>

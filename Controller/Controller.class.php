@@ -683,44 +683,43 @@ class Controller
 
     /**
      * Gera uma senha aleatória segura de 12 caracteres.
-     * Contém: 1 Letra Maiúscula, 2 Minúsculas, 1 Símbolo, 8 Números.
-     *
-     * @return string A senha embaralhada.
+     * Regras:
+     *  - 12 caracteres
+     *  - pelo menos 1 letra maiúscula
+     *  - pelo menos 1 letra minúscula
+     *  - pelo menos 1 número
+     *  - pelo menos 1 símbolo (!@#$%^&*()_+-=[]{})
+     * @return string A senha gerada.
      */
     private function gerarNovaSenha()
     {
-        // 1. Definir os conjuntos de caracteres
+        // Conjuntos de caracteres
         $letrasMaiusculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $letrasMinusculas = 'abcdefghijklmnopqrstuvwxyz';
         $numeros = '0123456789';
-        // Você pode ajustar quais símbolos são permitidos
         $simbolos = '!@#$%^&*()_+-=[]{}|';
 
-        // 2. Gerar as partes obrigatórias
+        // Garantir ao menos um de cada tipo
+        $senha = '';
+        $senha .= $letrasMaiusculas[random_int(0, strlen($letrasMaiusculas) - 1)];
+        $senha .= $letrasMinusculas[random_int(0, strlen($letrasMinusculas) - 1)];
+        $senha .= $numeros[random_int(0, strlen($numeros) - 1)];
+        $senha .= $simbolos[random_int(0, strlen($simbolos) - 1)];
 
-        // 3 Letras (1 maiúscula, 2 minúsculas)
-        // Pega 1 caractere aleatório da string de maiúsculas
-        $parteLetras = $letrasMaiusculas[random_int(0, strlen($letrasMaiusculas) - 1)];
-        // Pega 2 caracteres aleatórios da string de minúsculas
-        $parteLetras .= substr(str_shuffle($letrasMinusculas), 0, 2);
+        // Combinar todos os caracteres possíveis para o restante
+        $todos = $letrasMaiusculas . $letrasMinusculas . $numeros . $simbolos;
 
-        // 1 Símbolo
-        $parteSimbolo = $simbolos[random_int(0, strlen($simbolos) - 1)];
-
-        // 8 Números (para completar 12 caracteres: 3 + 1 + 8 = 12)
-        $parteNumeros = '';
-        for ($i = 0; $i < 8; $i++) {
-            $parteNumeros .= $numeros[random_int(0, 9)];
+        // Completar até 12 caracteres
+        for ($i = strlen($senha); $i < 12; $i++) {
+            $senha .= $todos[random_int(0, strlen($todos) - 1)];
         }
 
-        // 3. Juntar todas as partes
-        $senhaJunta = $parteLetras . $parteSimbolo . $parteNumeros;
+        // Embaralhar a senha final
+        $senha = str_shuffle($senha);
 
-        // 4. Embaralhar a string final para que os tipos de caracteres fiquem misturados
-        $senhaFinal = str_shuffle($senhaJunta);
-
-        return $senhaFinal;
+        return $senha;
     }
+
     // verificar se o usuario ja existe
     public function consultarUsuario_Cpf($cpf)
     {
@@ -1292,7 +1291,6 @@ class Controller
         print '</div>';
         print '</div>';
     }
-    
     // select de usuarios
     public function selectUsuario($id_usuario = null)
     {
@@ -3392,10 +3390,6 @@ class Controller
         print '</div>';
         print '</div>';
     }
-
-
-
-
 
     // CLIENTE
 
@@ -6968,15 +6962,6 @@ class Controller
         ];
         return $map[$acao] ?? ['nome' => $acao, 'classe_css' => 'bg-secondary', 'icone' => 'bi-question-circle-fill'];
     }
-
-
-
-
-
-
-
-
-
 
     //  Charts
     public function dashboardDados()
