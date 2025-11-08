@@ -402,9 +402,7 @@ class Controller
         unset($_SESSION['mensagem_erro']);
         unset($_SESSION['mensagem_sucesso']);
         unset($_SESSION['id_usuario']);
-
         session_destroy(); // Destrói a sessão
-
         // Limpa o cache do navegador
         header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
         header("Cache-Control: post-check=0, pre-check=0", false);
@@ -822,7 +820,9 @@ class Controller
         print '<div class="input-group">';
         print '<input type="password" class="form-control" id="senha_cadastro" name="senha"
                 required autocomplete="new-password" placeholder="Mínimo 12 caracteres"
-                minlength="12" title="A senha deve ter pelo menos 12 caracteres.">';
+                minlength="12"
+                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+]).{12,}$"
+                title="A senha deve ter no mínimo 12 caracteres, uma maiúscula, uma minúscula e um símbolo (ex: !@#$).">';
         print '<span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(\'_cadastro\', false)">';
         print '<i class="fas fa-eye" id="toggleSenhaIcon_cadastro"></i>';
         print '</span>';
@@ -916,6 +916,92 @@ class Controller
                 exit();
             }
         }
+    }
+    // metodo de alterar a senha
+    public function alterar_Senha($id_usuario, $nova_senha)
+    {
+        // Instancia a classe Usuario
+        $objUsuario = new Usuario();
+        // Tenta alterar a senha
+        if ($objUsuario->alterarSenha($id_usuario, $nova_senha) == true) {
+            // Inicia a sessão
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/usuario.php';
+            $this->mostrarMensagemSucesso("Senha do usuario alterada com sucesso");
+        } else {
+            // Inicia a sessão
+            session_start();
+            $menu = $this->menu();
+            include_once 'view/usuario.php';
+            $this->mostrarMensagemErro("Erro ao alterar a senha do usuario");
+        }
+    }
+    // modal de alterar senha
+    public function modalAlterarSenha($id_usuario, $nome_usuario)
+    {
+        print '<div class="modal fade" id="alterar_senha' . $id_usuario . '" tabindex="-1" aria-labelledby="alterarSenhaLabel' . $id_usuario . '" aria-hidden="true">';
+        print '  <div class="modal-dialog modal-dialog-centered">';
+        print '    <div class="modal-content rounded-3 shadow-sm">';
+
+        // Cabeçalho
+        print '      <div class="modal-header bg-primary text-white">';
+        print '        <h5 class="modal-title" id="alterarSenhaLabel' . $id_usuario . '"><i class="bi bi-lock-fill me-2"></i>Alterar Senha</h5>';
+        print '        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>';
+        print '      </div>';
+
+        // Corpo
+        print '      <div class="modal-body px-4 py-4">';
+        print '        <form action="index.php" method="post">';
+
+        print '          <h6 class="text-muted text-uppercase mb-3">Nova senha para:</h6>';
+        print '          <div class="alert alert-secondary text-center fw-bold mb-4">' . $nome_usuario . '</div>';
+
+        // Campo senha
+        print '           <div class="mb-3">';
+        print '             <label for="senha' . $id_usuario . '" class="form-label">Nova senha*</label>';
+        print '             <div class="input-group">';
+        print '     <input type="password" class="form-control form-control-lg" id="senha' . $id_usuario . '" name="senha"
+                    required
+                    minlength="12"
+                    placeholder="Mínimo 12 caracteres"
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+]).{12,}$"
+                    title="A senha deve ter no mínimo 12 caracteres, uma maiúscula, uma minúscula e um símbolo (ex: !@#$%)."
+                    autocomplete="new-password">';
+        print '               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(' . $id_usuario . ', false)">';
+        print '                 <i class="fas fa-eye" id="toggleSenhaIcon' . $id_usuario . '"></i>';
+        print '               </span>';
+        print '             </div>';
+        print '           </div>';
+
+        // Confirmar senha
+        print '           <div class="mb-4">';
+        print '             <label for="confSenha' . $id_usuario . '" class="form-label">Confirmar nova senha*</label>';
+        print '             <div class="input-group">';
+        print '               <input type="password" class="form-control form-control-lg" id="confSenha' . $id_usuario . '" name="confSenha" required minlength="12" placeholder="Repita a nova senha" title="As senhas devem ser idênticas." autocomplete="new-password" oninput="this.setCustomValidity(this.value != document.getElementById(\'senha' . $id_usuario . '\').value ? \'As senhas não coincidem.\' : \'\')">';
+        print '               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(' . $id_usuario . ', true)">';
+        print '                 <i class="fas fa-eye" id="toggleConfSenhaIcon' . $id_usuario . '"></i>';
+        print '               </span>';
+        print '             </div>';
+        print '           </div>';
+
+        // Botões
+        print '          <input type="hidden" name="id_usuario" value="' . $id_usuario . '">';
+        print '          <div class="d-grid gap-2 d-md-flex justify-content-md-center">';
+        print '            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">';
+        print '              <i class="bi bi-x-circle me-1"></i>Fechar';
+        print '            </button>';
+        print '            <button type="submit" name="alterar_senha" class="btn btn-primary px-4">';
+        print '              <i class="bi bi-check-circle me-1"></i>Alterar';
+        print '            </button>';
+        print '          </div>';
+
+        print '        </form>';
+        print '      </div>'; // modal-body
+
+        print '    </div>'; // modal-content
+        print '  </div>';   // modal-dialog
+        print '</div>';     // modal
     }
     // consultar usuario
     public function consultar_Usuario($nome_usuario, $id_perfil)
@@ -1206,86 +1292,7 @@ class Controller
         print '</div>';
         print '</div>';
     }
-    // metodo de alterar a senha
-    public function alterar_Senha($id_usuario, $nova_senha)
-    {
-        // Instancia a classe Usuario
-        $objUsuario = new Usuario();
-        // Tenta alterar a senha
-        if ($objUsuario->alterarSenha($id_usuario, $nova_senha) == true) {
-            // Inicia a sessão
-            session_start();
-            $menu = $this->menu();
-            include_once 'view/usuario.php';
-            $this->mostrarMensagemSucesso("Senha alterada com sucesso");
-        } else {
-            // Inicia a sessão
-            session_start();
-            $menu = $this->menu();
-            include_once 'view/usuario.php';
-            $this->mostrarMensagemErro("Senha Atual invalida");
-        }
-    }
-    // modal de alterar senha
-    public function modalAlterarSenha($id_usuario, $nome_usuario)
-    {
-        print '<div class="modal fade" id="alterar_senha' . $id_usuario . '" tabindex="-1" aria-labelledby="alterarSenhaLabel' . $id_usuario . '" aria-hidden="true">';
-        print '  <div class="modal-dialog modal-dialog-centered">';
-        print '    <div class="modal-content rounded-3 shadow-sm">';
-
-        // Cabeçalho
-        print '      <div class="modal-header bg-primary text-white">';
-        print '        <h5 class="modal-title" id="alterarSenhaLabel' . $id_usuario . '"><i class="bi bi-lock-fill me-2"></i>Alterar Senha</h5>';
-        print '        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>';
-        print '      </div>';
-
-        // Corpo
-        print '      <div class="modal-body px-4 py-4">';
-        print '        <form action="index.php" method="post">';
-
-        print '          <h6 class="text-muted text-uppercase mb-3">Nova senha para:</h6>';
-        print '          <div class="alert alert-secondary text-center fw-bold mb-4">' . $nome_usuario . '</div>';
-
-        // Campo senha
-        print '           <div class="mb-3">';
-        print '             <label for="senha' . $id_usuario . '" class="form-label">Nova senha*</label>';
-        print '             <div class="input-group">';
-        print '               <input type="password" class="form-control form-control-lg" id="senha' . $id_usuario . '" name="senha" required minlength="12" placeholder="Mínimo 12 caracteres" title="A senha deve ter pelo menos 12 caracteres." autocomplete="new-password">';
-        print '               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(' . $id_usuario . ', false)">';
-        print '                 <i class="fas fa-eye" id="toggleSenhaIcon' . $id_usuario . '"></i>';
-        print '               </span>';
-        print '             </div>';
-        print '           </div>';
-
-        // Confirmar senha
-        print '           <div class="mb-4">';
-        print '             <label for="confSenha' . $id_usuario . '" class="form-label">Confirmar nova senha*</label>';
-        print '             <div class="input-group">';
-        print '               <input type="password" class="form-control form-control-lg" id="confSenha' . $id_usuario . '" name="confSenha" required minlength="12" placeholder="Repita a nova senha" title="As senhas devem ser idênticas." autocomplete="new-password" oninput="this.setCustomValidity(this.value != document.getElementById(\'senha' . $id_usuario . '\').value ? \'As senhas não coincidem.\' : \'\')">';
-        print '               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha(' . $id_usuario . ', true)">';
-        print '                 <i class="fas fa-eye" id="toggleConfSenhaIcon' . $id_usuario . '"></i>';
-        print '               </span>';
-        print '             </div>';
-        print '           </div>';
-
-        // Botões
-        print '          <input type="hidden" name="id_usuario" value="' . $id_usuario . '">';
-        print '          <div class="d-grid gap-2 d-md-flex justify-content-md-center">';
-        print '            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">';
-        print '              <i class="bi bi-x-circle me-1"></i>Fechar';
-        print '            </button>';
-        print '            <button type="submit" name="alterar_senha" class="btn btn-primary px-4">';
-        print '              <i class="bi bi-check-circle me-1"></i>Alterar';
-        print '            </button>';
-        print '          </div>';
-
-        print '        </form>';
-        print '      </div>'; // modal-body
-
-        print '    </div>'; // modal-content
-        print '  </div>';   // modal-dialog
-        print '</div>';     // modal
-    }
+    
     // select de usuarios
     public function selectUsuario($id_usuario = null)
     {
@@ -3459,7 +3466,6 @@ class Controller
         return preg_replace("/^(\d{5})(\d{3})$/", "$1-$2", $cep);
     }
     // tabela de consulta de cliente
-    // tabela de consulta de cliente
     public function tabelaConsultarCliente($cliente)
     {
         if (empty($cliente)) return;
@@ -3522,14 +3528,14 @@ class Controller
                 print '<td>';
                 print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
                 print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_cliente' . $valor->id_cliente . '">
-                        <i class="bi bi-pencil-square"></i>
-                      </button>';
+                                <i class="bi bi-pencil-square"></i>
+                            </button>';
                 print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_cliente' . $valor->id_cliente . '">
-                        <i class="bi bi-trash"></i>
-                      </button>';
+                                <i class="bi bi-trash"></i>
+                            </button>';
                 print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_cliente' . $valor->id_cliente . '">
-                        <i class="bi bi-eye"></i>
-                      </button>';
+                                <i class="bi bi-eye"></i>
+                            </button>';
                 print '</div>';
                 print '</td>';
             } else {

@@ -59,16 +59,36 @@ if (isset($_POST['verificar_cpf'])) {
     $cpf = limparCpf(filter_input(INPUT_POST, 'cpf_consulta'));
     $objController->consultarUsuario_Cpf($cpf);
 }
+
+
+function validarSenhaForte($senha)
+{
+    // Mínimo 12 caracteres, 1 minúscula, 1 maiúscula e 1 símbolo
+    $regex = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+]).{12,}$/';
+    return preg_match($regex, $senha);
+}
+
 // ================= CADASTRAR USUÁRIO =================
 if (isset($_POST['cadastrar_usuario'])) {
-    $nome = htmlspecialchars($_POST['nome_usuario']);
-    $email = filter_input(INPUT_POST, 'email_usuario', FILTER_SANITIZE_EMAIL);
-    $senha = $_POST['senha'];
+    $nome      = htmlspecialchars($_POST['nome_usuario']);
+    $email     = filter_input(INPUT_POST, 'email_usuario', FILTER_SANITIZE_EMAIL);
+    $senha     = $_POST['senha'];
     $confSenha = $_POST['confSenha'];
-    $perfil = $_POST['id_perfil'];
-    $telefone = limparTelefone($_POST['telefone']);
-    $cpf = limparCpf($_POST['cpf']);
+    $perfil    = $_POST['id_perfil'];
+    $telefone  = limparTelefone($_POST['telefone']);
+    $cpf       = limparCpf($_POST['cpf']);
 
+    // === Validação de senha forte ===
+    if (!validarSenhaForte($senha)) {
+        $menu = $objController->menu();
+        include_once 'view/usuario.php';
+        $objController->mostrarMensagemErro(
+            "A senha deve ter no mínimo 12 caracteres, incluir letra maiúscula, minúscula e símbolo (ex: !@#$%)."
+        );
+        return;
+    }
+
+    // === Validação de senhas iguais ===
     if (!validarSenhasIguais($senha, $confSenha)) {
         $menu = $objController->menu();
         include_once 'view/usuario.php';
@@ -76,8 +96,37 @@ if (isset($_POST['cadastrar_usuario'])) {
         return;
     }
 
+    // === Tudo ok ===
     $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
     $objController->cadastrar_Usuario($nome, $email, $senhaHash, $perfil, $telefone, $cpf);
+}
+// ================= ALTERAR SENHA =================
+if (isset($_POST['alterar_senha'])) {
+    $id        = intval($_POST['id_usuario']);
+    $novaSenha = $_POST['senha'];
+    $confSenha = $_POST['confSenha'];
+
+    // === Validação de senha forte ===
+    if (!validarSenhaForte($novaSenha)) {
+        $menu = $objController->menu();
+        include_once 'view/usuario.php';
+        $objController->mostrarMensagemErro(
+            "A senha deve ter no mínimo 12 caracteres, incluir letra maiúscula, minúscula e símbolo (ex: !@#$%)."
+        );
+        return;
+    }
+
+    // === Validação de senhas iguais ===
+    if (!validarSenhasIguais($novaSenha, $confSenha)) {
+        $menu = $objController->menu();
+        include_once 'view/usuario.php';
+        $objController->mostrarMensagemErro("As senhas não coincidem");
+        return;
+    }
+
+    // === Tudo ok ===
+    $senhaHash = password_hash($novaSenha, PASSWORD_DEFAULT);
+    $objController->alterar_Senha($id, $senhaHash);
 }
 // ================= CONSULTAR USUÁRIO =================
 if (isset($_POST['consultar_usuario'])) {
@@ -100,23 +149,6 @@ if (isset($_POST['alterar_usuario'])) {
     $telefone = limparTelefone($_POST['telefone']);
     $cpf = limparCpf($_POST['cpf']);
     $objController->alterar_Usuario($id, $nome, $email, $perfil, $cpf, $telefone);
-}
-// ================= ALTERAR SENHA =================
-if (isset($_POST['alterar_senha'])) {
-    $id = intval($_POST['id_usuario']);
-    $nome = htmlspecialchars($_POST['nome_usuario']);
-    $novaSenha = $_POST['senha'];
-    $confSenha = $_POST['confSenha'];
-
-    if (!validarSenhasIguais($novaSenha, $confSenha)) {
-        $menu = $objController->menu();
-        include_once 'view/usuario.php';
-        $objController->mostrarMensagemErro("As senhas não coincidem");
-        return;
-    }
-
-    $senhaHash = password_hash($novaSenha, PASSWORD_DEFAULT);
-    $objController->alterar_Senha($id, $senhaHash);
 }
 
 // PERFIL

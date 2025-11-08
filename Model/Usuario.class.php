@@ -435,7 +435,6 @@ class Usuario extends Conexao
                                 FROM usuario u
                                 JOIN perfil_usuario p ON u.id_perfil = p.id_perfil
                                 WHERE p.perfil_usuario = :master";
-
                 $qCount = $bd->prepare($sqlCount);
                 $qCount->bindValue(':master', $PERFIL_MASTER, PDO::PARAM_STR);
                 $qCount->execute();

@@ -51,8 +51,7 @@
                 class="form-control"
                 placeholder="Digite sua senha"
                 required
-                minlength="12"
-                autocomplete="current-password" />
+                autocomplete="current-password"/>
               <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleSenha()" role="button" aria-label="Mostrar ou ocultar senha">
                 <i class="fas fa-eye" id="toggleSenhaIcon"></i>
               </span>

@@ -271,5 +271,7 @@
         <script src="assets/js/usuario.js"></script>
         <!-- ajax de produtos com baixo estoque-->
         <script src="assets/js/notificacao.js"></script>
+        <!-- // validação de senha -->
+        <script src="assets/js/validacaoSenha.js"></script>
     </body>
     </html>

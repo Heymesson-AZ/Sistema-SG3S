@@ -1,4 +1,4 @@
-// Se você usa $(document).ready(...), deixe a função FORA dele ou exponha no window
+
 function toggleSenha(id_usuario, isConfirm) {
   const inputId = isConfirm ? "confSenha" + id_usuario : "senha" + id_usuario;
   const iconId  = isConfirm ? "toggleConfSenhaIcon" + id_usuario : "toggleSenhaIcon" + id_usuario;
