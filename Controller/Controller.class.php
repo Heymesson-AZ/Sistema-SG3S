@@ -536,8 +536,10 @@ class Controller
                 ['usuario', 'fas fa-users', 'Usuário'],
                 ['pedido', 'fas fa-shopping-bag', 'Pedidos'],
                 ['relatorios', 'fas fa-warehouse', 'Relatórios'],
-                ['auditoria', 'fas fa-search', 'Auditoria']
             ];
+            if ($perfilUsuario === 'Administrador Master') {
+                $adminLinks[] = ['auditoria', 'fas fa-search', 'Auditoria'];
+            }
             foreach ($adminLinks as $link) {
                 print ' <li class="nav-item">';
                 print ' <a href="index.php?' . $link[0] . '" class="btn btn-outline-light fw-semibold"><i class="' . $link[1] . ' me-1"></i> ' . $link[2] . '</a>';
@@ -3900,47 +3902,56 @@ class Controller
     ) {
         // instancia a classe
         $objcliente = new Cliente();
-        // Invocar o método de validar cnpj e o metodo de alterar cliente
-        if ($this->validarCNPJ($cnpj_cliente) == false) {
+
+        // verificar se o cnpj digitado ja foi cadastrado
+        if ($objcliente->verificarCliente($cnpj_cliente) == true) {
             session_start();
-            // Carregar o menu
             $menu = $this->menu();
-            // Incluir a view do usuário
+            $this->mostrarMensagemErro("Esse CNPJ ja pertence a um cliente");
             include_once 'view/cliente.php';
-            // Exibir mensagem de erro
-            $this->mostrarMensagemErro("CNPJ inválido");
         } else {
-            if ($objcliente->alterarCliente(
-                $id_cliente,
-                $nome_representante,
-                $razao_social,
-                $nome_fantasia,
-                $cnpj_cliente,
-                $email,
-                $limite_credito,
-                $telefones,
-                $inscricao_estadual,
-                $cidade,
-                $estado,
-                $bairro,
-                $cep,
-                $complemento
-            ) == true) {
-                session_start();
-                // Carregar o menu
-                $menu = $this->menu();
-                // Incluir a view do usuário
-                include_once 'view/cliente.php';
-                // Exibir mensagem de sucesso
-                $this->mostrarMensagemSucesso("Cliente alterado com sucesso");
-            } else {
+            // Invocar o método de validar cnpj e o metodo de alterar cliente
+            if ($this->validarCNPJ($cnpj_cliente) == false) {
                 session_start();
                 // Carregar o menu
                 $menu = $this->menu();
                 // Incluir a view do usuário
                 include_once 'view/cliente.php';
                 // Exibir mensagem de erro
-                $this->mostrarMensagemErro("Erro ao alterar Cliente");
+                $this->mostrarMensagemErro("CNPJ inválido");
+            } else {
+                if ($objcliente->alterarCliente(
+                    $id_cliente,
+                    $nome_representante,
+                    $razao_social,
+                    $nome_fantasia,
+                    $cnpj_cliente,
+                    $email,
+                    $limite_credito,
+                    $telefones,
+                    $inscricao_estadual,
+                    $cidade,
+                    $estado,
+                    $bairro,
+                    $cep,
+                    $complemento
+                ) == true) {
+                    session_start();
+                    // Carregar o menu
+                    $menu = $this->menu();
+                    // Incluir a view do usuário
+                    include_once 'view/cliente.php';
+                    // Exibir mensagem de sucesso
+                    $this->mostrarMensagemSucesso("Cliente alterado com sucesso");
+                } else {
+                    session_start();
+                    // Carregar o menu
+                    $menu = $this->menu();
+                    // Incluir a view do usuário
+                    include_once 'view/cliente.php';
+                    // Exibir mensagem de erro
+                    $this->mostrarMensagemErro("Erro ao alterar Cliente");
+                }
             }
         }
     }
