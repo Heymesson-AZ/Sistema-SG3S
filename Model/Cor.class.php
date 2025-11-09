@@ -67,7 +67,10 @@ class Cor extends Conexao
             $emUso = $this->verificarUsoCor($this->getIdCor());
 
             if ($emUso > 0) {
-                return false;
+                return [
+                    'sucesso' => false,
+                    'mensagem' => "Não é possível excluir esta cor, pois existem produtos associados a ela."
+                ];
             }
 
             // 2. Se não estiver em uso, prosseguir com a exclusão
@@ -76,13 +79,19 @@ class Cor extends Conexao
             $query = $bd->prepare($sql);
             $query->bindParam(':id_cor', $this->getIdCor(), PDO::PARAM_INT);
             $query->execute();
-            return true;
+            return [
+                'sucesso' => true,
+                'mensagem' => "Cor excluída com sucesso."
+            ];
         } catch (PDOException $e) {
             // Em caso de erro na consulta ou exclusão
-            print "Erro ao excluir cor: " . $e->getMessage();
-            return false;
+            return [
+                'sucesso' => false,
+                'mensagem' => "Erro ao excluir cor: " . $e->getMessage()
+            ];
         }
     }
+
     // Método para alterar cor
     public function alterarCor($id_cor, $nome_cor)
     {
@@ -123,7 +132,6 @@ class Cor extends Conexao
 
             $query->execute();
             return $query->fetchAll(PDO::FETCH_OBJ);
-
         } catch (PDOException $e) {
             print "Erro ao consultar cor: " . $e->getMessage();
             return false;

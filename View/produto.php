@@ -66,7 +66,7 @@
                 </div>
             <?php endif; ?>
         </div>
-
+        <!-- Modal de Verificação de Produto -->
         <div class="modal fade" id="modal_verificar_produto" tabindex="-1" aria-labelledby="modalVerificarProdutoLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
@@ -107,7 +107,7 @@
                                                 <input type="hidden" id="id_cor_hidden" name="id_cor" value="" />
                                                 <input type="text" class="form-control" id="cor" placeholder="Digite a cor" autocomplete="off" required />
                                                 <button type="button" class="btn btn-outline-primary btn-abrir-cadastro-rapido" data-bs-toggle="modal" data-bs-target="#modal_cor"><i class="bi bi-plus-lg"></i></button>
-                                                <div id="resultado_busca_cor"  class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>
+                                                <div id="resultado_busca_cor" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -117,7 +117,7 @@
                                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                                             <input type="hidden" id="id_fornecedor_hidden_verificar" name="id_fornecedor" value="" />
                                             <input type="text" class="form-control" id="id_fornecedor_produto_verificar" placeholder="Digite o fornecedor" autocomplete="off" required />
-                                            <div id="resultado_busca_fornecedor_verificar"  class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>
+                                            <div id="resultado_busca_fornecedor_verificar" class="list-group position-absolute top-100 start-0 w-100 shadow" style="max-height:200px; overflow-y:auto;"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -135,7 +135,7 @@
                 </div>
             </div>
         </div>
-
+        <!-- Modal de Consulta de Produto -->
         <div class="modal fade" id="modal_consultar_produto" tabindex="-1" aria-labelledby="modalConsultaProdutoLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
@@ -186,7 +186,7 @@
                 </div>
             </div>
         </div>
-
+        <!-- Modal de Cadastro de tipo Produto -->
         <div class="modal fade" id="modal_tipo_produto" tabindex="-1" aria-labelledby="modalTipoProdutoLabel" aria-hidden="true">
             <div class="modal-dialog modal-default modal-dialog-centered">
                 <div class="modal-content">
@@ -200,7 +200,17 @@
                                 <legend class="float-none w-auto px-2">Dados do Tipo de Produto</legend>
                                 <div class="mb-3">
                                     <label for="nome_tipo_produto" class="form-label">Nome do Tipo de Produto *</label>
-                                    <input type="text" class="form-control" id="nome_tipo" name="nome_tipo" required autocomplete="off" placeholder="Digite o nome do tipo de produto" pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$" title="Somente letras e espaços são permitidos" />
+                                    <input type="text"
+                                        class="form-control"
+                                        id="nome_tipo"
+                                        name="nome_tipo"
+                                        required
+                                        autocomplete="off"
+                                        placeholder="Digite o nome do tipo de produto"
+                                        pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,30}$"
+                                        minlength="3"
+                                        maxlength="30"
+                                        title="O nome do tipo de produto deve conter entre 3 e 30 caracteres, apenas letras e espaços." />
                                 </div>
                             </fieldset>
                             <div class="d-flex justify-content-center gap-2 mt-4">
@@ -216,6 +226,7 @@
                 </div>
             </div>
         </div>
+        <!-- Modal de Cadastro de Cor -->
         <div class="modal fade" id="modal_cor" tabindex="-1" aria-labelledby="modalCorLabel" aria-hidden="true">
             <div class="modal-dialog modal-default modal-dialog-centered">
                 <div class="modal-content">
@@ -229,7 +240,17 @@
                                 <legend class="float-none w-auto px-2">Dados da Cor</legend>
                                 <div class="mb-3">
                                     <label for="nome_cor" class="form-label">Nome da Cor *</label>
-                                    <input type="text" class="form-control" id="nome_cor" name="nome_cor" required autocomplete="off" placeholder="Digite o nome da cor" pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$" title="Somente letras e espaços são permitidos" />
+                                    <input type="text"
+                                        class="form-control"
+                                        id="nome_cor"
+                                        name="nome_cor"
+                                        required
+                                        autocomplete="off"
+                                        placeholder="Digite o nome da cor"
+                                        pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,30}$"
+                                        minlength="3"
+                                        maxlength="30"
+                                        title="O nome da cor deve conter entre 3 e 30 caracteres, apenas letras e espaços." />
                                 </div>
                             </fieldset>
                             <div class="d-flex justify-content-center gap-2 mt-4">
@@ -245,6 +266,7 @@
                 </div>
             </div>
         </div>
+        <!-- Modal de Consulta de Tipo de Produto -->
         <div class="modal fade" id="modal_consultar_tipo_produto" tabindex="-1" aria-labelledby="modalTipoProdutoLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -271,6 +293,7 @@
                 </div>
             </div>
         </div>
+        <!-- Modal de Consulta de Cor -->
         <div class="modal fade" id="modal_consultar_cor" tabindex="-1" aria-labelledby="modalCorLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -297,6 +320,7 @@
                 </div>
             </div>
         </div>
+        <!-- Modal de Consulta de Fornecedor -->
         <div class="modal fade" id="modal_consulta_fornecedor" tabindex="-1" aria-labelledby="modalConsultaFornecedorLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -323,6 +347,7 @@
                 </div>
             </div>
         </div>
+        <!-- Modal de Consulta de CNPJ -->
         <div class="modal fade" id="modal_cnpj" tabindex="-1" aria-labelledby="modalCnpjLabel" aria-hidden="true">
             <div class="modal-dialog modal-default modal-dialog-centered">
                 <div class="modal-content">

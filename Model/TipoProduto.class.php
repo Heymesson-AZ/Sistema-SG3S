@@ -59,7 +59,7 @@ class TipoProduto extends Conexao
             return false;
         }
     }
-    // Método para excluir tipo de produto (COM VERIFICAÇÃO)
+    // Método para excluir tipo de produto (com verificação)
     public function excluirTipo($id_tipo_produto)
     {
         $this->setIdTipoProduto($id_tipo_produto);
@@ -68,9 +68,11 @@ class TipoProduto extends Conexao
             // 1. Verificar se o tipo de produto está em uso
             $emUso = $this->verificarUsoTipoProduto($this->getIdTipoProduto());
 
-            // Se a contagem for maior que 0, o tipo está em uso e não pode ser excluído.
             if ($emUso > 0) {
-                return false; // Retorna false para indicar falha na exclusão
+                return [
+                    'sucesso' => false,
+                    'mensagem' => "Não é possível excluir este tipo de produto, pois existem produtos associados a ele."
+                ];
             }
 
             // 2. Se não estiver em uso, prosseguir com a exclusão
@@ -79,10 +81,17 @@ class TipoProduto extends Conexao
             $query = $bd->prepare($sql);
             $query->bindParam(':id_tipo_produto', $this->getIdTipoProduto(), PDO::PARAM_INT);
             $query->execute();
-            return true;
+
+            return [
+                'sucesso' => true,
+                'mensagem' => "Tipo de produto excluído com sucesso."
+            ];
         } catch (PDOException $e) {
-            print "Erro ao excluir tipo: " . $e->getMessage();
-            return false;
+            // Em caso de erro na consulta ou exclusão
+            return [
+                'sucesso' => false,
+                'mensagem' => "Erro ao excluir tipo de produto: " . $e->getMessage()
+            ];
         }
     }
     // Método para alterar tipo de produto

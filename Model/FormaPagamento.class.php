@@ -80,31 +80,45 @@ class FormaPagamento extends Conexao
             return false;
         }
     }
-    // metodo de excluir forma de pagamento
+    // Método para excluir forma de pagamento
     public function excluirFormaPagamento($id_forma_pagamento)
     {
-        // settar atributos
         $this->setIdFormaPagamento($id_forma_pagamento);
 
         try {
-            // sql para excluir no banco de dados
-            $sql = "DELETE FROM forma_pagamento WHERE id_forma_pagamento = :id_forma_pagamento";
-            // preparar a query e blindar os parâmetros da tabela forma de pagamento
-            //conectar com o banco
+            // Verificar se a forma de pagamento está em uso (opcional, se tiver relação com pedidos)
+            $sqlCheck = "SELECT COUNT(*) AS quantidade FROM pedido WHERE id_forma_pagamento = :id_forma_pagamento";
             $bd = $this->conectarBanco();
-            //preparar o sql
+            $queryCheck = $bd->prepare($sqlCheck);
+            $queryCheck->bindParam(':id_forma_pagamento', $this->getIdFormaPagamento(), PDO::PARAM_INT);
+            $queryCheck->execute();
+            $resultadoCheck = $queryCheck->fetch(PDO::FETCH_OBJ);
+
+            if ($resultadoCheck->quantidade > 0) {
+                return [
+                    'sucesso' => false,
+                    'mensagem' => "Não é possível excluir esta forma de pagamento, pois está associada a pedidos existentes."
+                ];
+            }
+
+            // Se não estiver em uso, excluir
+            $sql = "DELETE FROM forma_pagamento WHERE id_forma_pagamento = :id_forma_pagamento";
             $query = $bd->prepare($sql);
-            // bind dos parâmetros
-            $query->bindValue(":id_forma_pagamento", $this->getIdFormaPagamento(), PDO::PARAM_INT);
-            // executar a query
+            $query->bindParam(':id_forma_pagamento', $this->getIdFormaPagamento(), PDO::PARAM_INT);
             $query->execute();
-            return true;
-        } catch (Exception $e) {
-            error_log("Erro ao excluir forma de pagamento: " . $e->getMessage());
-            print "Erro ao excluir forma de pagamento: " . $e->getMessage();
-            return false;
+
+            return [
+                'sucesso' => true,
+                'mensagem' => "Forma de pagamento excluída com sucesso."
+            ];
+        } catch (PDOException $e) {
+            return [
+                'sucesso' => false,
+                'mensagem' => "Erro ao excluir forma de pagamento: " . $e->getMessage()
+            ];
         }
     }
+
     // metodo de cosultar forma de pagamento
     public function consultarFormaPagamento($descricao)
     {

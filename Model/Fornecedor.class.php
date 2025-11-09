@@ -112,7 +112,6 @@ class Fornecedor extends Conexao
             return false;
         }
     }
-
     // ===============================
     // Alterar Fornecedor
     // ===============================
@@ -212,40 +211,52 @@ class Fornecedor extends Conexao
             return false;
         }
     }
-
-    //Excluir fornecedor
     public function excluirFornecedor($id_fornecedor)
     {
-        // query sql para excluir o fornecedor no banco de dados
-        $sql = "DELETE FROM fornecedor WHERE id_fornecedor = :id_fornecedor";
-        // Tentar executar a query
         try {
-            // Conectar ao banco
+            // verificar se o fornecedor tem produtos vinculados
+            $sqlCheck = "SELECT COUNT(*) AS quantidade FROM produto WHERE id_fornecedor = :id_fornecedor";
+            $queryCheck = $this->conectarBanco()->prepare($sqlCheck);
+            $queryCheck->bindParam(':id_fornecedor', $id_fornecedor, PDO::PARAM_INT);
+            $queryCheck->execute();
+            $resultadoCheck = $queryCheck->fetch(PDO::FETCH_OBJ);
+
+            if ($resultadoCheck->quantidade > 0) {
+                // Retorna mensagem de erro em vez de lançar exceção
+                return [
+                    'sucesso' => false,
+                    'mensagem' => "Não é possível excluir o fornecedor, pois existem produtos associados."
+                ];
+            }
+
+            // query sql para excluir o fornecedor no banco de dados
+            $sql = "DELETE FROM fornecedor WHERE id_fornecedor = :id_fornecedor";
             $bd = $this->conectarBanco();
-            // Preparar a query
             $query = $bd->prepare($sql);
-            // Bindar valores
             $query->bindParam(':id_fornecedor', $id_fornecedor, PDO::PARAM_INT);
-            // Executar query
             $query->execute();
-            // Retornar resultado
-            return true;
+
+            return [
+                'sucesso' => true,
+                'mensagem' => "Fornecedor excluído com sucesso."
+            ];
         } catch (Exception $e) {
-            print "Erro: " . $e->getMessage();
-            return false;
+            // Se der algum erro de banco
+            return [
+                'sucesso' => false,
+                'mensagem' => "Erro ao excluir fornecedor: "
+            ];
         }
     }
-    // ================================
-    // Consultar Fornecedor
-    // ================================
+
+    // metodo de consultar fornecedor
     public function consultarFornecedor($razao_social = null, $cnpj_fornecedor = null)
     {
         // settar atributos
         $this->setRazaoSocialFornecedor($razao_social);
         $this->setCnpjFornecedor($cnpj_fornecedor);
-
         // Query base com GROUP_CONCAT para agrupar telefones
-        $sql = "SELECT 
+        $sql = "SELECT
                 f.id_fornecedor,
                 f.razao_social,
                 f.cnpj_fornecedor,
@@ -254,8 +265,8 @@ class Fornecedor extends Conexao
                     CONCAT(tf.id_telefone, ':', tf.tipo, ':', tf.numero)
                     ORDER BY tf.id_telefone SEPARATOR ','
                 ) AS telefones
-            FROM fornecedor AS f
-            LEFT JOIN telefone_fornecedor AS tf 
+                FROM fornecedor AS f
+                LEFT JOIN telefone_fornecedor AS tf
                 ON f.id_fornecedor = tf.id_fornecedor";
 
         // Condições dinâmicas
@@ -272,12 +283,12 @@ class Fornecedor extends Conexao
         }
 
         // Agrupamento para o GROUP_CONCAT
-        $sql .= " GROUP BY 
+        $sql .= " GROUP BY
                 f.id_fornecedor,
                 f.razao_social,
                 f.cnpj_fornecedor,
                 f.email
-              ORDER BY f.razao_social ASC";
+                ORDER BY f.razao_social ASC";
 
         try {
             $bd = $this->conectarBanco();

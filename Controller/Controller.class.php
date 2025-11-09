@@ -1450,42 +1450,27 @@ class Controller
         print '</thead>';
         print '<tbody>';
 
-        // Armazena o perfil do usuário logado em uma variável para facilitar a leitura.
+        // Perfil do usuário logado
         $perfil_usuario_logado = $_SESSION['perfil'];
 
         foreach ($perfis as $valor) {
+            $perfil_da_linha = $valor->perfil_usuario;
+
             print '<tr>';
-            print '<td>' . htmlspecialchars($valor->perfil_usuario, ENT_QUOTES, 'UTF-8') . '</td>';
+            print '<td>' . htmlspecialchars($perfil_da_linha, ENT_QUOTES, 'UTF-8') . '</td>';
             print '<td>';
             print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
 
             // ---- INÍCIO DA LÓGICA DE PERMISSÃO ----
 
-            // Variável para controlar a exibição dos botões.
-            $mostrar_botoes = false;
+            // Bloqueia sempre para "Administrador Master" e "Administrador"
+            if ($perfil_da_linha !== 'Administrador Master' && $perfil_da_linha !== 'Administrador') {
 
-            // Perfil que está sendo exibido na linha atual da tabela.
-            $perfil_da_linha = $valor->perfil_usuario;
-
-            // Regra 1: Se o usuário logado é "Administrador Master".
-            if ($perfil_usuario_logado === 'Administrador Master') {
-                // Ele pode editar/remover todos, EXCETO o seu próprio perfil.
-                if ($perfil_da_linha !== 'Administrador Master') {
-                    $mostrar_botoes = true;
-                }
-            }
-            // Regra 2: Se o usuário logado é "Administrador".
-            elseif ($perfil_usuario_logado === 'Administrador') {
-                // Ele pode editar/remover os outros, EXCETO o seu próprio perfil e o do "Administrador Master".
-                if ($perfil_da_linha !== 'Administrador' && $perfil_da_linha !== 'Administrador Master') {
-                    $mostrar_botoes = true;
-                }
-            }
-            // Se a variável $mostrar_botoes for true, exibe os botões.
-            if ($mostrar_botoes) {
+                // Exibe os botões normalmente para os demais perfis
                 print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_perfil' . $valor->id_perfil . '"><i class="bi bi-pencil-square"></i></button>';
                 print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_perfil' . $valor->id_perfil . '"><i class="bi bi-trash"></i></button>';
             }
+
             print '</div>';
             print '</td>';
             print '</tr>';
@@ -1495,6 +1480,7 @@ class Controller
         print '</table>';
         print '</div>';
     }
+
     // modal de alterar Perfil de Usuario
     public function modalAlterarPerfil($id_perfil, $perfil_usuario)
     {
@@ -1517,8 +1503,18 @@ class Controller
 
         print '<div class="mb-3">';
         print '<label for="perfil_usuario_alterar_' . $id_perfil . '" class="form-label">Nome do Perfil *</label>';
-        print '<input type="text" class="form-control" id="perfil_usuario_alterar_' . $id_perfil . '" name="perfil_usuario" required autocomplete="off" placeholder="Digite o nome do perfil" value="' . htmlspecialchars($perfil_usuario, ENT_QUOTES) . '">';
+        print '<input type="text" class="form-control" '
+            . 'id="perfil_usuario_alterar_' . $id_perfil . '" '
+            . 'name="perfil_usuario" '
+            . 'required autocomplete="off" '
+            . 'placeholder="Digite o nome do perfil" '
+            . 'value="' . htmlspecialchars($perfil_usuario, ENT_QUOTES) . '" '
+            . 'minlength="3" '
+            . 'maxlength="30" '
+            . 'pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,30}$" '
+            . 'title="O nome do perfil deve conter entre 3 e 30 caracteres, apenas letras e espaços." />';
         print '</div>';
+
 
         print '</fieldset>';
         print '</form>';
@@ -1680,7 +1676,7 @@ class Controller
 
         print '                  <div class="col-md-6">';
         print '                    <label for="cnpj" class="form-label">CNPJ *</label>';
-        print '                    <input type="text" class="form-control cnpj" id="cnpj" name="cnpj" value="' . ($_SESSION['cnpj_cadastro']) . '" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" autocomplete="off">';
+        print '                    <input type="text" class="form-control cnpj" id="cnpj" name="cnpj" value="' . ($_SESSION['cnpj_cadastro']) . '" required placeholder="00.000.000/0000-00" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" autocomplete="off" readonly>';
         print '                  </div>';
 
         print '                  <div class="col-md-6">';
@@ -1857,30 +1853,26 @@ class Controller
             }
         }
     }
-    // excluir fornecedor
     public function excluir_Fornecedor($id_fornecedor)
     {
-        // instancia a classe
+        session_start();
         $objFornecedor = new Fornecedor();
-        // Invocar o método da classe Usuario para excluir o perfil de usuário
-        if ($objFornecedor->excluirFornecedor($id_fornecedor) == true) {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/produto.php';
-            // Exibir mensagem de sucesso
-            $this->mostrarMensagemSucesso("Fornecedor excluído com sucesso");
+
+        // Recebe o retorno estruturado da função
+        $resultado = $objFornecedor->excluirFornecedor($id_fornecedor);
+
+        // Carrega menu e view
+        $menu = $this->menu();
+        include_once 'view/produto.php';
+
+        // Exibe mensagem
+        if ($resultado['sucesso']) {
+            $this->mostrarMensagemSucesso($resultado['mensagem']);
         } else {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do usuário
-            include_once 'view/produto.php';
-            // Exibir mensagem de erro
-            $this->mostrarMensagemErro("Erro ao excluir Fornecedor");
+            $this->mostrarMensagemErro($resultado['mensagem']);
         }
     }
+
     // Modal de Alterar Fornecedor
     public function modal_AlterarFornecedor($id_fornecedor, $razao_social, $cnpj, $email, $telefones)
     {
@@ -2483,13 +2475,13 @@ class Controller
 
         // Quantidade
         print '                  <div class="col-md-4">';
-        print '                    <label for="quantidade" class="form-label">Qtd. (m) *</label>';
+        print '                    <label for="quantidade" class="form-label">Quantidade (m) *</label>';
         print '                    <input type="text" class="form-control quantidade" id="quantidade" name="quantidade" required placeholder="0,00" autocomplete="off">';
         print '                  </div>';
 
         // Quantidade mínima, Largura, Composição
         print '                  <div class="col-md-4">';
-        print '                    <label for="quantidade_minima" class="form-label">Qtd. Mínima *</label>';
+        print '                    <label for="quantidade_minima" class="form-label">Quantidade Mínima (m) *</label>';
         print '                    <input type="text" class="form-control quantidade_minima" id="quantidade_minima" name="quantidade_minima" required placeholder="0,00" autocomplete="off">';
         print '                  </div>';
 
@@ -2819,7 +2811,7 @@ class Controller
         print '<th scope="col">Cor</th>';
         print '<th scope="col">Largura</th>';
         print '<th scope="col">Qtd</th>';
-        print '<th scope="col">Valor Venda</th>';
+        print '<th scope="col">Valor de Venda</th>';
         if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
             print '<th scope="col">Ações</th>';
         }
@@ -3002,6 +2994,7 @@ class Controller
 
     // COR DO PRODUTO
 
+    // Função de cadastro de cor do produto com resposta diferenciada para requisições AJAX
     public function cadastrar_CorProduto($nome_cor, $origem)
     {
         $objCor = new Cor();
@@ -3047,6 +3040,7 @@ class Controller
             }
         }
     }
+    // Funcao de consultara cor do produto
     public function consultar_CorProduto($nome_cor = null)
     {
         $objCor = new Cor();
@@ -3063,6 +3057,7 @@ class Controller
             $this->mostrarMensagemErro("Erro ao consultar Cores");
         }
     }
+    //funcao de alatarar cor
     public function alterar_CorProduto($id_cor, $nome_cor)
     {
         $objCor = new Cor();
@@ -3079,31 +3074,27 @@ class Controller
             $this->mostrarMensagemErro("Erro ao alterar Cor");
         }
     }
+    // funcao de excluir cor
     public function excluir_CorProduto($id_cor)
     {
+        session_start();
         $objCor = new Cor();
-        // Invoca o método de exclusão, que pode retornar true, false ou 'em_uso'
+
+        // Recebe o retorno estruturado da função
         $resultado = $objCor->excluirCor($id_cor);
-        if ($resultado === true) {
-            session_start();
-            $menu = $this->menu();
-            // IMPORTANTE: Altere 'view/cores.php' para o caminho da sua view de cores
-            include_once 'view/produto.php';
-            $this->mostrarMensagemSucesso("Cor excluída com sucesso");
-        } else if ($resultado === 'em_uso') {
-            // Caso específico em que a cor está associada a outro registro
-            session_start();
-            $menu = $this->menu();
-            include_once 'view/produto.php';
-            $this->mostrarMensagemErro("Não é possível excluir esta cor, pois existem produtos associados a ela.");
+
+        // Carrega menu e view
+        $menu = $this->menu();
+        include_once 'view/produto.php';
+
+        // Exibe mensagem de acordo com o resultado
+        if ($resultado['sucesso']) {
+            $this->mostrarMensagemSucesso($resultado['mensagem']);
         } else {
-            // Qualquer outro tipo de erro
-            session_start();
-            $menu = $this->menu();
-            include_once 'view/produto.php';
-            $this->mostrarMensagemErro("Erro ao excluir Cor");
+            $this->mostrarMensagemErro($resultado['mensagem']);
         }
     }
+    // Tabela de consulta de cor
     public function tabelaConsultaCor($cores)
     {
         if (empty($cores)) return;
@@ -3133,6 +3124,7 @@ class Controller
         print '</table>';
         print '</div>';
     }
+    // modal de alatar cor
     public function modalAlterarCor($id_cor, $nome_cor)
     {
         print '<div class="modal fade" id="alterar_cor' . $id_cor . '" tabindex="-1" aria-labelledby="alterarCorLabel" aria-hidden="true">';
@@ -3154,7 +3146,16 @@ class Controller
 
         print '<div class="mb-3">';
         print '<label for="nome_cor_alterar_' . $id_cor . '" class="form-label">Nome da Cor *</label>';
-        print '<input type="text" class="form-control" id="nome_cor_alterar_' . $id_cor . '" name="nome_cor" required autocomplete="off" placeholder="Digite o nome da cor" value="' . htmlspecialchars($nome_cor, ENT_QUOTES) . '">';
+        print '<input type="text" class="form-control" '
+            . 'id="nome_cor_alterar_' . $id_cor . '" '
+            . 'name="nome_cor" '
+            . 'required autocomplete="off" '
+            . 'placeholder="Digite o nome da cor" '
+            . 'value="' . htmlspecialchars($nome_cor, ENT_QUOTES) . '" '
+            . 'minlength="3" '
+            . 'maxlength="30" '
+            . 'pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,30}$" '
+            . 'title="O nome da cor deve conter entre 3 e 30 caracteres, apenas letras e espaços." />';
         print '</div>';
 
         print '</fieldset>';
@@ -3183,6 +3184,7 @@ class Controller
         print '</div>'; // fecha modal-dialog
         print '</div>'; // fecha modal
     }
+    //  modal de de excluir cor
     public function modalExcluirCor($id_cor, $nome_cor)
     {
         print '<div class="modal fade" id="excluir_cor' . $id_cor . '" tabindex="-1" aria-labelledby="excluirCorLabel" aria-hidden="true">';
@@ -3210,7 +3212,7 @@ class Controller
 
     // TIPO DO PRODUTO
 
-
+    // Função de cadastrar tipo de produto
     public function cadastrar_TipoProduto($nome_tipo, $origem)
     {
         $objTipoProduto = new TipoProduto();
@@ -3256,6 +3258,7 @@ class Controller
             }
         }
     }
+    // Função de consultar tipo de produto
     public function consultar_TipoProduto($nome_tipo = null)
     {
         $objTipoProduto = new TipoProduto();
@@ -3272,6 +3275,7 @@ class Controller
             $this->mostrarMensagemErro("Erro ao consultar Tipos de Produto");
         }
     }
+    // Função de alterar tipo de produto
     public function alterar_TipoProduto($id_tipo_produto, $nome_tipo)
     {
         $objTipoProduto = new TipoProduto();
@@ -3288,24 +3292,28 @@ class Controller
             $this->mostrarMensagemErro("Erro ao alterar Tipo de Produto");
         }
     }
+    // Função de excluir tipo de produto
     public function excluir_TipoProduto($id_tipo_produto)
     {
+        session_start();
         $objTipoProduto = new TipoProduto();
 
-        // O método excluirTipo retorna 'false' se estiver em uso ou se ocorrer um erro.
-        if ($objTipoProduto->excluirTipo($id_tipo_produto) === true) {
-            session_start();
-            $menu = $this->menu();
-            include_once 'view/produto.php';
-            $this->mostrarMensagemSucesso("Tipo de produto excluído com sucesso");
+        // Recebe o retorno estruturado da função
+        $resultado = $objTipoProduto->excluirTipo($id_tipo_produto);
+
+        // Carrega menu e view
+        $menu = $this->menu();
+        include_once 'view/produto.php';
+
+        // Exibe mensagem de acordo com o resultado
+        if ($resultado['sucesso']) {
+            $this->mostrarMensagemSucesso($resultado['mensagem']);
         } else {
-            // Mensagem genérica que cobre tanto o caso de estar em uso quanto outros erros.
-            session_start();
-            $menu = $this->menu();
-            include_once 'view/produto.php';
-            $this->mostrarMensagemErro("Não é possível excluir. Verifique se o tipo de produto não está associado a um produto existente.");
+            $this->mostrarMensagemErro($resultado['mensagem']);
         }
     }
+
+    // Tabela de consulta de tipo de produto
     public function tabelaConsultaTipoProduto($tiposProduto)
     {
         if (empty($tiposProduto)) return;
@@ -3335,6 +3343,7 @@ class Controller
         print '</table>';
         print '</div>';
     }
+    // Modal de alterar tipo de produto
     public function modalAlterarTipoProduto($id_tipo_produto, $nome_tipo)
     {
         print '<div class="modal fade" id="alterar_tipo_produto' . $id_tipo_produto . '" tabindex="-1" aria-labelledby="alterarTipoProdutoLabel" aria-hidden="true">';
@@ -3355,7 +3364,16 @@ class Controller
         print '<legend class="float-none w-auto px-2">Dados do Tipo de Produto</legend>';
         print '<div class="mb-3">';
         print '<label for="nome_tipo_alterar_' . $id_tipo_produto . '" class="form-label">Nome do Tipo de Produto *</label>';
-        print '<input type="text" class="form-control" id="nome_tipo_alterar_' . $id_tipo_produto . '" name="nome_tipo" required autocomplete="off" placeholder="Digite o nome do tipo" value="' . htmlspecialchars($nome_tipo, ENT_QUOTES) . '">';
+        print '<input type="text" class="form-control" '
+            . 'id="nome_tipo_alterar_' . $id_tipo_produto . '" '
+            . 'name="nome_tipo" '
+            . 'required autocomplete="off" '
+            . 'placeholder="Digite o nome do tipo" '
+            . 'value="' . htmlspecialchars($nome_tipo, ENT_QUOTES) . '" '
+            . 'minlength="3" '
+            . 'maxlength="30" '
+            . 'pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,30}$" '
+            . 'title="O nome do tipo de produto deve conter entre 3 e 30 caracteres, apenas letras e espaços." />';
         print '</div>';
         print '</fieldset>';
         print '</form>';
@@ -3379,6 +3397,7 @@ class Controller
         print '</div>';
         print '</div>';
     }
+    // Modal de excluir tipo de produto
     public function modalExcluirTipoProduto($id_tipo_produto, $nome_tipo)
     {
         print '<div class="modal fade" id="excluir_tipo_produto' . $id_tipo_produto . '" tabindex="-1" aria-labelledby="excluirTipoProdutoLabel" aria-hidden="true">';
@@ -3475,7 +3494,6 @@ class Controller
     public function tabelaConsultarCliente($cliente)
     {
         if (empty($cliente)) return;
-
         print '<div class="table-responsive mt-4">';
         print '<table class="table table-striped table-hover table-bordered align-middle text-center">';
         print '<thead class="table-primary">';
@@ -3520,28 +3538,26 @@ class Controller
                     }
                 }
             }
-
             // Monta a linha da tabela
             print '<tr>';
             print '<td>' . htmlspecialchars($valor->nome_representante) . '</td>';
             print '<td>' . htmlspecialchars($valor->nome_fantasia) . '</td>';
             // print '<td>' . htmlspecialchars($valor->email) . '</td>'; // REMOVIDO
             print '<td>R$ ' . $limite . '</td>';
-
             // Lógica condicional para células
             if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
                 // Célula de Ações para Admins
                 print '<td>';
                 print '<div class="d-flex gap-2 justify-content-center flex-wrap">';
                 print '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alterar_cliente' . $valor->id_cliente . '">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>';
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>';
                 print '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#excluir_cliente' . $valor->id_cliente . '">
-                                <i class="bi bi-trash"></i>
-                            </button>';
+                                    <i class="bi bi-trash"></i>
+                                </button>';
                 print '<button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detalhes_cliente' . $valor->id_cliente . '">
-                                <i class="bi bi-eye"></i>
-                            </button>';
+                                    <i class="bi bi-eye"></i>
+                                </button>';
                 print '</div>';
                 print '</td>';
             } else {
@@ -3553,10 +3569,8 @@ class Controller
                 print '<td>' . $celular_str . '</td>';
                 print '<td>' . $fixo_str . '</td>';
             }
-
             print '</tr>';
         }
-
         print '</tbody>';
         print '</table>';
         print '</div>';
@@ -4362,30 +4376,27 @@ class Controller
             $this->mostrarMensagemErro("Erro ao alterar Forma de pagamento");
         }
     }
-    // excluir forma de pagamento
-    public function excluirForma_Pagamento($id_forma_pagamento, $forma_pagamento)
+    // Excluir forma de pagamento
+    public function excluirForma_Pagamento($id_forma_pagamento)
     {
-        // instancia a classe
+        session_start();
         $objFormaPagamento = new FormaPagamento();
-        // Invocar o método da classe FormaPagamento para excluir a forma de pagamento
-        if ($objFormaPagamento->excluirFormaPagamento($id_forma_pagamento, $forma_pagamento) == true) {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do pedido
-            include_once 'view/pedido.php';
-            // Exibir mensagem de sucesso
-            $this->mostrarMensagemSucesso("Forma de pagamento excluída com sucesso");
+
+        // Chama o método da classe e recebe o retorno estruturado
+        $resultado = $objFormaPagamento->excluirFormaPagamento($id_forma_pagamento);
+
+        // Carregar o menu
+        $menu = $this->menu();
+        include_once 'view/pedido.php';
+
+        // Exibir mensagem de acordo com o resultado
+        if ($resultado['sucesso']) {
+            $this->mostrarMensagemSucesso($resultado['mensagem']);
         } else {
-            session_start();
-            // Carregar o menu
-            $menu = $this->menu();
-            // Incluir a view do pedido
-            include_once 'view/pedido.php';
-            // Exibir mensagem de erro
-            $this->mostrarMensagemErro("Erro ao excluir Forma de pagamento");
+            $this->mostrarMensagemErro($resultado['mensagem']);
         }
     }
+
     // modal de alterar forma de pagamento
     public function modalAlterarForma_Pagamento($id_forma_pagamento, $forma_pagamento)
     {
@@ -4400,7 +4411,17 @@ class Controller
         print '<form action="index.php" method="post">';
         print '<div class="row g-3">';
         print '<div class="col-md-12">';
-        print '<input type="text" class="form-control" id="forma_pagamento" name="descricao" value="' . $forma_pagamento . '" required>';
+        print '<label for="forma_pagamento_alterar_' . $id_forma_pagamento . '" class="form-label">Forma de Pagamento</label>';
+        print '<input type="text" class="form-control" '
+            . 'id="forma_pagamento_alterar_' . $id_forma_pagamento . '" '
+            . 'name="descricao" '
+            . 'value="' . htmlspecialchars($forma_pagamento, ENT_QUOTES) . '" '
+            . 'required autocomplete="off" '
+            . 'placeholder="Digite a forma de pagamento" '
+            . 'pattern="^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s]{3,40}$" '
+            . 'minlength="3" '
+            . 'maxlength="40" '
+            . 'title="A descrição deve conter entre 3 e 40 caracteres e pode incluir letras, números e espaços." />';
         print '</div>';
         print '</div>';
         print '<div class="d-flex justify-content-center gap-2 mt-4">';
@@ -4452,7 +4473,7 @@ class Controller
         print '<table class="table table-striped table-hover table-bordered align-middle text-center">';
         print '<thead class="table-primary">';
         print '<tr>';
-        print '<th scope="col">Descrição</th>';
+        print '<th scope="col">Formas de Pagamento</th>';
 
         print '<th scope="col">Ações</th>';
 

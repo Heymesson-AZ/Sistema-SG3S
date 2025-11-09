@@ -1,5 +1,6 @@
     <!DOCTYPE html>
     <html lang="pt-br">
+
     <head>
         <title>Sistema de Gerenciamento SG3S</title>
         <meta charset="utf-8" />
@@ -13,6 +14,7 @@
         <!-- CSS Personalizado -->
         <link rel="stylesheet" href="assets/css/index.css">
     </head>
+
     <body>
         <main class="container-fluid mt-4">
             <div class="text-center mb-4">
@@ -95,10 +97,17 @@
                                     <legend class="float-none w-auto px-2">Dados do Perfil</legend>
                                     <div class="mb-3">
                                         <label for="nome_perfil" class="form-label">Nome do Perfil *</label>
-                                        <input type="text" class="form-control" id="nome_perfil" name="nome_perfil"
-                                            required autocomplete="off" placeholder="Digite o nome do perfil"
-                                            pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$"
-                                            title="Somente letras e espaços são permitidos" />
+                                        <input type="text"
+                                            class="form-control"
+                                            id="nome_perfil"
+                                            name="nome_perfil"
+                                            required
+                                            autocomplete="off"
+                                            placeholder="Digite o nome do perfil"
+                                            pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,30}$"
+                                            minlength="3"
+                                            maxlength="30"
+                                            title="O nome do perfil deve conter entre 3 e 30 caracteres, apenas letras e espaços." />
                                     </div>
                                 </fieldset>
                                 <!-- Rodapé com botões -->
@@ -273,4 +282,5 @@
         <!-- // validação de senha -->
         <script src="assets/js/validacaoSenha.js"></script>
     </body>
+
     </html>

@@ -83,10 +83,10 @@
                                         <legend class="float-none w-auto px-3 fw-semibold text-primary">Dados do Pedido</legend>
                                         <div class="row g-3">
                                             <?php if ($this->temPermissao(['Administrador', 'Administrador Master'])) : ?>
-                                            <div class="col-md-6">
-                                                <label for="frete" class="form-label">Frete</label>
-                                                <input type="text" class="form-control frete" id="frete" name="frete" placeholder="R$ 0,00" autocomplete="off">
-                                            </div>
+                                                <div class="col-md-6">
+                                                    <label for="frete" class="form-label">Frete</label>
+                                                    <input type="text" class="form-control frete" id="frete" name="frete" placeholder="R$ 0,00" autocomplete="off">
+                                                </div>
                                             <?php endif; ?>
                                             <div class="col-md-6">
                                                 <label for="valor_total" class="form-label">Valor Total</label>
@@ -241,10 +241,17 @@
                                 <legend class="float-none w-auto px-2">Dados da Forma de Pagamento</legend>
                                 <div class="mb-3">
                                     <label for="forma_pagamento_cadastro" class="form-label">Descrição da Forma de Pagamento *</label>
-                                    <input type="text" class="form-control" id="forma_pagamento_cadastro" name="descricao_cadastro"
-                                        required autocomplete="off" placeholder="Digite a forma de pagamento"
-                                        pattern="^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s]+$"
-                                        title="Somente letras, números e espaços são permitidos" />
+                                    <input type="text"
+                                        class="form-control"
+                                        id="forma_pagamento_cadastro"
+                                        name="descricao_cadastro"
+                                        required
+                                        autocomplete="off"
+                                        placeholder="Digite a forma de pagamento"
+                                        pattern="^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s]{3,40}$"
+                                        minlength="3"
+                                        maxlength="40"
+                                        title="A descrição deve conter entre 3 e 40 caracteres e pode incluir letras, números e espaços." />
                                 </div>
                             </fieldset>
                             <!-- Rodapé com botões -->

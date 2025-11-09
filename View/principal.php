@@ -41,7 +41,7 @@
                         </div>
                         <div class="col-6 col-md-4 col-lg-3 d-grid">
                             <button class="btn btn-secondary btn-md" data-bs-toggle="modal" data-bs-target="#modal_consulta_pedido">
-                                <i class="bi bi-file-earmark-text"></i> Consultar
+                                <i class="bi bi-file-earmark-text"></i> Consultar Pedidos
                             </button>
                         </div>
                     </div>
