@@ -1,6 +1,7 @@
 <?php
 // Incluindo classe de conexao
 include_once 'Conexao.class.php';
+
 // Classe Usuario
 class Usuario extends Conexao
 {
@@ -154,15 +155,15 @@ class Usuario extends Conexao
         $this->setNomeUsuario($nome_usuario);
         $this->setIdPerfil($id_perfil);
         // Montar a query para consultar um usuário
-        $sql = "SELECT u.id_usuario, u.nome_usuario, u.email, u.cpf, u.senha, u.telefone, p.perfil_usuario,p.id_perfil
-        FROM usuario as u
-        LEFT JOIN perfil_usuario as p ON u.id_perfil = p.id_perfil
-        WHERE true";
+        $sql = "SELECT u.id_usuario, u.nome_usuario, u.email, u.cpf, u.telefone, p.perfil_usuario, p.id_perfil
+            FROM usuario as u
+            LEFT JOIN perfil_usuario as p ON u.id_perfil = p.id_perfil
+            WHERE TRUE";
         // Adicionando condições de filtro
         if (!empty($this->getNomeUsuario())) {
             $sql .= " AND u.nome_usuario LIKE :nome_usuario";
         }
-        if (!empty($this->getIdPerfil())) {
+        if (!empty($this->getIdPerfil()) ) {
             $sql .= " AND p.id_perfil = :id_perfil ";
         }
 

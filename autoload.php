@@ -1,7 +1,8 @@
 <?php
 function autoloadModel($className)
 {
-    $filename = 'model/' . $className . '.class.php';
+    $filename = __DIR__ . '/model/' . $className . '.class.php';
+
     if (is_readable($filename)) {
         require $filename;
     }
@@ -9,11 +10,10 @@ function autoloadModel($className)
 
 function autoloadController($className)
 {
-    $filename = 'controller/' . $className . '.class.php';
+    $filename = __DIR__ . '/controller/' . $className . '.class.php';
     if (is_readable($filename)) {
         require $filename;
     }
 }
 spl_autoload_register('autoloadModel');
 spl_autoload_register('autoloadController');
-?>

@@ -61,10 +61,12 @@ function validarRecaptcha($secret, $controller) {
 
         if (!$responseData || !$responseData->success) {
             $controller->mostrarMensagemErro("Erro: Falha na verificação do reCAPTCHA. Tente novamente.");
+            include_once 'login.php';
             exit();
         }
     } else {
         $controller->mostrarMensagemErro("Por favor, marque a caixa 'Não sou um robô'");
+        include_once 'login.php';
         exit();
     }
 }
@@ -78,12 +80,12 @@ if (isset($_POST['recuperar_senha'])) {
 
     // MUDANÇA: Chamar a validação do reCAPTCHA aqui
     validarRecaptcha($recaptchaSecret, $objController);
-    
     // O script só continua se o reCAPTCHA for válido
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $objController->mostrarMensagemErro("Erro: Formato de e-mail inválido.");
+        include_once 'recuperarSenha.php';
         exit();
     }
     $objController->recuperarSenha($email);
@@ -93,33 +95,26 @@ if (isset($_POST['recuperar_senha'])) {
 
 // 2. Login do usuário
 if (isset($_POST['login'])) {
-
-    // MUDANÇA: Chamar a validação do reCAPTCHA aqui
     validarRecaptcha($recaptchaSecret, $objController);
-
-    // MUDANÇA: O bloco de validação que estava aqui foi movido para a função
-    
     // O script só chega aqui se o reCAPTCHA for válido.
     $cpf = isset($_POST['cpf']) ? trim($_POST['cpf']) : '';
     $senha = isset($_POST['senha']) ? trim($_POST['senha']) : '';
 
     if (empty($cpf) || empty($senha)) {
         $objController->mostrarMensagemErro("Erro: CPF e Senha são obrigatórios.");
+        include_once 'login.php';
         exit();
     }
-
     $cpfLimpo = preg_replace('/[^0-9]/', '', $cpf);
-
     if (strlen($cpfLimpo) != 11) {
         $objController->mostrarMensagemErro("Erro: Formato de CPF inválido.");
+        include_once 'login.php';
         exit();
     }
-
     // Agora validamos o usuário
     $objController->validar($cpfLimpo, $senha);
     exit();
 }
-
 // Roteamento principal
 $objController->validarSessao();
 include_once "router.php";

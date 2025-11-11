@@ -1,5 +1,10 @@
 <?php
 
+// Defina uma constante para indicar que a chamada é via API
+if (!defined('IS_API_CALL')) {
+    define('IS_API_CALL', false);
+}
+
 class Conexao
 {
     private $host;
@@ -12,7 +17,7 @@ class Conexao
     private function ambiente()
     {
         // detecção de conexão de teste ( servidoor e porta)
-        if (in_array($_SERVER['SERVER_NAME'], ['localhost', '127.0.0.1'])) {
+        if (!isset($_SERVER['SERVER_NAME']) || in_array($_SERVER['SERVER_NAME'], ['localhost', '127.0.0.1'])) {
             return 'local';
         } else {
             return 'online';
@@ -25,16 +30,16 @@ class Conexao
         $ambiente = $this->ambiente();
         // local {Ambiente de Teste}
         if ($ambiente === 'local') {
-            $this->host = 'localhost';
-            $this->dbname = 'td187899_sg3s';
-            $this->user = 'root';
-            $this->password = '';
+            $this->host = getenv('DB_HOST');
+            $this->dbname = getenv('DB_NAME');
+            $this->user = getenv('DB_USER');
+            $this->password = getenv('DB_PASS');
         } else {
             // Online {Ambiente de Podução}
-            $this->host = 'localhost';
-            $this->dbname = 'td187899_sg3s';
-            $this->user = 'td187899_sg3s';
-            $this->password = '34FqyUp9NLt7Ybv7ZDeE';
+            $this->host = getenv('DB_HOSTProduction');
+            $this->dbname = getenv('DB_NAMEProduction');
+            $this->user = getenv('DB_USERProduction');
+            $this->password = getenv('DB_PASSProduction');
         }
     }
 
@@ -71,7 +76,7 @@ class Conexao
             return $this->link;
         } catch (PDOException $e) {
             error_log("Erro ao conectar ao banco de dados ({$this->dbname}): " . $e->getMessage());
-            print "Erro ao conectar ao banco de dados". $e->getMessage();
+            print "Erro ao conectar ao banco de dados" . $e->getMessage();
             return false;
         }
     }

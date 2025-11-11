@@ -288,17 +288,30 @@ class Controller
     // validar sessao
     public function validarSessao()
     {
-        // limpando o chache do navegador
+        // limpar cache do navegador
         header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
         header("Cache-Control: post-check=0, pre-check=0", false);
         header("Pragma: no-cache");
 
-        // Verifica se a sessão está iniciada
-        if (!isset($_SESSION['usuario']) and !isset($_SESSION['perfil'])) {
-            //acesso negado
-            header("location: login.php");
+        // verifica se sessão está iniciada
+        if (!isset($_SESSION['usuario']) && !isset($_SESSION['perfil'])) {
+
+            // se for uma chamada de API, não redireciona
+            if (defined('IS_API_CALL') && IS_API_CALL === true) {
+                http_response_code(401);
+                echo json_encode([
+                    'sucesso' => false,
+                    'erro' => 'Sessão expirada ou não autenticada.'
+                ]);
+                exit;
+            } else {
+                // se for acesso normal (via navegador), redireciona
+                header("Location: login.php");
+                exit;
+            }
         }
     }
+
     // validar cpf
     function validarCPF($cpf)
     {
@@ -475,144 +488,258 @@ class Controller
     }
 
     //menu dinamico
-    public function menu()
-    {
+    //menu dinamico
+
+    public function menu() {
+
         // 1. Capturar e preparar as variáveis de sessão
-        $usuarioNome = htmlspecialchars(isset($_SESSION['usuario']) ? $_SESSION['usuario'] : 'Usuário', ENT_QUOTES, 'UTF-8');
-        $perfilUsuario = htmlspecialchars(isset($_SESSION['perfil']) ? $_SESSION['perfil'] : 'Visitante', ENT_QUOTES, 'UTF-8');
+
+        $usuarioNome = htmlspecialchars($_SESSION['usuario'], ENT_QUOTES, 'UTF-8');
+
+        // Adiciona o perfil (com um fallback seguro)
+
+        $perfilUsuario = htmlspecialchars($_SESSION['perfil'], ENT_QUOTES, 'UTF-8');
+
+
 
         $avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($usuarioNome) . '&background=ffffff&color=0d6efd&rounded=true&size=32';
 
-        print '<header class="bg-primary shadow-sm">';
 
-        // CSS para o dropdown de notificações responsivo
-        print '
-        <style>
-            .dropdown-notificacoes {
-                max-height: 600px;
-                overflow-y: auto;
-                width: 420px; /* Largura padrão no desktop */
-            }
-            @media (max-width: 991.98px) {
-                .dropdown-notificacoes {
-                    width: 90vw; /* Ocupa 90% da largura da tela */
-                    max-width: 100%;
-                }
-            }
-        </style>';
+
+        print '<header class="bg-primary shadow-sm">';
 
         print ' <nav class="container navbar navbar-expand-lg navbar-dark py-2">';
 
+
+
         // Logo
+
         print ' <a class="navbar-brand fw-bold text-white d-flex align-items-center" href="index.php?principal">';
+
         print ' <i class="fas fa-chart-line me-2"></i> Sistema SG3S';
+
         print ' </a>';
 
-        // Botão Mobile
+
+
+        // Botão Mobile (com atributos de acessibilidade)
+
         print ' <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">';
+
         print ' <span class="navbar-toggler-icon"></span>';
+
         print ' </button>';
+
+
 
         print ' <div class="collapse navbar-collapse" id="navbarNav">';
 
+
+
         // --- Seção do Usuário/Perfil (MOBILE ONLY) ---
+
+        // Adiciona o nome do usuário e o perfil visível APENAS em telas pequenas (d-lg-none)
+
         print ' <div class="d-lg-none text-white p-3 border-bottom border-secondary mb-2">';
+
         print ' <div class="d-flex align-items-center">';
+
         print ' <img src="' . $avatarUrl . '" alt="avatar" class="rounded-circle me-2" />';
+
         print ' <div>';
+
         print ' <strong class="d-block">' . $usuarioNome . '</strong>';
-        print ' <small class="text-white-50 fw-semibold">' . $perfilUsuario . '</small>';
+
+        // Perfil do Usuário
+
+        print ' <p></p><small class="text-secondary fw-semibold">' . $perfilUsuario . '</small>';
+
         print ' </div>';
+
         print ' </div>';
+
         print ' </div>';
+
         // ------------------------------------------------
 
-        // Lista de links (com 'btn btn-outline-light')
-        print ' <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-2">';
+
+
+        print ' <ul class="navbar-nav d-flex align-items-center gap-2">';
+
+
+
+        // Links principais (o restante do menu de links segue normal)
 
         $links = [
+
             ['principal', 'fas fa-home', 'Início'],
+
             ['cliente', 'fas fa-user', 'Cliente'],
+
             ['produto', 'fas fa-box', 'Produto']
+
         ];
 
+
+
         foreach ($links as $link) {
+
             print ' <li class="nav-item">';
+
+            // No mobile, os botões 'btn-outline-light' podem ficar feios/grandes. Podemos trocar para 'nav-link'
+
+            // para melhor leitura no menu colapsado, mas manterei o btn-outline-light para consistência.
+
             print ' <a href="index.php?' . $link[0] . '" class="btn btn-outline-light fw-semibold"><i class="' . $link[1] . ' me-1"></i> ' . $link[2] . '</a>';
+
             print ' </li>';
         }
 
+
+
         // Links administrativos
+
         if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
+
             $adminLinks = [
+
                 ['usuario', 'fas fa-users', 'Usuário'],
+
                 ['pedido', 'fas fa-shopping-bag', 'Pedidos'],
+
                 ['relatorios', 'fas fa-warehouse', 'Relatórios'],
+
             ];
+
             if ($perfilUsuario === 'Administrador Master') {
+
                 $adminLinks[] = ['auditoria', 'fas fa-search', 'Auditoria'];
             }
+
             foreach ($adminLinks as $link) {
+
                 print ' <li class="nav-item">';
+
                 print ' <a href="index.php?' . $link[0] . '" class="btn btn-outline-light fw-semibold"><i class="' . $link[1] . ' me-1"></i> ' . $link[2] . '</a>';
+
                 print ' </li>';
             }
         }
 
+
+
         // Calendário
+
         print ' <li class="nav-item">';
+
         print ' <a href="#" class="btn btn-outline-light fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCalendario">';
+
         print ' <i class="fas fa-calendar-alt me-1"></i> Calendário';
+
         print ' </a>';
+
         print ' </li>';
 
-        // Item 'Sair' para o Mobile
+
+
+        // ------------------------------------------------
+
+        // Novo item de 'Sair' para o Mobile
+
+        // O item 'Sair' estava escondido dentro do dropdown, que não é acessível no menu colapsado (mobile).
+
+        // Adicionei um link direto para 'Sair' apenas para mobile.
+
         print ' <li class="nav-item d-lg-none mt-2">';
+
         print ' <a class="btn btn-danger fw-semibold" href="index.php?sair">';
+
         print ' <i class="fas fa-sign-out-alt me-1"></i> Sair do Sistema';
+
         print ' </a>';
+
         print ' </li>';
+
+        // ------------------------------------------------
+
+
 
         print '</ul>';
 
-        // Container final (notificações + usuário)
-        // **CORREÇÃO PRINCIPAL:**
-        // Adicionado 'd-none d-lg-flex' para OCULTAR este bloco inteiro no mobile.
-        print ' <div class="ms-auto d-none d-lg-flex align-items-center gap-3">';
 
-        // Bloco de Notificações (Apenas Admin)
-        if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
-            print ' <div class="nav-item dropdown">';
-            print ' <a class="nav-link position-relative" href="#" id="notificacoesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
-            print ' <i class="fas fa-bell fa-lg text-white"></i>';
-            print ' <span id="contadorNotificacoes" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm" style="font-size: 0.65rem; display:none;">0</span>';
-            print ' </a>';
-            print ' <ul id="listaNotificacoes" class="dropdown-menu dropdown-menu-end shadow-sm p-2 dropdown-notificacoes" aria-labelledby="notificacoesDropdown">';
-            print ' <li><span class="dropdown-item text-muted">Carregando...</span></li>';
-            print ' </ul>';
-            print ' </div>';
-        }
 
-        // Linha separadora (só aparece no desktop de qualquer maneira)
-        print ' <div class="vr text-white d-none d-lg-block"></div>';
+        // Container final (notificações + usuário) - Alinhar à direita
 
-        // Usuário (só aparece no desktop de qualquer maneira)
-        print ' <div class="dropdown d-none d-lg-block">';
-        print ' <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="#" id="usuarioDropdown" data-bs-toggle="dropdown" aria-expanded="false">';
-        print ' <img src="' . $avatarUrl . '" alt="avatar" class="rounded-circle me-2" />';
-        print ' <div>';
-        print ' <strong class="d-block">' . $usuarioNome . '</strong>';
-        print ' <small class="text-white-50 fw-semibold">' . $perfilUsuario . '</small>';
-        print ' </div>';
+        // d-flex e ms-auto garantem que o restante do conteúdo empurre os links para a direita em telas grandes
+
+        print ' <div class="ms-auto d-flex align-items-center gap-3">';
+
+
+
+        // Notificações
+
+        // Mantido como estava.
+
+        print ' <div class="nav-item dropdown">';
+
+        print ' <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
+
+        print ' <i class="fas fa-bell fa-lg text-white"></i>';
+
+        print ' <span id="contadorNotificacoes" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm" style="font-size: 0.65rem; display:none;">0</span>';
+
         print ' </a>';
-        print ' <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="usuarioDropdown">';
-        print ' <li><a class="dropdown-item" href="index.php?sair"><i class="fas fa-sign-out-alt me-2 text-danger"></i> Sair</a></li>';
+
+        print ' <ul id="listaNotificacoes" class="dropdown-menu dropdown-menu-end shadow-sm p-2" style="width: 420px; max-height: 600px; overflow-y: auto;">';
+
         print ' </ul>';
+
         print ' </div>';
+
+
+
+        // Linha separadora (apenas em telas grandes)
+
+        print ' <div class="vr d-none d-lg-block"></div>';
+
+
+
+        // Usuário (Apenas em telas Grandes - d-none em telas pequenas)
+
+        print ' <div class="dropdown d-none d-lg-block">'; // d-none d-lg-block: Oculta em mobile, mostra a partir de 'lg'
+
+        print ' <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="#" id="usuarioDropdown" data-bs-toggle="dropdown" aria-expanded="false">';
+
+        print ' <img src="' . $avatarUrl . '" alt="avatar" class="rounded-circle me-2" />';
+
+        print ' <div>';
+
+        print ' <strong class="d-block">' . $usuarioNome . '</strong>';
+
+        // Perfil do Usuário no Desktop
+
+        print ' <small class="text-black fw-semibold">' . $perfilUsuario . '</small>';
+
+        print ' </div>';
+
+        print ' </a>';
+
+        print ' <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="usuarioDropdown">';
+
+        print ' <li><a class="dropdown-item" href="index.php?sair"><i class="fas fa-sign-out-alt me-2 text-danger"></i> Sair</a></li>';
+
+        print ' </ul>';
+
+        print ' </div>';
+
+
 
         print ' </div>'; // fecha container notificações + usuário
+
         print ' </div>'; // fecha collapse
+
         print ' </nav>';
+
         print ' </header>';
     }
 
@@ -1029,14 +1156,12 @@ class Controller
     {
         // Instancia a classe Usuario
         $objUsuario = new Usuario();
-        // Executa a consulta e armazena o resultado
-        $objUsuario->consultarUsuario($nome_usuario, $id_perfil);
         // Verifica se há resultados
-        if ($objUsuario->consultarUsuario($nome_usuario, $id_perfil) == true) {
+        if ($objUsuario->ConsultarUsuario($nome_usuario, $id_perfil) == true) {
             // Inicia a sessão
             session_start();
             // Carregar o menu
-            $resultado = $objUsuario->consultarUsuario($nome_usuario, $id_perfil);
+            $resultado = $objUsuario->ConsultarUsuario($nome_usuario, $id_perfil);
             // menu
             $menu = $this->menu();
             // Incluir a view do usuário
