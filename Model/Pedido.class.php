@@ -700,7 +700,7 @@ class Pedido extends Conexao
 
             $bd->beginTransaction();
 
-            // Se o pedido estava aprovado ou aguardando pagamento, devolve ao estoque
+            // Se o pedido estava aguardando pagamento, devolve ao estoque
             if (in_array($statusAtual, ['Aguardando Pagamento'])) {
                 $sqlItens = "SELECT id_produto, quantidade FROM item_pedido WHERE id_pedido = :id_pedido";
                 $queryItens = $bd->prepare($sqlItens);
@@ -719,7 +719,7 @@ class Pedido extends Conexao
             // Atualiza o status do pedido e data_finalizacao (se status for Cancelado)
             $sqlUpdateStatus = "UPDATE pedido
                             SET status_pedido = :status_pedido";
-
+            $dataHoraCancelamento = date('Y-m-d H:i:s');
             if (in_array($this->getStatusPedido(), ['Cancelado', 'Finalizado'])) {
                 $sqlUpdateStatus .= ", data_finalizacao = :data_finalizacao";
             }
@@ -731,7 +731,7 @@ class Pedido extends Conexao
             $queryStatus->bindValue(':status_pedido', $this->getStatusPedido(), PDO::PARAM_STR);
 
             if (in_array($this->getStatusPedido(), ['Cancelado'])) {
-                $queryStatus->bindValue(':data_finalizacao', date('Y-m-d'));
+                $queryStatus->bindValue(':data_finalizacao', $dataHoraCancelamento);
             }
 
             $queryStatus->execute();
@@ -1170,7 +1170,8 @@ class Pedido extends Conexao
                 pr.id_produto,
                 pr.nome_produto,
                 pr.valor_venda,
-                pr.quantidade
+                pr.quantidade,
+                pr.data_compra
             FROM produto pr
             WHERE pr.id_produto NOT IN (
                 SELECT DISTINCT ip.id_produto FROM item_pedido ip

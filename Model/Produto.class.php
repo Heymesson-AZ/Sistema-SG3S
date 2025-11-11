@@ -646,8 +646,8 @@ class Produto extends Conexao
                     p.id_produto,
                     p.nome_produto,
                     p.id_tipo_produto,
-                    tp.nome_tipo AS tipo_produto,
                     p.largura,
+                    c.nome_cor AS cor,
                     p.composicao,
                     SUM(ip.quantidade) AS quantidade_total,
                     -- custo médio ponderado por item (valor histórico)
@@ -658,22 +658,24 @@ class Produto extends Conexao
                     ROUND(SUM(ip.quantidade * ip.valor_unitario), 2) AS valor_total_pedidos,
                     -- lucro bruto (valor histórico de venda - custo histórico)
                     ROUND(SUM(ip.quantidade * ip.valor_unitario) - SUM(ip.quantidade * ip.custo_compra), 2) AS lucro_bruto
-                    FROM item_pedido ip
-                    LEFT JOIN produto p ON p.id_produto = ip.id_produto
-                    LEFT JOIN pedido pe ON pe.id_pedido = ip.id_pedido
-                    LEFT JOIN tipo_produto tp ON p.id_tipo_produto = tp.id_tipo_produto
-                    WHERE pe.status_pedido = 'Finalizado'";
+                FROM item_pedido ip
+                LEFT JOIN produto p ON p.id_produto = ip.id_produto
+                LEFT JOIN pedido pe ON pe.id_pedido = ip.id_pedido
+                LEFT JOIN cor c ON p.id_cor = c.id_cor
+                WHERE pe.status_pedido = 'Finalizado'";
             if (!empty($id_produto)) {
                 $sql .= " AND ip.id_produto = :id_produto";
             }
 
+            // AJUSTES FEITOS AQUI:
             $sql .= " GROUP BY
                     p.id_produto,
                     p.nome_produto,
-                    tp.id_tipo_produto,
+                    p.id_tipo_produto, -- Corrigido (era tp.id_tipo_produto)
                     p.largura,
+                    c.nome_cor,         -- Adicionado (estava faltando)
                     p.composicao
-                    ORDER BY lucro_bruto DESC";
+                ORDER BY lucro_bruto DESC";
 
             $query = $bd->prepare($sql);
 

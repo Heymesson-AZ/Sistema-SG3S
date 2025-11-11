@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const selectPagamento = document.querySelector("#modal_pedido select[name='id_forma_pagamento']");
 
     // ===========================
-    // SELETORES DO DOM - MODAL DE CONSULTA DE PEDIDO (NOVO)
+    // SELETORES DO DOM - MODAL DE CONSULTA DE PEDIDO
     // ===========================
     const inputClienteConsulta = document.getElementById("cliente_pedido_consulta");
     const resultadoClienteConsulta = document.getElementById("resultado_busca_cliente_consulta");
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ===============================================
-    // LISTENERS - MODAL DE CONSULTA DE PEDIDO (NOVO)
+    // LISTENERS - MODAL DE CONSULTA DE PEDIDO
     // ===============================================
     if (inputClienteConsulta) {
         inputClienteConsulta.addEventListener("input", (e) => {
@@ -269,6 +269,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let displayText = nome;
                 if (cor && cor !== 'null') displayText += ` - Cor: ${cor}`;
                 if (largura && largura !== 'null') displayText += ` - Largura: ${largura}m`;
+                if (quantidade && quantidade !== 'null') displayText += ` - Estoque: ${quantidade} m`;
                 inputProduto.value = displayText;
             }
             let hiddenIdProduto = document.getElementById("id_produto_hidden");

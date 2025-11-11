@@ -162,7 +162,7 @@
                                     <input type="number" name="limite_mais_compraram" class="form-control" min="1" max="10" value="1" placeholder="Ex: 10" required>
                                 </div>
                             </div>
-                            <button type="submit" name="cliente_mais_compraram" class="btn btn-primary w-100 mt-auto">Gerar</button>
+                            <button type="submit" name="cliente_mais_compraram" class="btn btn-primary w-100 mt-auto"><i class="bi bi-currency-dollar me-1"></i> Gerar</button>
                         </form>
                     </div>
                 </div>
@@ -180,7 +180,7 @@
                                     <input type="number" name="dias_recentes" class="form-control" min="1" value="7" max="30" placeholder="Ex: 7" required>
                                 </div>
                             </div>
-                            <button type="submit" name="pedidos_recentes" class="btn btn-primary w-100 mt-auto">Gerar</button>
+                            <button type="submit" name="pedidos_recentes" class="btn btn-primary w-100 mt-auto"> <i class="bi bi-calendar-event me-1"></i> Gerar</button>
                         </form>
                     </div>
                 </div>
@@ -209,7 +209,7 @@
                                     <input type="number" name="ano_faturamento" class="form-control" value="<?= date('Y') ?>" min="2000" max="<?= date('Y') ?>" required />
                                 </div>
                             </div>
-                            <button type="submit" name="relatorio_variacao" class="btn btn-primary w-100 mt-auto">Gerar</button>
+                            <button type="submit" name="relatorio_variacao" class="btn btn-primary w-100 mt-auto"><i class="bi bi-bar-chart-line me-1"></i> Gerar</button>
                         </form>
                     </div>
                 </div>
@@ -220,8 +220,8 @@
                     <div class="card-body">
                         <form method="POST" action="index.php" class="d-flex flex-column h-100">
                             <div class="card-form-content">
-                                <h6 class="card-title">Lucro Bruto Mensal</h6>
-                                <p class="card-text small text-muted">Mostra o lucro bruto consolidado por mês.</p>
+                                <h6 class="card-title">Lucro Mensal </h6>
+                                <p class="card-text small text-muted">Mostra o lucro consolidado por mês.</p>
                                 <div class="mb-2">
                                     <label class="form-label">Ano:</label>
                                     <input type="number" name="ano_faturamento" class="form-control" value="<?= date('Y') ?>" min="2000" max="<?= date('Y') ?>" required />
@@ -236,7 +236,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <button type="submit" name="relatorio_lucro" class="btn btn-primary w-100 mt-auto">Gerar</button>
+                            <button type="submit" name="relatorio_lucro" class="btn btn-primary w-100 mt-auto"><i class="bi bi-currency-dollar me-1"></i> Gerar</button>
                         </form>
                     </div>
                 </div>
@@ -307,7 +307,7 @@
                                 <p class="card-text small text-muted">Exibe os pedidos com maior valor total em pedidos finalizados.</p>
                                 <div class="mb-3">
                                     <label for="limite_valor" class="form-label">Limite:</label>
-                                    <input type="number" id="limite_valor" name="limite_valor" class="form-control" value="10" min="1" max="100" required />
+                                    <input type="number" id="limite_valor" name="limite_valor" class="form-control" value="10" min="1" required />
                                 </div>
                             </div>
                             <input type="hidden" name="tipo_relatorio" value="pedidos_maior_valor" />
@@ -503,7 +503,7 @@
                     $this->tabelaVariacaoVendasProduto($variacao_vendas);
                 };
                 if (isset($dadosLucroMensal)) {
-                    $this->tabelaLucroBrutoMensal($dadosLucroMensal);
+                    $this->tabelaLucroMensal($dadosLucroMensal);
                 };
                 ?>
             </div>

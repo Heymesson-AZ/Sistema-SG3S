@@ -478,13 +478,29 @@ class Controller
     public function menu()
     {
         // 1. Capturar e preparar as variáveis de sessão
-        $usuarioNome = htmlspecialchars($_SESSION['usuario'], ENT_QUOTES, 'UTF-8');
-        // Adiciona o perfil (com um fallback seguro)
-        $perfilUsuario = htmlspecialchars($_SESSION['perfil'], ENT_QUOTES, 'UTF-8');
+        $usuarioNome = htmlspecialchars(isset($_SESSION['usuario']) ? $_SESSION['usuario'] : 'Usuário', ENT_QUOTES, 'UTF-8');
+        $perfilUsuario = htmlspecialchars(isset($_SESSION['perfil']) ? $_SESSION['perfil'] : 'Visitante', ENT_QUOTES, 'UTF-8');
 
         $avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($usuarioNome) . '&background=ffffff&color=0d6efd&rounded=true&size=32';
 
         print '<header class="bg-primary shadow-sm">';
+
+        // CSS para o dropdown de notificações responsivo
+        print '
+        <style>
+            .dropdown-notificacoes {
+                max-height: 600px;
+                overflow-y: auto;
+                width: 420px; /* Largura padrão no desktop */
+            }
+            @media (max-width: 991.98px) {
+                .dropdown-notificacoes {
+                    width: 90vw; /* Ocupa 90% da largura da tela */
+                    max-width: 100%;
+                }
+            }
+        </style>';
+
         print ' <nav class="container navbar navbar-expand-lg navbar-dark py-2">';
 
         // Logo
@@ -492,7 +508,7 @@ class Controller
         print ' <i class="fas fa-chart-line me-2"></i> Sistema SG3S';
         print ' </a>';
 
-        // Botão Mobile (com atributos de acessibilidade)
+        // Botão Mobile
         print ' <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">';
         print ' <span class="navbar-toggler-icon"></span>';
         print ' </button>';
@@ -500,22 +516,20 @@ class Controller
         print ' <div class="collapse navbar-collapse" id="navbarNav">';
 
         // --- Seção do Usuário/Perfil (MOBILE ONLY) ---
-        // Adiciona o nome do usuário e o perfil visível APENAS em telas pequenas (d-lg-none)
         print ' <div class="d-lg-none text-white p-3 border-bottom border-secondary mb-2">';
         print ' <div class="d-flex align-items-center">';
         print ' <img src="' . $avatarUrl . '" alt="avatar" class="rounded-circle me-2" />';
         print ' <div>';
         print ' <strong class="d-block">' . $usuarioNome . '</strong>';
-        // Perfil do Usuário
-        print ' <p></p><small class="text-secondary fw-semibold">' . $perfilUsuario . '</small>';
+        print ' <small class="text-white-50 fw-semibold">' . $perfilUsuario . '</small>';
         print ' </div>';
         print ' </div>';
         print ' </div>';
         // ------------------------------------------------
 
-        print ' <ul class="navbar-nav d-flex align-items-center gap-2">';
+        // Lista de links (com 'btn btn-outline-light')
+        print ' <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-2">';
 
-        // Links principais (o restante do menu de links segue normal)
         $links = [
             ['principal', 'fas fa-home', 'Início'],
             ['cliente', 'fas fa-user', 'Cliente'],
@@ -524,8 +538,6 @@ class Controller
 
         foreach ($links as $link) {
             print ' <li class="nav-item">';
-            // No mobile, os botões 'btn-outline-light' podem ficar feios/grandes. Podemos trocar para 'nav-link'
-            // para melhor leitura no menu colapsado, mas manterei o btn-outline-light para consistência.
             print ' <a href="index.php?' . $link[0] . '" class="btn btn-outline-light fw-semibold"><i class="' . $link[1] . ' me-1"></i> ' . $link[2] . '</a>';
             print ' </li>';
         }
@@ -554,45 +566,43 @@ class Controller
         print ' </a>';
         print ' </li>';
 
-        // ------------------------------------------------
-        // Novo item de 'Sair' para o Mobile
-        // O item 'Sair' estava escondido dentro do dropdown, que não é acessível no menu colapsado (mobile).
-        // Adicionei um link direto para 'Sair' apenas para mobile.
+        // Item 'Sair' para o Mobile
         print ' <li class="nav-item d-lg-none mt-2">';
         print ' <a class="btn btn-danger fw-semibold" href="index.php?sair">';
         print ' <i class="fas fa-sign-out-alt me-1"></i> Sair do Sistema';
         print ' </a>';
         print ' </li>';
-        // ------------------------------------------------
 
         print '</ul>';
 
-        // Container final (notificações + usuário) - Alinhar à direita
-        // d-flex e ms-auto garantem que o restante do conteúdo empurre os links para a direita em telas grandes
-        print ' <div class="ms-auto d-flex align-items-center gap-3">';
+        // Container final (notificações + usuário)
+        // **CORREÇÃO PRINCIPAL:**
+        // Adicionado 'd-none d-lg-flex' para OCULTAR este bloco inteiro no mobile.
+        print ' <div class="ms-auto d-none d-lg-flex align-items-center gap-3">';
 
-        // Notificações
-        // Mantido como estava.
-        print ' <div class="nav-item dropdown">';
-        print ' <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
-        print ' <i class="fas fa-bell fa-lg text-white"></i>';
-        print ' <span id="contadorNotificacoes" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm" style="font-size: 0.65rem; display:none;">0</span>';
-        print ' </a>';
-        print ' <ul id="listaNotificacoes" class="dropdown-menu dropdown-menu-end shadow-sm p-2" style="width: 420px; max-height: 600px; overflow-y: auto;">';
-        print ' </ul>';
-        print ' </div>';
+        // Bloco de Notificações (Apenas Admin)
+        if ($this->temPermissao(['Administrador', 'Administrador Master'])) {
+            print ' <div class="nav-item dropdown">';
+            print ' <a class="nav-link position-relative" href="#" id="notificacoesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
+            print ' <i class="fas fa-bell fa-lg text-white"></i>';
+            print ' <span id="contadorNotificacoes" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm" style="font-size: 0.65rem; display:none;">0</span>';
+            print ' </a>';
+            print ' <ul id="listaNotificacoes" class="dropdown-menu dropdown-menu-end shadow-sm p-2 dropdown-notificacoes" aria-labelledby="notificacoesDropdown">';
+            print ' <li><span class="dropdown-item text-muted">Carregando...</span></li>';
+            print ' </ul>';
+            print ' </div>';
+        }
 
-        // Linha separadora (apenas em telas grandes)
-        print ' <div class="vr d-none d-lg-block"></div>';
+        // Linha separadora (só aparece no desktop de qualquer maneira)
+        print ' <div class="vr text-white d-none d-lg-block"></div>';
 
-        // Usuário (Apenas em telas Grandes - d-none em telas pequenas)
-        print ' <div class="dropdown d-none d-lg-block">'; // d-none d-lg-block: Oculta em mobile, mostra a partir de 'lg'
+        // Usuário (só aparece no desktop de qualquer maneira)
+        print ' <div class="dropdown d-none d-lg-block">';
         print ' <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="#" id="usuarioDropdown" data-bs-toggle="dropdown" aria-expanded="false">';
         print ' <img src="' . $avatarUrl . '" alt="avatar" class="rounded-circle me-2" />';
         print ' <div>';
         print ' <strong class="d-block">' . $usuarioNome . '</strong>';
-        // Perfil do Usuário no Desktop
-        print ' <small class="text-black fw-semibold">' . $perfilUsuario . '</small>';
+        print ' <small class="text-white-50 fw-semibold">' . $perfilUsuario . '</small>';
         print ' </div>';
         print ' </a>';
         print ' <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="usuarioDropdown">';
@@ -5279,7 +5289,7 @@ class Controller
         print 'do cliente <strong>' . htmlspecialchars($nome_fantasia) . '</strong>.';
         print '</p>';
         print '<div class="alert alert-success text-center" role="alert">';
-        print '<i class="bi bi-info-circle-fill me-2"></i> Após a finalização, não será possível fazer alterações neste pedido.';
+        print '<i class="bi bi-info-circle-fill me-2"></i> Após a finalização, não será possível fazer alterações ou cancelar esse pedido.';
         print '</div>';
         print '</div>';
 
@@ -5395,7 +5405,7 @@ class Controller
         print '<th scope="col">Total de Pedidos</th>';
         print '<th scope="col">Pedidos Cancelados</th>';
         print '<th scope="col">Pedidos em Aberto</th>';
-        print '<th scope="col">% Crescimento</th>';
+        print '<th scope="col">Variação (%) </th>';
         print '</tr>';
         print '</thead>';
         print '<tbody>';
@@ -5472,9 +5482,9 @@ class Controller
         print '<table class="table table-bordered table-striped table-hover align-middle text-center table-sm">';
         print '<thead class="table-primary">';
         print '<tr>';
-        print '<th>#</th>';
+        print '<th>Posição</th>';
         print '<th>Produto</th>';
-        print '<th>Total Vendido</th>';
+        print '<th>Total Vendido (m)</th>';
         print '<th>Valor Médio Venda (R$)</th>';
         print '<th>Faturamento (R$)</th>';
         print '<th>Lucro Líquido (R$)</th>';
@@ -5517,7 +5527,7 @@ class Controller
             $menu = $this->menu();
             // view
             include_once 'view/relatorios.php';
-            $this->mostrarMensagemErro("No ano base digitado nao foi finalizado nenhum pedido!");
+            $this->mostrarMensagemErro("Erro: No ano base digitado nao foi finalizado nenhum pedido!");
         }
     }
     //tabela de quantidade de pedidos por mes
@@ -5620,7 +5630,7 @@ class Controller
             $menu = $this->menu();
             // view
             include_once 'view/relatorios.php';
-            $this->mostrarMensagemErro("Erro ao cosultar quantidade de pedidos por forma de pagamento!");
+            $this->mostrarMensagemErro("Erro ao consultar quantidade de pedidos por forma de pagamento!");
         }
     }
     // tabela de quantidade de pedidos por forma de pagamento
@@ -5660,6 +5670,55 @@ class Controller
         print '</table>';
         print '</div>';
     }
+    // metodo de clientes que mais compraram
+    public function clientes_MaisCompraram($ano_referencia, $mes_referencia, $limite)
+    {
+        $objPedido = new Pedido();
+        $objPedido->clientesQueMaisCompraram($ano_referencia, $mes_referencia, $limite);
+        if ($objPedido->clientesQueMaisCompraram($ano_referencia, $mes_referencia, $limite) == true) {
+            $clientes_mais_compram = $objPedido->clientesQueMaisCompraram($ano_referencia, $mes_referencia, $limite);
+            // menu
+            $menu = $this->menu();
+            // view
+            include_once 'view/relatorios.php';
+        } else {
+            // menu
+            $menu = $this->menu();
+            // view
+            include_once 'view/relatorios.php';
+            $this->mostrarMensagemErro("Erro ao consultar clientes que mais compraram!");
+        }
+    }
+    // tabela de clientes que mais compraram
+    public function tabelaClientesMaisCompraram($clientes_mais_compram)
+    {
+        if (empty($clientes_mais_compram)) {
+            return;
+        }
+
+        print '<div class="table-responsive mt-4">';
+        print '<table class="table table-bordered table-striped table-sm align-middle text-center">';
+        print '<thead class="table-primary">';
+        print '<tr>';
+        print '<th>Cliente</th>';
+        print '<th>Total de Pedidos (qtd.)</th>';
+        print '<th>Total Comprado (R$)</th>';
+        print '</tr>';
+        print '</thead><tbody>';
+
+        foreach ($clientes_mais_compram as $clientes) {
+            $nome = ($clientes->nome_fantasia);
+            $totalPedidos = $clientes->total_pedidos;
+            $totalComprado = ($clientes->total_comprado);
+            print '<tr>';
+            print "<td>$nome</td>";
+            print "<td>$totalPedidos</td>";
+            print "<td>R$ $totalComprado</td>";
+            print '</tr>';
+        }
+
+        print '</tbody></table></div>';
+    }
     // metodo de resumo de pedidos por cliente
     public function pedidos_Cliente($id_cliente)
     {
@@ -5688,13 +5747,13 @@ class Controller
         print '<table class="table table-bordered table-striped table-hover align-middle text-center table-sm">';
         print '<thead class="table-primary">';
         print '<tr>';
-        print '<th>Cliente</th>';
+        print '<th>Cliente  </th>';
         print '<th>Último Pedido</th>';
-        print '<th>Total de Pedidos</th>';
-        print '<th>Pendentes</th>';
-        print '<th>Em Andamento</th>';
-        print '<th>Cancelados</th>';
-        print '<th>Finalizados</th>';
+        print '<th>Total de Pedidos (qtd.)</th>';
+        print '<th>Pendentes (qtd.)</th>';
+        print '<th>Aguardando Pagamento (qtd.)</th>';
+        print '<th>Cancelados (qtd.)</th>';
+        print '<th>Finalizados (qtd.)</th>';
         print '</tr>';
         print '</thead>';
         print '<tbody>';
@@ -5746,19 +5805,18 @@ class Controller
         print '<table class="table table-bordered table-striped table-hover align-middle text-center table-sm">';
         print '<thead class="table-primary">';
         print '<tr>';
-        print '<th>#</th>';
+
         print '<th>Status do Pedido</th>';
         print '<th>Total de Pedidos</th>';
         print '<th>Valor Total (R$)</th>';
         print '</tr>';
         print '</thead>';
         print '<tbody>';
-        $contador = 1;
+
         $totalGeralPedidos = 0;
         $valorGeral = 0;
         foreach ($pedidosPorStatus as $item) {
-            print '<tr>';
-            print '<td>' . $contador++ . '</td>';
+
             print '<td>' . htmlspecialchars($item->status_pedido) . '</td>';
             print '<td>' . $item->total_pedidos . '</td>';
             print '<td>' . number_format($item->valor_total, 2, ',', '.') . '</td>';
@@ -5768,7 +5826,7 @@ class Controller
         }
         print '<tfoot class="table-light fw-bold">';
         print '<tr>';
-        print '<td colspan="2">Total Geral</td>';
+        print '<td colspan="1">Total Geral</td>';
         print '<td>' . $totalGeralPedidos . '</td>';
         print '<td>' . number_format($valorGeral, 2, ',', '.') . '</td>';
         print '</tr>';
@@ -5806,7 +5864,7 @@ class Controller
         print '<table class="table table-bordered table-striped table-hover align-middle text-center table-sm">';
         print '<thead class="table-primary">';
         print "<tr>
-            <th>#</th>
+            <th>Posição</th>
             <th>Número do Pedido</th>
             <th>Cliente</th>
             <th>Data do Pedido</th>
@@ -5858,19 +5916,17 @@ class Controller
         print '<table class="table table-bordered table-striped table-hover align-middle text-center table-sm">';
         print '<thead class="table-primary">';
         print "<tr>
-            <th>#</th>
             <th>Produto</th>
+            <th> Data de Compra</th>
             <th>Valor de Venda</th>
             <th>Quantidade em Estoque</th>
             </tr>";
         print "</thead>";
         print "<tbody>";
-
-        $contador = 1;
         foreach ($produtosNaoVendidos as $produto) {
             print "<tr>";
-            print "<td>" . ($contador++) . "</td>";
             print "<td>" . htmlspecialchars($produto->nome_produto) . "</td>";
+            print "<td>" . date("d/m/Y", strtotime($produto->data_compra)) . "</td>";
             print "<td>R$ " . number_format($produto->valor_venda, 2, ',', '.') . "</td>";
             print "<td>" . (int) $produto->quantidade . "</td>";
             print "</tr>";
@@ -5895,7 +5951,7 @@ class Controller
             $menu = $this->menu();
             // view
             include_once 'view/relatorios.php';
-            $this->mostrarMensagemErro("Nenhum pedido recente encontrado!");
+            $this->mostrarMensagemErro("Erro, nenhum pedido recente encontrado!");
         }
     }
     // tabela de pedidos recentes
@@ -5908,20 +5964,16 @@ class Controller
         print '<table class="table table-bordered table-striped table-hover align-middle text-center table-sm">';
         print '<thead class="table-primary">';
         print "<tr>
-        <th>#</th>
-        <th>Número do Pedido</th>
-        <th>Data do Pedido</th>
-        <th>Cliente</th>
-        <th>Forma de Pagamento</th>
-        <th>Valor Total</th>
-        </tr>";
+                <th>Número do Pedido</th>
+                <th>Data do Pedido</th>
+                <th>Cliente</th>
+                <th>Forma de Pagamento</th>
+                <th>Valor Total</th>
+                </tr>";
         print "</thead>";
         print "<tbody>";
-
-        $contador = 1;
         foreach ($pedidosRecentes as $pedido) {
             print "<tr>";
-            print "<td>" . ($contador++) . "</td>";
             print "<td>" . htmlspecialchars($pedido->numero_pedido) . "</td>";
             print "<td>" . date('d/m/Y', strtotime($pedido->data_pedido)) . "</td>";
             print "<td>" . htmlspecialchars($pedido->cliente) . "</td>";
@@ -5929,7 +5981,6 @@ class Controller
             print "<td>R$ " . number_format($pedido->valor_total, 2, ',', '.') . "</td>";
             print "</tr>";
         }
-
         print "</tbody>";
         print "</table>";
         print "</div>";
@@ -5950,7 +6001,7 @@ class Controller
             $menu = $this->menu();
             // view
             include_once 'view/relatorios.php';
-            $this->mostrarMensagemErro("Erro ao buscar variacao de vendas por produto");
+            $this->mostrarMensagemErro("Erro ao buscar variação de vendas por produto");
         }
     }
     // Tabela de variação de vendas por produto
@@ -5999,7 +6050,7 @@ class Controller
         print '</tbody></table></div>';
     }
     // metodo de lucro mensal Bruto
-    public function lucroBruto_Mensal($ano, $mes)
+    public function lucro_Mensal($ano, $mes)
     {
         $objPedido = new Pedido();
         $objPedido->lucroBrutoMensal($ano, $mes);
@@ -6014,11 +6065,11 @@ class Controller
             $menu = $this->menu();
             // view
             include_once 'view/relatorios.php';
-            $this->mostrarMensagemErro("Erro ao buscar Lucro bruto de vendas");
+            $this->mostrarMensagemErro("Erro ao buscar Lucro de vendas por mês");
         }
     }
     // Tabela de Lucro Mensal Bruto
-    public function tabelaLucroBrutoMensal($dadosLucroMensal)
+    public function tabelaLucroMensal($dadosLucroMensal)
     {
         if (empty($dadosLucroMensal)) {
             return;
@@ -6135,7 +6186,6 @@ class Controller
             $this->mostrarMensagemErro("Erro ao buscar produtos e seus custos!");
         }
     }
-    // tabela de  Custo Total por Produto em pedidos realizados
     public function tabelaCustoTotalPorProduto($custoTotal_Produto)
     {
         if (empty($custoTotal_Produto)) return;
@@ -6145,19 +6195,20 @@ class Controller
         $totalLucroBruto = 0;
 
         print '<div class="table-responsive mt-4">';
-        print '<table class="table table-bordered table-striped table-hover align-middle text-center table-sm">';
+        print '<table class="table table-bordered table-striped table-hover align-middle text-center table-lg">';
+
+        // 1. TÍTULOS MELHORADOS E REORDENADOS
         print '<thead class="table-primary">';
         print '<tr>';
         print '<th>Produto</th>';
-        print '<th>Tipo</th>';
         print '<th>Largura</th>';
-        print '<th>Composição</th>';
+        print '<th>Cor</th>';
         print '<th>Qtd. Vendida</th>';
         print '<th>Custo Médio</th>';
-        print '<th>Total Investido</th>';
-        print '<th>Total de Vendas</th>';
+        print '<th>Receita Total (Vendas)</th>'; // Novo Título e Ordem
+        print '<th>Custo Total (Investido)</th>'; // Novo Título e Ordem
         print '<th>Lucro Bruto</th>';
-        print '<th>% Lucro</th>';
+        print '<th>Margem (%)</th>';           // Novo Título
         print '</tr>';
         print '</thead><tbody>';
 
@@ -6165,7 +6216,22 @@ class Controller
             $investido = $p->total_investido ?? 0;
             $vendas = $p->valor_total_pedidos ?? 0;
             $lucroBruto = $p->lucro_bruto ?? 0;
-            $percLucro = ($vendas > 0) ? ($lucroBruto / $vendas) * 100 : 0;
+
+            // Cálculo da margem
+            $margemPerc = ($vendas > 0) ? ($lucroBruto / $vendas) * 100 : 0;
+
+            // 3. LÓGICA DE DESTAQUE VISUAL (CORES)
+            $margemClasse = ''; // Classe CSS padrão
+            if ($margemPerc >= 30) {
+                // Margem boa (ex: 30% ou mais)
+                $margemClasse = 'text-success';
+            } elseif ($margemPerc < 10 && $margemPerc >= 0) {
+                // Margem baixa (ex: abaixo de 10%)
+                $margemClasse = 'text-warning';
+            } elseif ($margemPerc < 0) {
+                // Prejuízo
+                $margemClasse = 'text-danger';
+            }
 
             $totalInvestido += $investido;
             $totalVendas += $vendas;
@@ -6173,27 +6239,41 @@ class Controller
 
             print '<tr>';
             print '<td>' . htmlspecialchars($p->nome_produto) . '</td>';
-            print '<td>' . htmlspecialchars($p->tipo_produto) . '</td>';
             print '<td>' . number_format($p->largura, 2, ',', '.') . ' m</td>';
-            print '<td>' . htmlspecialchars($p->composicao) . '</td>';
+            print '<td>' . htmlspecialchars($p->cor) . '</td>';
             print '<td>' . number_format($p->quantidade_total, 2, ',', '.') . ' m</td>';
             print '<td>R$ ' . number_format($p->custo_unit_medio, 2, ',', '.') . '</td>';
-            print '<td>R$ ' . number_format($investido, 2, ',', '.') . '</td>';
+
+            // 2. COLUNAS REORDENADAS (Receita, Custo, Lucro)
             print '<td>R$ ' . number_format($vendas, 2, ',', '.') . '</td>';
-            print '<td>R$ ' . number_format($lucroBruto, 2, ',', '.') . '</td>';
-            print '<td>' . number_format($percLucro, 1, ',', '.') . ' %</td>';
+            print '<td>R$ ' . number_format($investido, 2, ',', '.') . '</td>';
+
+            // 3. DESTAQUE VISUAL (Negrito no Lucro e Margem)
+            print '<td class="fw-bold">R$ ' . number_format($lucroBruto, 2, ',', '.') . '</td>';
+            print '<td class="fw-bold ' . $margemClasse . '">' . number_format($margemPerc, 1, ',', '.') . ' %</td>';
+
             print '</tr>';
         }
 
-        // Totais
+        // --- TOTAIS ---
         $percLucroTotal = ($totalVendas > 0) ? ($totalLucroBruto / $totalVendas) * 100 : 0;
 
+        // Lógica de cor para o total
+        $totalMargemClasse = '';
+        if ($percLucroTotal >= 30) $totalMargemClasse = 'text-success';
+        elseif ($percLucroTotal < 10 && $percLucroTotal >= 0) $totalMargemClasse = 'text-warning';
+        elseif ($percLucroTotal < 0) $totalMargemClasse = 'text-danger';
+
+
         print '<tr class="fw-bold table-secondary">';
-        print '<td colspan="6">Totais Gerais</td>';
-        print '<td>R$ ' . number_format($totalInvestido, 2, ',', '.') . '</td>';
+        // Ajustar colspan para a nova contagem de colunas
+        print '<td colspan="5">Totais Gerais</td>';
+
+        // Exibir totais na nova ordem
         print '<td>R$ ' . number_format($totalVendas, 2, ',', '.') . '</td>';
+        print '<td>R$ ' . number_format($totalInvestido, 2, ',', '.') . '</td>';
         print '<td>R$ ' . number_format($totalLucroBruto, 2, ',', '.') . '</td>';
-        print '<td>' . number_format($percLucroTotal, 1, ',', '.') . ' %</td>';
+        print '<td class="' . $totalMargemClasse . '">' . number_format($percLucroTotal, 1, ',', '.') . ' %</td>';
         print '</tr>';
 
         print '</tbody></table></div>';
@@ -6290,8 +6370,8 @@ class Controller
         print '<thead class="table-primary">';
         print '<tr>';
         print '<th>Produto</th>';
-        print '<th>Custo (R$)</th>';
-        print '<th>Venda (R$)</th>';
+        print '<th>Custo de compra(R$)</th>';
+        print '<th>Valor de venda (R$)</th>';
         print '<th>Margem (%)</th>';
         print '</tr>';
         print '</thead><tbody>';
@@ -6311,55 +6391,7 @@ class Controller
         }
         print '</tbody></table></div>';
     }
-    // metodo de clientes que mais compraram
-    public function clientes_MaisCompraram($ano_referencia, $mes_referencia, $limite)
-    {
-        $objPedido = new Pedido();
-        $objPedido->clientesQueMaisCompraram($ano_referencia, $mes_referencia, $limite);
-        if ($objPedido->clientesQueMaisCompraram($ano_referencia, $mes_referencia, $limite) == true) {
-            $clientes_mais_compram = $objPedido->clientesQueMaisCompraram($ano_referencia, $mes_referencia, $limite);
-            // menu
-            $menu = $this->menu();
-            // view
-            include_once 'view/relatorios.php';
-        } else {
-            // menu
-            $menu = $this->menu();
-            // view
-            include_once 'view/relatorios.php';
-            $this->mostrarMensagemErro("Erro ao consultar clientes que mais compraram!");
-        }
-    }
-    // tabela de clientes que mais compraram
-    public function tabelaClientesMaisCompraram($clientes_mais_compram)
-    {
-        if (empty($clientes_mais_compram)) {
-            return;
-        }
 
-        print '<div class="table-responsive mt-4">';
-        print '<table class="table table-bordered table-striped table-sm align-middle text-center">';
-        print '<thead class="table-primary">';
-        print '<tr>';
-        print '<th>Cliente</th>';
-        print '<th>Total de Pedidos (qtd.)</th>';
-        print '<th>Total Comprado (R$)</th>';
-        print '</tr>';
-        print '</thead><tbody>';
-
-        foreach ($clientes_mais_compram as $clientes) {
-            $nome = ($clientes->nome_fantasia);
-            $totalPedidos = $clientes->total_pedidos;
-            $totalComprado = ($clientes->total_comprado);
-            print '<tr>';
-            print "<td>$nome</td>";
-            print "<td>$totalPedidos</td>";
-            print "<td>R$ $totalComprado</td>";
-            print '</tr>';
-        }
-
-        print '</tbody></table></div>';
-    }
 
     // NOTIFICAÇOES
 
@@ -6471,7 +6503,7 @@ class Controller
         } else {
             $menu = $this->menu();
             include_once 'view/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias!");
+            $this->mostrarMensagemErro("Erro ao consultar o histórico de auditorias dos ultimos 7 dias!");
         }
     }
     /**
@@ -6557,7 +6589,7 @@ class Controller
             $menu = $this->menu();
             $dadosParaView = [];
             include_once 'view/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada de usuario e ação!");
         }
     }
     /**
@@ -6604,7 +6636,7 @@ class Controller
             $menu = $this->menu();
             $dadosParaView = [];
             include_once 'view/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada de usuario e periodo!");
         }
     }
 
@@ -6629,7 +6661,7 @@ class Controller
             $menu = $this->menu();
             $dadosParaView = [];
             include_once 'view/auditoria.php';
-            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada!");
+            $this->mostrarMensagemErro("Erro ao realizar a consulta combinada de usuario, ação e periodo!");
         }
     }
 

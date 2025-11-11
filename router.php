@@ -900,7 +900,7 @@ if (isset($_POST['relatorio_variacao'])) {
 if (isset($_POST['relatorio_lucro'])) {
     $ano = $_POST['ano_faturamento'];
     $mes = $_POST['mes_lucro'];
-    $objController->lucroBruto_Mensal($ano, $mes);
+    $objController->lucro_Mensal($ano, $mes);
 };
 
 //relatorios de Produtos

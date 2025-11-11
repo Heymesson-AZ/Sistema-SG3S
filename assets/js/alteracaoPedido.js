@@ -228,7 +228,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // ===========================
     // DELEGAÇÃO: seleção de cliente/produto
     // ===========================
-    // (As funções de seleção permanecem inalteradas)
     const resultadoClienteContainer = document.getElementById(`resultado_busca_cliente_${numeroPedido}`);
     if (resultadoClienteContainer) {
       resultadoClienteContainer.addEventListener("click", function (e) {
@@ -256,6 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
           let displayText = nome;
           if (cor) displayText += ` - Cor: ${cor}`;
           if (largura) displayText += ` - Largura: ${largura}m`;
+          if (quantidade) displayText += ` - Estoque: ${quantidade} m`;
           produtoInput.value = displayText;
         }
 

@@ -89,7 +89,7 @@
                                                 </div>
                                             <?php endif; ?>
                                             <div class="col-md-6">
-                                                <label for="valor_total" class="form-label">Valor Total</label>
+                                                <label for="valor_total" class="form-label">Valor Total do Pedido</label>
                                                 <input type="text" class="form-control" id="valor_total" name="valor_total" placeholder="R$ 0,00" readonly>
                                             </div>
                                             <div class="col-12">
@@ -108,7 +108,7 @@
                                                 <label for="produto_pedido" class="form-label">Buscar Produto</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                                    <input type="text" class="form-control" id="produto_pedido" name="produto_pedido" placeholder="Digite o nome, cor ou código do produto" autocomplete="off">
+                                                    <input type="text" class="form-control" id="produto_pedido" name="produto_pedido" placeholder="Digite o nome ou cor do Produto" autocomplete="off">
                                                 </div>
                                                 <div id="resultado_busca_produto" class="list-group position-absolute top-100 start-0 w-100 zindex-dropdown shadow" style="max-height: 200px; overflow-y: auto;"></div>
                                             </div>
@@ -133,9 +133,9 @@
                                                         <th class="text-start">Produto</th>
                                                         <th>Cor</th>
                                                         <th>Largura (m)</th>
-                                                        <th>Quantidade</th>
-                                                        <th>Valor Unitário</th>
-                                                        <th>Valor Total</th>
+                                                        <th>Quantidade (m)</th>
+                                                        <th>Valor Unitário (R$)</th>
+                                                        <th>Valor Total (produto) (R$)</th>
                                                         <th>Ação</th>
                                                     </tr>
                                                 </thead>
@@ -151,7 +151,7 @@
                                     <i class="bi bi-arrow-counterclockwise me-1"></i> Limpar
                                 </button>
                                 <button type="button" class="btn btn-success" id="salvar_pedido" disabled>
-                                    <i class="bi bi-check-circle me-1"></i> Finalizar Pedido
+                                    <i class="bi bi-check-circle me-1"></i> Cadastrar Pedido
                                 </button>
                             </div>
                         </form>
